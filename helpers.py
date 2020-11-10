@@ -45,8 +45,8 @@ def contest_retrieve(session, request, db, contestid):
     if len(solve_info) == 0:
         db.execute("INSERT INTO :cid (user_id) VALUES(:id)",
                    cid=contestid, id=session["user_id"])
-        solve_info = db.execute(
-            "SELECT * FROM :cid WHERE user_id=:id", cid=contestid, id=session["user_id"])[0]
+        solve_info = db.execute("SELECT * FROM :cid WHERE user_id=:id",
+                                cid=contestid, id=session["user_id"])[0]
     else:
         solve_info = solve_info[0]
 
