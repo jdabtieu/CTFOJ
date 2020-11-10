@@ -1,0 +1,11 @@
+{% extends "layout.html" %}
+
+{% block title %}Edit Editorial for {{ data["name"] }}{% endblock %}
+
+{% block main %}
+<h1>Edit Editorial for {{ data["name"] }}</h1>
+<form autocomplete="off" method="post">
+    <textarea class="form-control form-group" id="editorial" name="editorial" rows="20" required>{{ data["editorial"] if data["editorial"] else "" }}</textarea>
+    <input class="btn btn-primary" type="submit" id="submit" name="submit" value="Submit">
+</form>
+{% endblock %}

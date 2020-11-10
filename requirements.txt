@@ -1,0 +1,7 @@
+cs50==5.1.0
+Flask==1.1.2
+Flask-Session==0.3.2
+Werkzeug==1.0.1
+requests==2.24.0
+Flask-Mail==0.9.1
+pyjwt==1.7.1

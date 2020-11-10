@@ -1,0 +1,10 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ data["name"] }} Editorial{% endblock %}
+
+{% block main %}
+<h1><a href="{{ request.path[:-10] }}">{{ data["name"] }}</a> Editorial</h1>
+<div>
+    {{ data["editorial"] | safe }}
+</div>
+{% endblock %}

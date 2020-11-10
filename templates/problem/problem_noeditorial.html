@@ -1,0 +1,14 @@
+{% extends "layout.html" %}
+
+{% block title %}Editorial{% endblock %}
+
+{% block main %}
+<h1>Editorial</h1>
+<div>
+    The problem with id {{ request.path.split("/")[2] }} does not have an editorial.
+</div>
+<script>
+    var path = window.location.pathname;
+    $("main").append(`<a href="${path.substring(0, path.lastIndexOf("/editorial"))}">Back to problem</a>`);
+</script>
+{% endblock %}

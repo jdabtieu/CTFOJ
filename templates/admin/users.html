@@ -1,0 +1,54 @@
+{% extends "layout.html" %}
+
+{% block title %}Users{% endblock %}
+
+{% block main %}
+<h1>Users</h1>
+<table class="table table-hover">
+    <thead class="thead-dark">
+        <tr>
+            <th scope="col">User ID</th>
+            <th scope="col">Username</th>
+            <th scope="col">Email</th>
+            <th scope="col">Join Date</th>
+            <th scope="col">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in data %}
+        <tr>
+            <td>{{ row["id"] }}</td>
+            <td {{ 'style=color:red;' if row["banned"] }} class="username" >{{ row["username"] }}</td>
+            <td>{{ row["email"] }}</td>
+            <td class="dt">{{ row["join_date"] }}</td>
+            <td userid="{{ row["id"] }}">
+                <a href="#" onclick="ban(this)"><img src="/static/restrict.svg" onerror="this.src='/static/restrict.png'" class="svg-red ban-user icon" title="Ban/Unban user"></img></a>
+                <a href="#" onclick="resetpass(this)"><img src="/static/key.svg" onerror="this.src='/static/key.png'" class="reset-password icon" title="Reset password"></img></a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<script>
+    document.querySelectorAll(".dt").forEach(function (e) {
+        var parsed = new Date(e.innerHTML + " UTC").toString().split(" ");
+        e.innerHTML = parsed[1] + " " + parsed[2] + ", " + parsed[3] + " " + parsed[4];
+    });
+
+    function ban(e) {
+        var user_id = e.parentNode.getAttribute("userid");
+        $.get("/admin/ban?user_id=" + user_id, data => {
+            alert(data)
+            $(e).parent().parent().find(".username").css("color", data.includes("unbanned") ? "" : "red");
+        })
+    }
+
+    function resetpass(e) {
+        var user_id = e.parentNode.getAttribute("userid");
+        $.get("/admin/resetpass?user_id=" + user_id, data => {
+            alert(data + " (copied to clipboard)")
+            navigator.clipboard.writeText(data);
+        })
+    }
+</script>
+{% endblock %}

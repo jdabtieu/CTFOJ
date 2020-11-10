@@ -1,0 +1,13 @@
+# Problem download files
+/dl/
+
+# Database
+/database.db
+/backup.db
+
+# Python Cache
+/__pycache__/
+
+# Private config
+/email_config.txt
+/secret_key.txt

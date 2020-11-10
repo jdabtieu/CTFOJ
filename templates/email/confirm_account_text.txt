@@ -1,0 +1,9 @@
+Dear {{ username }},
+
+To confirm your registration, click on the following link:
+
+{{ url_for('confirm_register', token=token, _external=True) }}
+
+If you have not requested for our website, please ignore this message.
+
+Marc Garneau Capture the Flag Club

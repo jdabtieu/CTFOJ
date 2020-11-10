@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ title }} Scoreboard{% endblock %}
+
+{% block main %}
+<h1><a href="{{ request.path[:-11] }}">{{ title }}</a> Scoreboard</h1>
+<table class="table table-hover">
+    <thead class="thead-dark">
+        <tr>
+            <th scope="col">Rank</th>
+            <th scope="col">Username</th>
+            <th scope="col">Points</th>
+            <th scope="col">Most recent AC submission</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for i in range(data | length) %}
+        <tr>
+            <td>{{ i + 1 }}</td>
+            <td>{{ data[i]["username"] }}</td>
+            <td>{{ data[i]["points"] }}</td>
+            <td class="dt">{{ data[i]["lastAC"] }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<script>
+    document.querySelectorAll(".dt").forEach(function (e) {
+        var parsed = new Date(e.innerHTML + " UTC").toString().split(" ");
+        e.innerHTML = parsed[1] + " " + parsed[2] + ", " + parsed[3] + " " + parsed[4];
+    });
+</script>
+{% endblock %}

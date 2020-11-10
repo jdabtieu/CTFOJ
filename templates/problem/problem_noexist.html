@@ -1,0 +1,11 @@
+{% extends "layout.html" %}
+
+{% block title %}Nonexistent problem{% endblock %}
+
+{% block main %}
+<h1>Nonexistent problem</h1>
+<div>
+    The problem with id {{ request.path.split("/")[2] }} does not exist.
+</div>
+<a href="/problems">Back to problems</a>
+{% endblock %}

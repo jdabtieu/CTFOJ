@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+
+{% block title %}Edit {{ data["name"] }}{% endblock %}
+
+{% block main %}
+<h1>Edit {{ data["name"] }}</h1>
+<form autocomplete="off" method="post">
+    <input class="form-control form-group" id="name" name="name" value="{{ data["name"] }}" required>
+    <textarea class="form-control form-group" id="description" name="description" rows="20" placeholder="Description" required>{{ data["description"] }}</textarea>
+    <textarea class="form-control form-group" id="hints" name="hints" rows="10" placeholder="Hints">{{ data["hints"] if data["hints"] }}</textarea>
+    <input class="btn btn-primary" type="submit" id="submit" name="submit" value="Submit">
+</form>
+{% endblock %}

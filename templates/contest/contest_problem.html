@@ -1,0 +1,52 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ data["name"] }}{% endblock %}
+
+{% block main %}
+<h1>{{ data["name"] }}</h1>
+{% if status %}
+    {% if status == "success" %}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+    {% else %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+    {% endif %}
+{% endif %}
+<div class="flex-container">
+    <div style="flex: 3; padding: 4px; word-break: break-word;">
+        {{ data["description"] | safe }}
+        {% if data["hints"] %}
+            <div style="margin-top: 16px;">
+                <a class="btn btn-secondary" id="togglehint" onclick="$('#hint').toggle()">Show/Hide Hints</a>
+                <div id="hint" style="display: none; margin-top: 8px;" class="card">
+                    {{ data["hints"] | safe }}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+    <div style="flex: 1; padding: 4px;">
+        <form autocomplete="off" method="post" style="margin-bottom: 0.5rem;">
+            <input class="form-control" type="text" id="flag" name="flag" placeholder="Flag" style="margin-bottom: 0.5rem;" required>
+            <input class="btn btn-primary problem-submit-button" type="submit" value="Submit">
+        </form>
+
+        <p>
+            <b>Category:</b> {{ data["category"] }}<br>
+            <b>Points:</b> {{ data["point_value"] }}<br>
+            <a href="/contest/{{ request.path.split("/")[2] }}">Back to contest</a>
+            {% if session["admin"] %}
+                <br><a href="{{ request.path }}/edit">Edit problem</a>
+            {% endif %}
+        </p>
+    </div>
+</div>
+{% endblock %}

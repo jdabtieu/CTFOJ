@@ -1,0 +1,9 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ e.code }}{% endblock %}
+
+{% block main %}
+<h1>{{ e.code }}</h1>
+{{ e.description }}
+<a href="/">Back to Home</a>
+{% endblock %}

@@ -1,0 +1,9 @@
+{% extends "layout.html" %}
+
+{% block title %}Page Not Found{% endblock %}
+
+{% block main %}
+<h1>Page Not Found</h1>
+The page {{ request.path[1:] }} could not be found.
+<a href="/">Back to Home</a>
+{% endblock %}

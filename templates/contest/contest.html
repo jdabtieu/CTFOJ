@@ -1,0 +1,42 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block main %}
+<div style="position: relative; margin-bottom: 0.5rem;">
+    <h1 style="display: inline;">{{ title }}</h1>
+    <div style="margin: 8px; display: inline; position: absolute;">
+        {% if scoreboard %}<h3 style="display: inline;"><a href="{{ request.path }}/scoreboard">Scoreboard</a></h3>{% endif %}
+        {% if session.admin %}
+            <h3 style="display: inline;"><a href="/admin/submissions?contest_id={{ request.path[9:] }}">Submissions</a></h3>
+            <h3 style="display: inline;"><a href="{{ request.path }}/addproblem">Add Problem</a></h3>
+        {% endif %}
+    </div>
+</div>
+<table class="table table-hover">
+    <thead class="thead-dark">
+        <tr>
+            <th scope="col">Status</th>
+            <th scope="col">Name</th>
+            <th scope="col">Category</th>
+            <th scope="col">Value</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in data %}
+        <tr>
+            <td>
+                {% if row["solved"] %}
+                    <img class="svg-green icon" src="/static/check.svg" onerror="this.src='/static/check.png'"></img>
+                {% else %}
+                    <img class="svg-red icon" src="/static/times.svg" onerror="this.src='/static/times.png'"></img>
+                {% endif %}
+            </td>
+            <td><a href="{{ request.path }}/problem/{{ row["id"] }}">{{ row["name"] }}</a></td>
+            <td>{{ row["category"] }}</td>
+            <td>{{ row["point_value"] }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block main %}
+<h1>Announcements</h1>
+{% for announcement in data %}
+    <div class="card" style="margin: 16px 0 16px 0;">
+        <h3>{{ announcement["name"] }}</h3>
+        <p class="dt">{{ announcement["date"] }}</p>
+        {{ announcement["description"] | safe }}
+        {% if session["admin"] %}
+        <a href="/admin/editannouncement/{{ announcement["id"] }}" style="position: absolute; top: 12px; right: 16px; width: 16px;">
+            <img src="/static/pencil.svg" onerror="this.src='/static/pencil.png'">
+        </a>
+        {% endif %}
+    </div>
+{% endfor %}
+<script>
+    document.querySelectorAll(".dt").forEach(function (e) {
+        var parsed = new Date(e.innerHTML + " UTC").toString().split(" ");
+        e.innerHTML = "Posted " + parsed[1] + " " + parsed[2] + ", " + parsed[3] + " " + parsed[4];
+    });
+</script>
+{% endblock %}

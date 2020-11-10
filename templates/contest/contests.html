@@ -1,0 +1,73 @@
+{% extends "layout.html" %}
+
+{% block title %}Contests{% endblock %}
+
+{% block main %}
+<h1>Future Contests</h1>
+{% if future | length == 0 %}
+	There are no future contests.
+{% endif %}
+{% for contest in future %}
+    <div class="card" style="margin: 16px 0 16px 0;">
+        <h3><a href="/contest/{{ contest["id"] }}">{{ contest["name"] }}</a></h3>
+        <p class="start dt" style="margin-bottom: 0;">{{ contest["start"] }}</p>
+        <p class="end dt">{{ contest["end"] }}</p>
+        {{ contest["description"] | safe }}
+        {% if session["admin"] %}
+            <a href="/admin/editcontest/{{ contest["id"] }}" style="position: absolute; top: 12px; right: 16px; width: 16px;">
+                <img src="/static/pencil.svg" onerror="this.src='/static/pencil.png'">
+            </a>
+        {% endif %}
+    </div>
+{% endfor %}
+
+<h1>Ongoing Contests</h1>
+{% if current | length == 0 %}
+	There are no ongoing contests.
+{% endif %}
+{% for contest in current %}
+    <div class="card" style="margin: 16px 0 16px 0;">
+        <h3><a href="/contest/{{ contest["id"] }}">{{ contest["name"] }}</a></h3>
+        <p class="start dt" style="margin-bottom: 0;">{{ contest["start"] }}</p>
+        <p class="end dt">{{ contest["end"] }}</p>
+        {{ contest["description"] | safe }}
+        {% if session["admin"] %}
+            <a href="/admin/editcontest/{{ contest["id"] }}" style="position: absolute; top: 12px; right: 16px; width: 16px;">
+                <img src="/static/pencil.svg" onerror="this.src='/static/pencil.png'">
+            </a>
+        {% endif %}
+    </div>
+{% endfor %}
+
+<h1>Past Contests</h1>
+{% if past | length == 0 %}
+	There are no past contests.
+{% endif %}
+{% for contest in past %}
+    <div class="card" style="margin: 16px 0 16px 0;">
+        <h3><a href="/contest/{{ contest["id"] }}">{{ contest["name"] }}</a></h3>
+        <p class="start dt" style="margin-bottom: 0;">{{ contest["start"] }}</p>
+        <p class="end dt">{{ contest["end"] }}</p>
+        {{ contest["description"] | safe }}
+        {% if session["admin"] %}
+            <a href="/admin/editcontest/{{ contest["id"] }}" style="position: absolute; top: 12px; right: 16px; width: 16px;">
+                <img src="/static/pencil.svg" onerror="this.src='/static/pencil.png'">
+            </a>
+        {% endif %}
+    </div>
+{% endfor %}
+<script>
+	document.querySelectorAll(".dt").forEach(function (e) {
+        var parsed = new Date(e.innerHTML + " UTC").toString().split(" ");
+        e.innerHTML = parsed[1] + " " + parsed[2] + ", " + parsed[3] + " " + parsed[4];
+    });
+
+    document.querySelectorAll(".start").forEach(function (e) {
+        e.innerHTML = "Start: " + e.innerHTML
+    });
+
+    document.querySelectorAll(".end").forEach(function (e) {
+        e.innerHTML = "End: " + e.innerHTML;
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends "layout.html" %}
+
+{% block title %}Submissions{% endblock %}
+
+{% block main %}
+<div class="flex-container">
+    <div style="flex: 3;">
+        <h1>Submissions</h1>
+        <table class="table table-hover">
+            <thead class="thead-dark">
+                <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">Time</th>
+                    <th scope="col">Username</th>
+                    <th scope="col">Problem ID</th>
+                    <th scope="col">Contest ID</th>
+                    <th scope="col">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in data %}
+                <tr>
+                    <td>{{ row["sub_id"] }}</td>
+                    <td class="dt">{{ row["date"] }}</td>
+                    <td>{{ row["username"] }}</td>
+                    <td>{{ row["problem_id"] }}</td>
+                    <td>{{ row["contest_id"] }}</td>
+                    <td>{% if row["correct"] == True %}
+                            AC
+                        {% else %}
+                            WA
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div style="flex: 1; margin-left: 8px;">
+        <div class="card">
+            <h3>Filter Submissions</h3>
+            <form>
+                <input class="form-control form-group" type="text" id="username" name="username" placeholder="Filter by username">
+                <input class="form-control form-group" type="text" id="problem_id" name="problem_id" placeholder="Filter by problem ID">
+                <input class="form-control form-group" type="text" id="contest_id" name="contest_id" placeholder="Filter by contest ID">
+                <select class="form-control form-group" id="correct" name="correct">
+                    <option value="" selected hidden>Filter by status</option>
+                    <option value="">All</option>
+                    <option value="AC">AC</option>
+                    <option value="WA">WA</option>
+                </select>
+                <input class="btn btn-primary" type="submit" value="Filter!">
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    var queryStrings = new URL(window.location.href).searchParams;
+    if (queryStrings.get("username") != false) $("form #username").attr("value", queryStrings.get("username"));
+    if (queryStrings.get("problem_id") != false) $("form #problem_id").attr("value", queryStrings.get("problem_id"));
+    if (queryStrings.get("contest_id") != false) $("form #contest_id").attr("value", queryStrings.get("contest_id"));
+
+    document.querySelectorAll(".dt").forEach(function (e) {
+        var parsed = new Date(e.innerHTML + " UTC").toString().split(" ");
+        e.innerHTML = parsed[1] + " " + parsed[2] + ", " + parsed[3] + " " + parsed[4];
+    });
+</script>
+{% endblock %}

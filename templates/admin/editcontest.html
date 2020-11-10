@@ -1,0 +1,37 @@
+{% extends "layout.html" %}
+
+{% block title %}Edit Contest{% endblock %}
+
+{% block main %}
+<h1>Edit Contest</h1>
+{% if message %}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+      {{ message }}
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+{% endif %}
+<form autocomplete="off" method="post" id="edit" name="edit">
+    <input class="form-control form-group" type="text" id="name" name="name" placeholder="Name" value="{{ data["name"] }}" required>
+    <textarea class="form-control form-group" id="description" name="description" rows="20" placeholder="Description" required>{{ data["description"] }}</textarea>
+    <input class="form-control form-group dtl" type="text" id="start" name="start" placeholder="Start Date & Time" value="{{ data["start"] }}" required>
+    <input class="form-control form-group dtl" type="text" id="end" name="end" placeholder="End Date & Time" value="{{ data["end"] }}" required>
+    <input class="btn btn-primary" type="submit" id="submit" name="submit" value="Edit">
+</form>
+<script>
+	$(".dtl").focus(function() {
+        $(this).attr("type", "datetime-local");
+    });
+
+    $("form").submit(function(event) {
+        var formStart = $(this).find("#start");
+        var start = new Date(formStart.val()).toISOString();
+        formStart.attr("type", "text").val(start);
+
+        var formEnd = $(this).find("#end");
+        var end = new Date(formEnd.val()).toISOString();
+        formEnd.attr("type", "text").val(end);
+    })
+</script>
+{% endblock %}
