@@ -8,6 +8,7 @@ The setup process involves 3 main steps:
 2. Create database
 3. Configure application
 
+&nbsp;
 1.
 ```
 $ pip install -r requirements.txt
