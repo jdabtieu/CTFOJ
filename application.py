@@ -8,11 +8,12 @@ from flask import (Flask, abort, flash, redirect, render_template, request,
                    send_from_directory, session, url_for)
 from flask_mail import Mail, Message
 from flask_session import Session
-from helpers import (admin_required, contest_retrieve, generate_password,
-                     login_required, send_email)
 from werkzeug.exceptions import (HTTPException, InternalServerError,
                                  default_exceptions)
 from werkzeug.security import check_password_hash, generate_password_hash
+
+from helpers import (admin_required, contest_retrieve, generate_password,
+                     login_required, send_email)
 
 app = Flask(__name__)
 maintenance_mode = False
@@ -253,8 +254,7 @@ def forgotpassword():
 
     if len(rows) == 1:
         exp = datetime.now() + timedelta(seconds=600)
-        token = jwt.encode({'user_id': rows[0]["id"], 'expiration': exp.isoformat(
-        )}, app.config['SECRET_KEY'], algorithm='HS256').decode('utf-8')
+        token = jwt.encode({'user_id': rows[0]["id"], 'expiration': exp.isoformat()}, app.config['SECRET_KEY'], algorithm='HS256').decode('utf-8')
         text = render_template(
             'email/reset_password_text.txt', username=rows[0]["username"], token=token)
         send_email('Reset Your CTF Password',
@@ -576,8 +576,7 @@ def editproblem(problem_id):
         "\r", "").replace("\n", "<br>\n")
     new_hint = request.form.get("hints")
     if new_hint:
-        new_hint = request.form.get("hints").replace(
-            "\r", "").replace("\n", "<br>\n")
+        new_hint = request.form.get("hints").replace("\r", "").replace("\n", "<br>\n")
 
     db.execute("UPDATE problems SET description=:description, name=:name, hints=:hints WHERE id=:problem_id",
                description=new_description, name=new_name, hints=new_hint, problem_id=problem_id)
@@ -602,8 +601,7 @@ def problem_editeditorial(problem_id):
 
     # Reached via POST
 
-    new_editorial = request.form.get("editorial").replace(
-        "\r", "").replace("\n", "<br>\n")
+    new_editorial = request.form.get("editorial").replace("\r", "").replace("\n", "<br>\n")
 
     if not new_editorial:
         db.execute(
@@ -636,8 +634,7 @@ def admin_submissions():
 
     if request.args.get("correct"):
         modifier += " correct=? AND"
-        args.insert(len(args), True if request.args.get(
-            "correct") == "AC" else False)
+        args.insert(len(args), request.args.get("correct") == "AC")
 
     if len(args) == 0:
         submissions = db.execute(
@@ -695,8 +692,7 @@ def admin_createcontest():
     if check_end < check_start:
         return render_template("admin/createcontest.html", message="Contest cannot end before it starts!"), 400
 
-    description = request.form.get("description").replace(
-        "\r", "").replace("\n", "<br>\n")
+    description = request.form.get("description").replace("\r", "").replace("\n", "<br>\n")
     scoreboard_visible = 1 if request.form.get("scoreboard_visible") else 0
 
     db.execute("INSERT INTO contests (id, name, start, end, description, scoreboard_visible) VALUES (:id, :name, datetime(:start), datetime(:end), :description, :scoreboard_visible)",
@@ -744,8 +740,7 @@ def createproblem():
     # Modify problems table
     db.execute("INSERT INTO problems (id, name, description, hints, point_value, category, flag) VALUES (:id, :name, :description, :hints, :point_value, :category, :flag)",
                id=problem_id, name=name, description=description, hints=hints, point_value=point_value, category=category, flag=flag)
-    db.execute("ALTER TABLE problems_master ADD COLUMN :problem_id boolean NOT NULL DEFAULT (0)",
-               problem_id=problem_id)
+    db.execute("ALTER TABLE problems_master ADD COLUMN :problem_id boolean NOT NULL DEFAULT (0)", problem_id=problem_id)
 
     # Go to problems page on success
     return redirect("/problems")
@@ -758,8 +753,7 @@ def ban():
     if not user_id:
         return "Must provide user ID"
 
-    banned_status = db.execute(
-        "SELECT banned FROM users WHERE id=:id", id=user_id)
+    banned_status = db.execute("SELECT banned FROM users WHERE id=:id", id=user_id)
 
     if len(banned_status) != 1:
         return "That user doesn't exist!"
@@ -804,8 +798,7 @@ def createannouncement():
         return render_template("admin/createannouncement.html", message="You have not entered all required fields"), 400
 
     name = request.form.get("name")
-    description = request.form.get("description").replace(
-        "\r", "").replace("\n", "<br>\n")
+    description = request.form.get("description").replace("\r", "").replace("\n", "<br>\n")
 
     db.execute("INSERT INTO announcements (name, description, date) VALUES (:name, :description, datetime('now'))",
                name=name, description=description)
