@@ -1,13 +1,14 @@
 import os
+import secrets
+import urllib.parse
+from datetime import datetime, timedelta
+from functools import wraps
+
 import jwt
 import requests
-import urllib.parse
-import secrets
-
 from flask import redirect, render_template, request, session
-from functools import wraps
-from datetime import datetime, timedelta
 from flask_mail import Mail, Message
+
 
 def login_required(f):
     """
@@ -22,6 +23,7 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+
 def admin_required(f):
     """
     Decorate routes to require admin login.
@@ -35,12 +37,16 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+
 def contest_retrieve(session, request, db, contestid):
-    solve_info = db.execute("SELECT * FROM :cid WHERE user_id=:id", cid=contestid, id=session["user_id"])
+    solve_info = db.execute(
+        "SELECT * FROM :cid WHERE user_id=:id", cid=contestid, id=session["user_id"])
 
     if len(solve_info) == 0:
-        db.execute("INSERT INTO :cid (user_id) VALUES(:id)", cid=contestid, id=session["user_id"])
-        solve_info = db.execute("SELECT * FROM :cid WHERE user_id=:id", cid=contestid, id=session["user_id"])[0]
+        db.execute("INSERT INTO :cid (user_id) VALUES(:id)",
+                   cid=contestid, id=session["user_id"])
+        solve_info = db.execute(
+            "SELECT * FROM :cid WHERE user_id=:id", cid=contestid, id=session["user_id"])[0]
     else:
         solve_info = solve_info[0]
 
@@ -58,9 +64,11 @@ def contest_retrieve(session, request, db, contestid):
         data.insert(len(data), keys)
     return data
 
+
 def generate_password():
     password = secrets.token_urlsafe(16)
     return password
+
 
 def send_email(subject, sender, recipients, text, mail):
     message = Message(subject, sender=sender, recipients=recipients, body=text)
