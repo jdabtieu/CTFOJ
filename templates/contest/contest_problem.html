@@ -44,6 +44,7 @@
             <b>Points:</b> {{ data["point_value"] }}<br>
             <a href="/contest/{{ request.path.split("/")[2] }}">Back to contest</a>
             {% if session["admin"] %}
+                <br><a href="/admin/submissions?contest_id={{ request.path.split("/")[2] }}&problem_id={{ request.path.split("/")[4] }}">View submissions</a>
                 <br><a href="{{ request.path }}/edit">Edit problem</a>
             {% endif %}
         </p>

@@ -46,6 +46,7 @@
                 <br><a href="{{ request.path }}/editorial">View editorial</a>
             {% endif %}
             {% if session["admin"] %}
+                <br><a href="/admin/submissions?problem_id={{ request.path.split("/")[2] }}">View submissions</a>
                 <br><a href="{{ request.path }}/editeditorial">Create/edit editorial</a>
                 <br><a href="{{ request.path }}/edit">Edit problem</a>
             {% endif %}
