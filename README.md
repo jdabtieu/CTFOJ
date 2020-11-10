@@ -12,9 +12,9 @@ If you have logged in with an administrator account, you will be able to manage 
 Contributors are welcome. If you want to help, feel free to submit a pull request or open an issue.
 
 #### Code Style
-4 space tabs. No tab characters, no 2 space tabs, no 8 space tabs.<br>
-Max line length is 120 characters, but preferably keep it below 100.<br>
-Make it readable. Use descriptive variable names, and define them close to the first use.
+We encourage you to follow the [PEP 8](https://www.python.org/dev/peps/pep-0008/) style guide for Python code. However, longer lines may be used if breaking the line would reduce readability.
+
+For non-Python code, please use 4 space tabs, limit your lines to under 100 characters, and use descriptive variable names.
 
 ## License
 This project is licensed under the [GNU AGPLv3](LICENSE).
