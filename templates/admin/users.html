@@ -4,6 +4,7 @@
 
 {% block main %}
 <h1>Users</h1>
+<div id="confirm" style="cursor: pointer;"></div>
 <table class="table table-hover">
     <thead class="thead-dark">
         <tr>
@@ -17,13 +18,13 @@
     <tbody>
         {% for row in data %}
         <tr>
-            <td>{{ row["id"] }}</td>
+            <td class="userid">{{ row["id"] }}</td>
             <td {{ 'style=color:red;' if row["banned"] }} class="username" >{{ row["username"] }}</td>
             <td>{{ row["email"] }}</td>
             <td class="dt">{{ row["join_date"] }}</td>
-            <td userid="{{ row["id"] }}">
-                <a href="#" onclick="ban(this)"><img src="/static/restrict.svg" onerror="this.src='/static/restrict.png'" class="svg-red ban-user icon" title="Ban/Unban user"></img></a>
-                <a href="#" onclick="resetpass(this)"><img src="/static/key.svg" onerror="this.src='/static/key.png'" class="reset-password icon" title="Reset password"></img></a>
+            <td>
+                <a href="#" onclick="banmsg(this)"><img src="/static/restrict.svg" onerror="this.src='/static/restrict.png'" class="svg-red ban-user icon" title="Ban/Unban user"></img></a>
+                <a href="#" onclick="resetpassmsg(this)"><img src="/static/key.svg" onerror="this.src='/static/key.png'" class="reset-password icon" title="Reset password"></img></a>
             </td>
         </tr>
         {% endfor %}
@@ -36,20 +37,48 @@
     });
 
     function ban(e) {
-        var user_id = e.parentNode.getAttribute("userid");
+        var user_id = e.getAttribute("userid");
         $.get("/admin/ban?user_id=" + user_id, data => {
+            $(".userid").filter(function() {
+                return $(this).text() === user_id;
+            }).parent().find(".username")
+                       .css("color", data.includes("Successfully banned") ? "red" : "");
             alert(data)
-            $(e).parent().parent().find(".username")
-                .css("color", data.includes("Successfully banned") ? "red" : "");
         })
+        e.innerHTML = "";
     }
 
     function resetpass(e) {
-        var user_id = e.parentNode.getAttribute("userid");
+        var user_id = e.getAttribute("userid");
         $.get("/admin/resetpass?user_id=" + user_id, data => {
-            alert(data + " (copied to clipboard)")
             navigator.clipboard.writeText(data);
+            alert(data + " (copied to clipboard)")
         })
+        e.innerHTML = "";
+    }
+
+    function banmsg(e) {
+        var username = $(e).parent().parent().find(".username").html();
+        var userid = $(e).parent().parent().find(".userid").html();
+        var msg = `
+            <div class="alert alert-danger show" role="alert">
+                Are you sure you want to ban/unban ${username}? Click this message to confirm.
+            </div>`;
+        $("#confirm").html(msg)
+                     .attr("userid", userid)
+                     .attr("onclick", "ban(this)");
+    }
+
+    function resetpassmsg(e) {
+        var username = $(e).parent().parent().find(".username").html();
+        var userid = $(e).parent().parent().find(".userid").html();
+        var msg = `
+            <div class="alert alert-danger show" role="alert">
+                Are you sure you want to reset ${username}'s password? Click this message to confirm.
+            </div>`;
+        $("#confirm").html(msg)
+                     .attr("userid", userid)
+                     .attr("onclick", "resetpass(this)");
     }
 </script>
 {% endblock %}

@@ -234,7 +234,7 @@ def changepassword():
     if not request.form.get("password"):
         return render_template("changepassword.html",
                                message="Password cannot be blank"), 400
-    if not request.form.get("newPassword") or lenrequest.form.get("newPassword") < 8:
+    if not request.form.get("newPassword") or len(request.form.get("newPassword")) < 8:
         return render_template("changepassword.html",
                                message="New password must be at least 8 characters"), 400
     if not request.form.get("confirmation") or request.form.get("newPassword") != request.form.get("confirmation"):
