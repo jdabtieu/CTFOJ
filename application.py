@@ -821,6 +821,8 @@ def ban():
     if len(banned_status) != 1:
         return "That user doesn't exist!"
 
+    user_id = int(user_id)
+
     banned_status = banned_status[0]["banned"]
 
     if user_id == session["user_id"]:

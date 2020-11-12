@@ -39,7 +39,8 @@
         var user_id = e.parentNode.getAttribute("userid");
         $.get("/admin/ban?user_id=" + user_id, data => {
             alert(data)
-            $(e).parent().parent().find(".username").css("color", data.includes("unbanned") ? "" : "red");
+            $(e).parent().parent().find(".username")
+                .css("color", data.includes("Successfully banned") ? "red" : "");
         })
     }
 
