@@ -40,7 +40,7 @@ $ python3 daily-tasks.py
 $ export FLASK_APP=application.py
 $ flask run
 ```
-If you do not want to export the FLASK_APP every time you reset your terminal, you can put it in your bashrc or create a symbolic link.
+If you do not want to export the FLASK_APP every time you reset your terminal, you can put it in your .bashrc or create a symbolic link.
 
 
 At this time, it is recommended to sign up for an account and then give it administrator access
