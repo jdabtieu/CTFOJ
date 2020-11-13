@@ -8,7 +8,7 @@
 <table class="table table-hover">
     <thead class="thead-dark">
         <tr>
-            <th scope="col">User ID</th>
+            <th scope="col">ID</th>
             <th scope="col">Username</th>
             <th scope="col">Email</th>
             <th scope="col">Join Date</th>
@@ -19,12 +19,19 @@
         {% for row in data %}
         <tr>
             <td class="userid">{{ row["id"] }}</td>
-            <td {{ 'style=color:red;' if row["banned"] }} class="username" >{{ row["username"] }}</td>
+            <td style="{{ "color:red;" if row["banned"] }} {{ "font-weight:bold;" if row["admin"] }}" class="username" >{{ row["username"] }}</td>
             <td>{{ row["email"] }}</td>
             <td class="dt">{{ row["join_date"] }}</td>
             <td>
-                <a href="#" onclick="banmsg(this)"><img src="/static/restrict.svg" onerror="this.src='/static/restrict.png'" class="svg-red ban-user icon" title="Ban/Unban user"></img></a>
-                <a href="#" onclick="resetpassmsg(this)"><img src="/static/key.svg" onerror="this.src='/static/key.png'" class="reset-password icon" title="Reset password"></img></a>
+                <a href="#" onclick="banmsg(this)">
+                    <img src="/static/restrict.svg" onerror="this.src='/static/restrict.png'" class="svg-red icon" title="Ban/Unban user"></img>
+                </a>
+                <a href="#" onclick="resetpassmsg(this)">
+                    <img src="/static/key.svg" onerror="this.src='/static/key.png'" class="icon" title="Reset password"></img>
+                </a>
+                <a href="#" onclick="adminmsg(this)">
+                    <img src="/static/arrow-up.svg" onerror="this.src='/static/arrow-up.png'" class="svg-green icon" title="Grant/Revoke admin"></img>
+                </a>
             </td>
         </tr>
         {% endfor %}
@@ -52,6 +59,18 @@
         e.innerHTML = "";
     }
 
+    function admin(e) {
+        var user_id = e.getAttribute("userid");
+        $.get("/admin/makeadmin?user_id=" + user_id, data => {
+            $(".userid").filter(function() {
+                return $(this).text() === user_id;
+            }).parent().find(".username")
+                       .css("font-weight", data.includes("revoked") ? "" : "bold");
+            alert(data)
+        })
+        e.innerHTML = "";
+    }
+
     function banmsg(e) {
         var username = $(e).parent().parent().find(".username").html();
         var userid = $(e).parent().parent().find(".userid").html();
@@ -74,6 +93,18 @@
         $("#confirm").html(msg)
                      .attr("userid", userid)
                      .attr("onclick", "resetpass(this)");
+    }
+
+    function adminmsg(e) {
+        var username = $(e).parent().parent().find(".username").html();
+        var userid = $(e).parent().parent().find(".userid").html();
+        var msg = `
+            <div class="alert alert-danger show" role="alert">
+                Are you sure you want to grant/revoke admin to ${username}? Click this message to confirm.
+            </div>`;
+        $("#confirm").html(msg)
+                     .attr("userid", userid)
+                     .attr("onclick", "admin(this)");
     }
 </script>
 {% endblock %}

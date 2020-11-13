@@ -700,7 +700,7 @@ def admin_submissions():
 @app.route("/admin/users")
 @admin_required
 def admin_users():
-    data = db.execute("SELECT id, username, email, join_date, banned FROM users")
+    data = db.execute("SELECT * FROM users")
     return render_template("admin/users.html", data=data)
 
 
@@ -873,6 +873,36 @@ def createannouncement():
 
     # Go to problems page on success
     return redirect("/")
+
+
+@app.route("/admin/makeadmin")
+@admin_required
+def makeadmin():
+    user_id = request.args.get("user_id")
+    if not user_id:
+        return "Must provide user ID"
+
+    admin_status = db.execute("SELECT admin FROM users WHERE id=:id", id=user_id)
+
+    if len(admin_status) != 1:
+        return "That user doesn't exist!"
+
+    user_id = int(user_id)
+
+    admin_status = admin_status[0]["admin"]
+
+    if admin_status and session["user_id"] != 1:
+        return "Only the super-admin can revoke admin status"
+
+    if admin_status and user_id == 1:
+        return "Cannot revoke super-admin's admin status"
+
+    if admin_status and session["user_id"] == 1:
+        db.execute("UPDATE users SET admin=0 WHERE id=:id", id=user_id)
+        return "Admin privileges for user with ID " + str(user_id) + " revoked"
+
+    db.execute("UPDATE users SET admin=1 WHERE id=:id", id=user_id)
+    return "Admin privileges for user with ID " + str(user_id) + " granted"
 
 
 @app.route('/admin/editannouncement/<a_id>', methods=["GET", "POST"])
