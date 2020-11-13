@@ -2,7 +2,7 @@ import secrets
 import shutil
 
 # Backup database
-shutil.copy2('database.db', 'backup.db')
+shutil.copy2('database.db', 'database.db.bak')
 
 # Generate new secret key
 secret = secrets.token_hex(48)  # 384 bits
