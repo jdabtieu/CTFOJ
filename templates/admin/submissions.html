@@ -59,10 +59,5 @@
     if (queryStrings.get("username") != false) $("form #username").attr("value", queryStrings.get("username"));
     if (queryStrings.get("problem_id") != false) $("form #problem_id").attr("value", queryStrings.get("problem_id"));
     if (queryStrings.get("contest_id") != false) $("form #contest_id").attr("value", queryStrings.get("contest_id"));
-
-    document.querySelectorAll(".dt").forEach(function (e) {
-        var parsed = new Date(e.innerHTML + " UTC").toString().split(" ");
-        e.innerHTML = parsed[1] + " " + parsed[2] + ", " + parsed[3] + " " + parsed[4];
-    });
 </script>
 {% endblock %}

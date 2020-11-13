@@ -18,8 +18,12 @@
 {% endfor %}
 <script>
     document.querySelectorAll(".dt").forEach(function (e) {
-        var parsed = new Date(e.innerHTML + " UTC").toString().split(" ");
-        e.innerHTML = "Posted " + parsed[1] + " " + parsed[2] + ", " + parsed[3] + " " + parsed[4];
+        var split = e.innerHTML.split(" ");
+            var date_split = split[0].split("-");
+            var final = date_split[1] + "/" + date_split[2] + "/" + date_split[0] + " " + split[1];
+        var parsed = new Date(final + " UTC").toString().split(" ");
+        e.innerHTML = "Posted: " + parsed[1] + " " + parsed[2] + ", " + parsed[3] + " " + parsed[4];
+        e.classList.remove("dt");
     });
 </script>
 {% endblock %}

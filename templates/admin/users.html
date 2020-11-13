@@ -31,11 +31,6 @@
     </tbody>
 </table>
 <script>
-    document.querySelectorAll(".dt").forEach(function (e) {
-        var parsed = new Date(e.innerHTML + " UTC").toString().split(" ");
-        e.innerHTML = parsed[1] + " " + parsed[2] + ", " + parsed[3] + " " + parsed[4];
-    });
-
     function ban(e) {
         var user_id = e.getAttribute("userid");
         $.get("/admin/ban?user_id=" + user_id, data => {
