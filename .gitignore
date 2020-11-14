@@ -3,7 +3,7 @@
 
 # Database
 /database.db
-/backup.db
+/database.db.bak
 
 # Python Cache
 /__pycache__/

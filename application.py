@@ -754,7 +754,7 @@ def admin_createcontest():
                id=contest_id, name=contest_name, start=start, end=end,
                description=description, scoreboard_visible=scoreboard_visible)
     db.execute("CREATE TABLE :cid ('user_id' integer NOT NULL, 'points' INTEGER NOT NULL DEFAULT (0) , 'lastAC' datetime)", cid=contest_id)
-    db.execute("CREATE TABLE :cidinfo ('id' varchar(32) NOT NULL, 'name' varchar(256) NOT NULL, 'category' varchar(32) NOT NULL, 'flag' varchar(256) NOT NULL, 'description' varchar(16384), 'hints' varchar(128), 'point_value' INTEGER NOT NULL DEFAULT (0))",
+    db.execute("CREATE TABLE :cidinfo ('id' varchar(32) NOT NULL, 'name' varchar(256) NOT NULL, 'category' varchar(32) NOT NULL, 'flag' varchar(256) NOT NULL, 'description' varchar(16384), 'hints' varchar(16384), 'point_value' INTEGER NOT NULL DEFAULT (0))",
                cidinfo=contest_id + "info")
 
     return redirect("/contest/" + contest_id)
@@ -997,3 +997,45 @@ for code in default_exceptions:
 @app.route("/teapot")
 def teapot():
     return render_template("error/418.html"), 418
+
+
+
+
+@app.route('/contest/<contest_id>/problem/<problem_id>/export', methods=["GET", "POST"])
+@admin_required
+def export_contest_problem(contest_id, problem_id):
+    # Ensure contest exists
+    data1 = db.execute("SELECT * FROM contests WHERE id=:cid", cid=contest_id)
+    if len(data1) != 1:
+        return render_template("contest/contest_noexist.html"), 404
+
+    # Ensure problem exists
+    data = db.execute("SELECT * FROM :cidinfo WHERE id=:pid",
+                      cidinfo=contest_id + "info", pid=problem_id)
+    if len(data) != 1:
+        return render_template("contest/contest_problem_noexist.html"), 404
+
+    if request.method == "GET":
+        end = datetime.strptime(data1[0]["end"], "%Y-%m-%d %H:%M:%S")
+        if datetime.now() < end:
+            return render_template('contest/exportproblem.html', data=data[0],
+                                   message="Are you sure? The contest hasn't ended yet")
+
+        return render_template('contest/exportproblem.html', data=data[0])
+
+    # Reached via POST
+
+    new_id = contest_id + "-" + data[0]["id"]
+
+    check = db.execute("SELECT * FROM problems WHERE id=:id", id=new_id)
+    if len(check) != 0:
+        return render_template('contest/exportproblem.html', data=data[0],
+                               message="This problem has already been exported")
+
+    new_name = data1[0]["name"] + " - " + data[0]["name"]
+    db.execute("INSERT INTO problems(id, name, description, point_value, category, flag, hints) VALUES(:id, :name, :description, :pv, :cat, :flag, :hints)",
+               id=new_id, name=new_name, description=data[0]["description"],
+               pv=data[0]["point_value"], cat=data[0]["category"], flag=data[0]["flag"],
+               hints=data[0]["hints"])
+
+    return redirect("/problem/" + new_id)
