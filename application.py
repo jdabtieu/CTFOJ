@@ -110,6 +110,11 @@ def login():
         return render_template("login.html",
                                message="You are banned! Please message an admin to appeal the ban."), 403
 
+    # Ensure user has confirmed account
+    if not rows[0]["verified"]:
+        return render_template("login.html",
+                               message="You have not confirmed your account yet. Please check your email."), 403
+
     # Remember which user has logged in
     session["user_id"] = rows[0]["id"]
     session["username"] = rows[0]["username"]
@@ -159,8 +164,6 @@ def register():
     email = request.form.get('email')
     token = jwt.encode(
         {
-            'username': request.form.get('username'),
-            'password': generate_password_hash(request.form.get('password')),
             'email': email,
             'expiration': exp.isoformat()
         },
@@ -169,6 +172,12 @@ def register():
     ).decode('utf-8')
     text = render_template('email/confirm_account_text.txt',
                            username=request.form.get('username'), token=token)
+
+    db.execute("INSERT INTO users(username, password, email, join_date) VALUES(:username, :password, :email, datetime('now'))",
+               username=request.form.get("username"),
+               password=generate_password_hash(request.form.get("password")),
+               email=request.form.get("email"))
+
     send_email('Confirm Your CTF Account',
                app.config['MAIL_DEFAULT_SENDER'], [email], text, mail)
 
@@ -187,30 +196,12 @@ def confirm_register(token):
     if datetime.strptime(token["expiration"], "%Y-%m-%dT%H:%M:%S.%f") < datetime.now():
         return render_template('login.html', message='Email verification link expired')
 
-    rows = db.execute("SELECT * FROM users WHERE username=:username OR email=:email",
-                      username=token['username'], email=token['email'])
-
-    # Ensure username and email do not already exist
-    rows = db.execute(
-        "SELECT * FROM users WHERE username = :username", username=token["username"])
-    if len(rows) > 0:
-        flash('Username unavailable, please register a new username')
-        return redirect("/register")
-    rows = db.execute("SELECT * FROM users WHERE email = :email", email=token["email"])
-    if len(rows) > 0:
-        flash(
-            'This email is already used in an account. Did you mean to reset your password?')
-        return redirect("/register")
-
-    # Insert into database
-    db.execute("INSERT INTO users (username, password, email, join_date) VALUES (:username, :password, :email, datetime('now'))",
-               username=token['username'],
-               password=token['password'],
-               email=token['email'])
+    rows = db.execute("UPDATE users SET verified=1 WHERE email=:email",
+                      email=token['email'])
 
     # Log user in
     user = db.execute(
-        "SELECT * FROM users WHERE username = :username", username=token['username'])[0]
+        "SELECT * FROM users WHERE email = :email", email=token['email'])[0]
     session["user_id"] = user["id"]
     session["username"] = user["username"]
     session["admin"] = False
