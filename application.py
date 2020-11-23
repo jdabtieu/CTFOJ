@@ -70,6 +70,11 @@ def index():
     return render_template("index.html", data=announcements)
 
 
+@app.route("/assets/<path:path>/<filename>")
+def get_asset(path, filename):
+    return send_from_directory("dl/" + path, filename)
+
+
 @app.route("/contests")
 @login_required
 def contests():

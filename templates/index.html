@@ -12,10 +12,10 @@
         {{ announcement["description"] | safe }}
         {% if session["admin"] %}
         <a href="/admin/editannouncement/{{ announcement["id"] }}" style="position: absolute; top: 12px; right: 36px; width: 16px;">
-            <img src="/static/pencil.svg" onerror="this.src='/static/pencil.png'">
+            <img src="/assets/images/pencil.svg" onerror="this.src='/assets/images/pencil.png'">
         </a>
         <a aid="{{ announcement["id"] }}" href="#" onclick="deletemsg(this)" style="position: absolute; top: 12px; right: 16px; width: 16px;">
-            <img src="/static/trash.svg" onerror="this.src='/static/trash.png'">
+            <img src="/assets/images/trash.svg" onerror="this.src='/assets/images/trash.png'">
         </a>
         {% endif %}
     </div>

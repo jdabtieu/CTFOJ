@@ -27,9 +27,9 @@
         <tr>
             <td>
                 {% if row["solved"] %}
-                    <img class="svg-green icon" src="/static/check.svg" onerror="this.src='/static/check.png'"></img>
+                    <img class="svg-green icon" src="/assets/images/check.svg" onerror="this.src='/assets/images/check.png'"></img>
                 {% else %}
-                    <img class="svg-red icon" src="/static/times.svg" onerror="this.src='/static/times.png'"></img>
+                    <img class="svg-red icon" src="/assets/images/times.svg" onerror="this.src='/assets/images/times.png'"></img>
                 {% endif %}
             </td>
             <td><a href="{{ request.path }}/problem/{{ row["id"] }}">{{ row["name"] }}</a></td>
