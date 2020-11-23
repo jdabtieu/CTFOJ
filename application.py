@@ -652,6 +652,19 @@ def problem_editeditorial(problem_id):
                editorial=new_editorial, problem_id=problem_id)
     return redirect("/problem/" + problem_id)
 
+@app.route('/problem/<problem_id>/delete')
+@admin_required
+def problem_editeditorial(problem_id):
+    data = db.execute("SELECT * FROM problems WHERE id=:problem_id",
+                      problem_id=problem_id)
+
+    # Ensure problem exists
+    if len(data) == 0:
+        return render_template("problem/problem_noexist.html"), 404
+
+    db.execute("DELETE FROM problems WHERE id=:id", id=problem_id)
+    return redirect("/problems")
+
 
 @app.route("/admin/submissions")
 @admin_required
@@ -833,7 +846,7 @@ def ban():
 def reset_password():
     user_id = request.args.get("user_id")
     if not user_id:
-        return "Must provide user ID"
+        return "Must provide user ID", 400
 
     password = generate_password()
     db.execute("UPDATE users SET password=:p WHERE id=:id",
@@ -866,12 +879,24 @@ def createannouncement():
     return redirect("/")
 
 
+@app.route("/admin/deleteannouncement")
+@admin_required
+def delete_announcement():
+    a_id = request.args.get("aid")
+    if not a_id:
+        return "Must provide announcement ID", 400
+
+    db.execute("DELETE FROM announcements WHERE id=:id", id=a_id)
+
+    return redirect("/")
+
+
 @app.route("/admin/makeadmin")
 @admin_required
 def makeadmin():
     user_id = request.args.get("user_id")
     if not user_id:
-        return "Must provide user ID"
+        return "Must provide user ID", 400
 
     admin_status = db.execute("SELECT admin FROM users WHERE id=:id", id=user_id)
 

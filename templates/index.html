@@ -3,6 +3,7 @@
 {% block title %}Home{% endblock %}
 
 {% block main %}
+<div id="confirm" style="cursor: pointer;"></div>
 <h1>Announcements</h1>
 {% for announcement in data %}
     <div class="card" style="margin: 16px 0 16px 0;">
@@ -10,8 +11,11 @@
         <p class="dt">{{ announcement["date"] }}</p>
         {{ announcement["description"] | safe }}
         {% if session["admin"] %}
-        <a href="/admin/editannouncement/{{ announcement["id"] }}" style="position: absolute; top: 12px; right: 16px; width: 16px;">
+        <a href="/admin/editannouncement/{{ announcement["id"] }}" style="position: absolute; top: 12px; right: 36px; width: 16px;">
             <img src="/static/pencil.svg" onerror="this.src='/static/pencil.png'">
+        </a>
+        <a aid="{{ announcement["id"] }}" href="#" onclick="deletemsg(this)" style="position: absolute; top: 12px; right: 16px; width: 16px;">
+            <img src="/static/trash.svg" onerror="this.src='/static/trash.png'">
         </a>
         {% endif %}
     </div>
@@ -25,5 +29,21 @@
         e.innerHTML = "Posted: " + parsed[1] + " " + parsed[2] + ", " + parsed[3] + " " + parsed[4];
         e.classList.remove("dt");
     });
+
+    function deleteAnnouncement(e) {
+        var aid = e.getAttribute("aid");
+        window.location.href = "/admin/deleteannouncement?aid=" + aid;
+    }
+
+    function deletemsg(e) {
+        var id = $(e).attr("aid")
+        var msg = `
+            <div class="alert alert-danger show" role="alert">
+                Are you sure you want to delete this announcement? Click this message to confirm.
+            </div>`;
+        $("#confirm").html(msg)
+                     .attr("aid", id)
+                     .attr("onclick", "deleteAnnouncement(this)");
+    }
 </script>
 {% endblock %}
