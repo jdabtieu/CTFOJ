@@ -199,7 +199,8 @@ def confirm_register(token):
     if not token:
         return render_template('login.html', message='Email verification link invalid')
     if datetime.strptime(token["expiration"], "%Y-%m-%dT%H:%M:%S.%f") < datetime.now():
-        return render_template('login.html', message='Email verification link expired')
+        db.execute("DELETE FROM users WHERE verified=0 and email=:email", email=token['email'])
+        return render_template('register.html', message='Email verification link expired; Please re-register')
 
     rows = db.execute("UPDATE users SET verified=1 WHERE email=:email",
                       email=token['email'])
@@ -263,7 +264,7 @@ def forgotpassword():
                       email=request.form.get("email"))
 
     if len(rows) == 1:
-        exp = datetime.now() + timedelta(seconds=600)
+        exp = datetime.now() + timedelta(seconds=1800)
         token = jwt.encode(
             {
                 'user_id': rows[0]["id"],
@@ -276,7 +277,7 @@ def forgotpassword():
                                username=rows[0]["username"], token=token)
         send_email('Reset Your CTF Password',
                    app.config['MAIL_DEFAULT_SENDER'], [email], text, mail)
-    return render_template("forgotpassword.html", 
+    return render_template("forgotpassword.html",
                            message='If there is an account associated with that email, a password reset email has been sent')
 
 
@@ -659,7 +660,7 @@ def problem_editeditorial(problem_id):
 
 @app.route('/problem/<problem_id>/delete')
 @admin_required
-def problem_editeditorial(problem_id):
+def problem_editeditorial2(problem_id):
     data = db.execute("SELECT * FROM problems WHERE id=:problem_id",
                       problem_id=problem_id)
 
@@ -741,7 +742,7 @@ def admin_createcontest():
     check = db.execute("SELECT * FROM contests WHERE id=:contest_id OR name=:contest_name",
                        contest_id=contest_id, contest_name=contest_name)
     if len(check) != 0:
-        return render_template("admin/createcontest.html", 
+        return render_template("admin/createcontest.html",
                                message="A contest with that name or ID already exists"), 409
 
     start = request.form.get("start")
