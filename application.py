@@ -658,9 +658,11 @@ def problem_editeditorial(problem_id):
                editorial=new_editorial, problem_id=problem_id)
     return redirect("/problem/" + problem_id)
 
+
 @app.route('/problem/<problem_id>/delete')
 @admin_required
-def problem_editeditorial2(problem_id):
+def delete_problem(problem_id):
+    # Work in progress
     data = db.execute("SELECT * FROM problems WHERE id=:problem_id",
                       problem_id=problem_id)
 
