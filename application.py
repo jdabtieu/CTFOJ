@@ -72,7 +72,7 @@ def index():
 
 @app.route("/assets/<path:path>/<filename>")
 def get_asset(path, filename):
-    return send_from_directory("dl/" + path, filename)
+    return send_from_directory("assets/" + path, filename)
 
 
 @app.route("/contests")
