@@ -11,7 +11,7 @@ The setup process involves 3 main steps:
 &nbsp;
 1.
 ```
-$ pip install -r requirements.txt
+$ pip3 install -r requirements.txt
 ```
 
 2.
@@ -28,9 +28,9 @@ CREATE TABLE 'announcements' ('id' integer PRIMARY KEY NOT NULL, 'name' varchar(
 
 3.
 ```
-$ echo 'YOUR EMAIL ADDRESS' > email_config.txt
+$ echo 'EMAIL ADDRESS' > email_config.txt
 $ echo 'EMAIL PASSWORD' >> email_config.txt
-$ echo 'YOUR EMAIL NAME (eg. CTF Club)' >> email_config.txt
+$ echo 'SENDER NAME (eg. CTF Club)' >> email_config.txt
 $ python3 daily-tasks.py
 ```
 
