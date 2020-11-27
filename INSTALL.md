@@ -11,12 +11,11 @@ The setup process involves 3 main steps:
 &nbsp;
 1.
 ```
-$ pip install -r requirements.txt
+$ pip3 install -r requirements.txt
 ```
 
 2.
 ```
-$ touch database.db
 $ sqlite3 database.db
 sqlite3>
 CREATE TABLE 'users' ('id' integer PRIMARY KEY NOT NULL, 'username' varchar(20) NOT NULL, 'password' varchar(64) NOT NULL, 'email' varchar(128), 'join_date' datetime NOT NULL DEFAULT (0) , 'admin' boolean NOT NULL DEFAULT (0) , 'banned' boolean NOT NULL DEFAULT (0), 'verified' boolean NOT NULL DEFAULT (0));
