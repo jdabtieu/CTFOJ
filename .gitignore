@@ -9,5 +9,5 @@
 /__pycache__/
 
 # Private config
-settings.py
+/settings.py
 /secret_key.txt
