@@ -9,5 +9,5 @@
 /__pycache__/
 
 # Private config
-/email_config.txt
+settings.py
 /secret_key.txt
