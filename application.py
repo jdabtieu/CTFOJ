@@ -17,36 +17,17 @@ from helpers import (admin_required, contest_retrieve, generate_password,
 
 app = Flask(__name__)
 maintenance_mode = False
+app.config.from_object('settings')
+app.config['SESSION_FILE_DIR'] = mkdtemp()
 
 # Configure session to use filesystem (instead of signed cookies)
-app.config["SESSION_FILE_DIR"] = mkdtemp()
-app.config["SESSION_PERMANENT"] = False
-app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
 # Configure CS50 Library to use SQLite database
 db = SQL("sqlite:///database.db")
 
 # Configure flask-mail
-with open('email_config.txt', 'r') as file:
-    email = file.readline().strip()
-    passwd = file.readline().strip()
-    name = file.readline().strip()
-    app.config.update(
-        MAIL_SERVER='smtp.gmail.com',
-        MAIL_PORT=587,
-        MAIL_USE_TLS=True,
-        MAIL_USE_SSL=False,
-        MAIL_USERNAME=email,
-        MAIL_PASSWORD=passwd,
-        MAIL_DEFAULT_SENDER=(name, email)
-    )
 mail = Mail(app)
-
-with open('secret_key.txt', 'r') as file:
-    secret_key = file.readline().strip()
-    app.config['SECRET_KEY'] = secret_key
-
 
 @app.before_request
 def check_for_maintenance():

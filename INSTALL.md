@@ -28,9 +28,8 @@ CREATE TABLE 'announcements' ('id' integer PRIMARY KEY NOT NULL, 'name' varchar(
 
 3.
 ```
-$ echo 'EMAIL ADDRESS' > email_config.txt
-$ echo 'EMAIL PASSWORD' >> email_config.txt
-$ echo 'SENDER NAME (eg. CTF Club)' >> email_config.txt
+$ cp default_settings.py settings.py
+$ nano settings.py # add your email credentials
 $ python3 daily-tasks.py
 ```
 
