@@ -1038,9 +1038,20 @@ def export_contest_problem(contest_id, problem_id):
                                message="This problem has already been exported")
 
     new_name = data1[0]["name"] + " - " + data[0]["name"]
+    
+    # Insert into problems databases
+
+    db.execute("BEGIN")
     db.execute("INSERT INTO problems(id, name, description, point_value, category, flag, hints) VALUES(:id, :name, :description, :pv, :cat, :flag, :hints)",
                id=new_id, name=new_name, description=data[0]["description"],
                pv=data[0]["point_value"], cat=data[0]["category"], flag=data[0]["flag"],
                hints=data[0]["hints"])
+    db.execute("ALTER TABLE problems_master ADD COLUMN :cpid boolean NOT NULL DEFAULT(0)",
+               cpid=new_id)
+    db.execute("""UPDATE problems_master SET :cpid = (SELECT :cid.:pid FROM :cid WHERE :cid.user_id = problems_master.user_id)
+               WHERE EXISTS (SELECT * FROM :cid WHERE problems_master.user_id = :cid.user_id)""",
+               cpid=new_id, cid=contest_id, pid=problem_id)
+    db.execute("COMMIT")
+
 
     return redirect("/problem/" + new_id)
