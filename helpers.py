@@ -52,7 +52,7 @@ def contest_retrieve(session, request, db, contestid):
 
     data = []
 
-    info = db.execute("SELECT * FROM :cidinfo", cidinfo=contestid + "info")
+    info = db.execute("SELECT * FROM :cidinfo WHERE draft=0", cidinfo=contestid + "info")
     for row in info:
         keys = {
             "name": row["name"],

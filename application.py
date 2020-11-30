@@ -327,6 +327,21 @@ def contest(contest_id):
                            data=contest_retrieve(session, request, db, contest_id))
 
 
+@app.route("/contest/<contest_id>/drafts")
+@admin_required
+def contest_drafts(contest_id):
+    # Ensure contest exists
+    contest_info = db.execute("SELECT * FROM contests WHERE id=:cid", cid=contest_id)
+    if len(contest_info) != 1:
+        return render_template("contest/contest_noexist.html"), 404
+
+    title = contest_info[0]["name"]
+
+    return render_template("contest/draft_problems.html", title=title,
+                           data=db.execute("SELECT * FROM :cidinfo WHERE draft=1",
+                                           cidinfo=contest_id + "info"))
+
+
 @app.route("/contest/<contest_id>/problem/<problem_id>", methods=["GET", "POST"])
 @login_required
 def contest_problem(contest_id, problem_id):
@@ -334,9 +349,15 @@ def contest_problem(contest_id, problem_id):
     check1 = db.execute("SELECT * FROM contests WHERE id=:id", id=contest_id)
     if len(check1) != 1:
         return render_template("contest/contest_noexist.html"), 404
+
     check = db.execute("SELECT * FROM :cidinfo WHERE id=:pid",
                        cidinfo=contest_id + "info", pid=problem_id)
     if len(check) != 1:
+        return render_template("contest/contest_problem_noexist.html"), 404
+
+    check1 = db.execute("SELECT * FROM :cidinfo WHERE id=:pid AND draft=0",
+                       cidinfo=contest_id + "info", pid=problem_id)
+    if len(check1) != 1 and session["admin"] != 1:
         return render_template("contest/contest_problem_noexist.html"), 404
 
     if request.method == "GET":
@@ -376,6 +397,25 @@ def contest_problem(contest_id, problem_id):
     return render_template("contest/contest_problem.html", data=check[0],
                            status="success",
                            message="Congratulations! You have solved this problem!")
+
+
+@app.route("/contest/<contest_id>/problem/<problem_id>/publish")
+@admin_required
+def publish_contest_problem(contest_id, problem_id):
+    # Ensure contest and problem exist
+    check = db.execute("SELECT * FROM contests WHERE id=:id", id=contest_id)
+    if len(check) != 1:
+        return render_template("contest/contest_noexist.html"), 404
+
+    check = db.execute("SELECT * FROM :cidinfo WHERE id=:pid",
+                       cidinfo=contest_id + "info", pid=problem_id)
+    if len(check) != 1:
+        return render_template("contest/contest_problem_noexist.html"), 404
+
+    db.execute("UPDATE :cidinfo SET draft=0 WHERE id=:pid",
+               cidinfo=contest_id + "info", pid=problem_id)
+    
+    return redirect("/contest/" + contest_id + "/problem/" + problem_id)
 
 
 @app.route('/contest/<contest_id>/problem/<problem_id>/edit', methods=["GET", "POST"])
@@ -475,6 +515,7 @@ def contest_add_problem(contest_id):
     point_value = request.form.get("point_value")
     category = request.form.get("category")
     flag = request.form.get("flag")
+    draft = 1 if request.form.get("draft") else 0
 
     # Ensure problem does not already exist
     problem_info = db.execute("SELECT * FROM :cidinfo WHERE id=:problem_id OR name=:name",
@@ -495,10 +536,10 @@ def contest_add_problem(contest_id):
         description += '<br><a href="/' + filepath + filename + '">' + filename + '</a>'
 
     # Modify problems table
-    db.execute("INSERT INTO :cidinfo (id, name, description, hints, point_value, category, flag) VALUES (:id, :name, :description, :hints, :point_value, :category, :flag)",
+    db.execute("INSERT INTO :cidinfo (id, name, description, hints, point_value, category, flag, draft) VALUES (:id, :name, :description, :hints, :point_value, :category, :flag, :draft)",
                cidinfo=contest_id + "info", id=problem_id, name=name,
                description=description, hints=hints, point_value=point_value,
-               category=category, flag=flag)
+               category=category, flag=flag, draft=draft)
     db.execute("ALTER TABLE :cid ADD COLUMN :problem_id boolean NOT NULL DEFAULT (0)",
                cid=contest_id, problem_id=problem_id)
 
@@ -532,6 +573,12 @@ def problem(problem_id):
 
     # Ensure problem exists
     if len(data) != 1:
+        return render_template("problem/problem_noexist.html"), 404
+
+    check = db.execute("SELECT * FROM problems WHERE id=:problem_id AND draft=0",
+                       problem_id=problem_id)
+
+    if len(check) != 1 and session["admin"] != 1:
         return render_template("problem/problem_noexist.html"), 404
 
     if request.method == "GET":
@@ -582,6 +629,12 @@ def problem_editorial(problem_id):
 
     # Ensure problem exists
     if len(data) == 0:
+        return render_template("problem/problem_noexist.html"), 404
+
+    check = db.execute("SELECT * FROM problems WHERE id=:problem_id AND draft=0",
+                       problem_id=problem_id)
+
+    if len(check) != 1 and session["admin"] != 1:
         return render_template("problem/problem_noexist.html"), 404
 
     # Ensure editorial exists
@@ -770,7 +823,7 @@ def admin_createcontest():
                id=contest_id, name=contest_name, start=start, end=end,
                description=description, scoreboard_visible=scoreboard_visible)
     db.execute("CREATE TABLE :cid ('user_id' integer NOT NULL, 'points' INTEGER NOT NULL DEFAULT (0) , 'lastAC' datetime)", cid=contest_id)
-    db.execute("CREATE TABLE :cidinfo ('id' varchar(32) NOT NULL, 'name' varchar(256) NOT NULL, 'category' varchar(32) NOT NULL, 'flag' varchar(256) NOT NULL, 'description' varchar(16384), 'hints' varchar(16384), 'point_value' INTEGER NOT NULL DEFAULT (0))",
+    db.execute("CREATE TABLE :cidinfo ('id' varchar(32) NOT NULL, 'name' varchar(256) NOT NULL, 'category' varchar(32) NOT NULL, 'flag' varchar(256) NOT NULL, 'description' varchar(16384), 'hints' varchar(16384), 'point_value' INTEGER NOT NULL DEFAULT (0), 'draft' boolean NOT NULL DEFAULT(0))",
                cidinfo=contest_id + "info")
 
     return redirect("/contest/" + contest_id)

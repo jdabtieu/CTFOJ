@@ -10,6 +10,7 @@
         {% if session.admin %}
             <h3 style="display: inline;"><a href="/admin/submissions?contest_id={{ request.path[9:] }}">Submissions</a></h3>
             <h3 style="display: inline;"><a href="{{ request.path }}/addproblem">Add Problem</a></h3>
+            <h3 style="display: inline;"><a href="{{ request.path }}/drafts">Draft Problems</a></h3>
         {% endif %}
     </div>
 </div>
