@@ -1,0 +1,14 @@
+{% extends "layout.html" %}
+
+{% block title %}Delete {{ data["name"] }}{% endblock %}
+
+{% block main %}
+<h1 >Delete {{ data["name"] }}</h1>
+<p style="color: red;">
+    Are you sure you want to delete the contest {{ data["name"] }}?
+    This action is irreversible.
+</p>
+<form method="post">
+    <input class="btn btn-primary problem-submit-button" type="submit" value="Confirm">
+</form>
+{% endblock %}

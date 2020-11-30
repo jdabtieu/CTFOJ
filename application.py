@@ -1013,6 +1013,28 @@ def delete_announcement():
     return redirect("/")
 
 
+@app.route("/admin/deletecontest/<contest_id>", methods=["GET", "POST"])
+@admin_required
+def delete_contest(contest_id):
+    # Ensure contest exists
+    check = db.execute("SELECT * FROM contests WHERE id=:cid", cid=contest_id)
+    if len(check) == 0:
+        return render_template("contest/contest_noexist.html")
+
+    if request.method == "GET":
+        return render_template("contest/delete_confirm.html", data=check[0])
+
+    # Reached using POST
+
+    db.execute("BEGIN")
+    db.execute("DELETE FROM contests WHERE id=:cid", cid=contest_id)
+    db.execute("DROP TABLE :cid", cid=contest_id)
+    db.execute("DROP TABLE :cidinfo", cidinfo=contest_id + "info")
+    db.execute("COMMIT")
+
+    return redirect("/contests")
+
+
 @app.route("/admin/makeadmin")
 @admin_required
 def makeadmin():
