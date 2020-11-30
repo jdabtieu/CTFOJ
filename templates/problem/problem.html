@@ -51,6 +51,9 @@
                 <br><a href="{{ request.path }}/editeditorial">Create/edit editorial</a>
                 <br><a href="{{ request.path }}/edit">Edit problem</a>
                 <br><a href="#" onlick="deletemsg(this)">Delete problem</a>
+                {% if data["draft"] %}
+                    <br><a href="{{ request.path }}/publish">Publish draft</a>
+                {% endif %}
             {% endif %}
         </p>
     </div>

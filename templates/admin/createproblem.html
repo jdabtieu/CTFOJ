@@ -21,6 +21,10 @@
     <input class="form-control form-group" type="text" id="category" name="category" placeholder="Category" required>
     <input class="form-control form-group" type="text" id="flag" name="flag" placeholder="Flag" required>
     <input class="form-control form-group" type="file" id="file" name="file" accept=".zip" style="border: 0;">
+    <div class="form-control form-group" style="border: 0;">
+        <input type="checkbox" id="draft" name="draft">
+        <label for="draft">Draft?</label>
+    </div>
     <input class="btn btn-primary" type="submit" id="submit" name="submit" value="Create">
 </form>
 {% endblock %}

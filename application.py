@@ -513,8 +513,15 @@ def problems():
                             user_id=session["user_id"])
 
     return render_template('problem/problems.html',
-                           data=db.execute("SELECT * FROM problems"),
+                           data=db.execute("SELECT * FROM problems WHERE draft=0"),
                            data2=solve_data[0])
+
+
+@app.route('/problems/draft')
+@admin_required
+def draft_problems():
+    return render_template('problem/draft_problems.html',
+                           data=db.execute("SELECT * FROM problems WHERE draft=1"))
 
 
 @app.route('/problem/<problem_id>', methods=["GET", "POST"])
@@ -549,6 +556,22 @@ def problem(problem_id):
                problem_id=problem_id, user_id=session["user_id"])
     return render_template('problem/problem.html', data=data[0], status="success",
                            message="Congratulations! You have solved this problem!")
+
+
+@app.route('/problem/<problem_id>/publish')
+@admin_required
+def publish_problem(problem_id):
+    data = db.execute("SELECT * FROM problems WHERE id=:problem_id",
+                      problem_id=problem_id)
+
+    # Ensure problem exists
+    if len(data) != 1:
+        return render_template("problem/problem_noexist.html"), 404
+
+    db.execute("UPDATE problems SET draft=0 WHERE id=:problem_id", problem_id=problem_id)
+
+    return redirect("/problem/" + problem_id)
+
 
 
 @app.route('/problem/<problem_id>/editorial')
@@ -776,6 +799,7 @@ def createproblem():
     point_value = request.form.get("point_value")
     category = request.form.get("category")
     flag = request.form.get("flag")
+    draft = 1 if request.form.get("draft") else 0
 
     # Ensure problem does not already exist
     problem_info = db.execute("SELECT * FROM problems WHERE id=:problem_id OR name=:name",
@@ -792,9 +816,9 @@ def createproblem():
         description += '<br><a href="/dl/' + filename + '">' + filename + '</a>'
 
     # Modify problems table
-    db.execute("INSERT INTO problems (id, name, description, hints, point_value, category, flag) VALUES (:id, :name, :description, :hints, :point_value, :category, :flag)",
+    db.execute("INSERT INTO problems (id, name, description, hints, point_value, category, flag, draft) VALUES (:id, :name, :description, :hints, :point_value, :category, :flag, :draft)",
                id=problem_id, name=name, description=description, hints=hints,
-               point_value=point_value, category=category, flag=flag)
+               point_value=point_value, category=category, flag=flag, draft=draft)
     db.execute("ALTER TABLE problems_master ADD COLUMN :problem_id boolean NOT NULL DEFAULT (0)",
                problem_id=problem_id)
 
