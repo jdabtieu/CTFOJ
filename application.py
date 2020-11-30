@@ -32,17 +32,21 @@ mail = Mail(app)
 
 @app.before_request
 def check_for_maintenance():
+    # crappy if/elses used here for future expandability
     global maintenance_mode
-    if maintenance_mode:
-        if session and session["admin"]:
-            if request.path == "/admin/maintenance":
-                maintenance_mode = False
-                return "Successfully disabled maintenance mode"
+    if session:
+        if not session["admin"]:
+            if maintenance_mode:
+                return render_template("error/maintenance.html"), 503
+            else:
+                return
+        else:
             return
-        return render_template("error/maintenance.html"), 503
-    if session and session["admin"] and request.path == "/admin/maintenance":
-        maintenance_mode = True
-        return "Successfully enabled maintenance mode"
+    else:
+        if maintenance_mode:
+            return render_template("error/maintenance.html"), 503
+        else:
+            return
 
 
 @app.route("/")
@@ -57,22 +61,25 @@ def get_asset(path, filename):
     return send_from_directory("assets/" + path, filename)
 
 
-@app.route("/contests")
+@app.route("/privacy")
+def privacy():
+    return render_template("privacy.html")
+
+
+@app.route("/terms")
+def terms():
+    return render_template("terms.html")
+
+
+@app.route("/dl/<path:path>/<filename>")
 @login_required
-def contests():
-    past = db.execute(
-        "SELECT * FROM contests WHERE end < datetime('now') ORDER BY end DESC")
-    current = db.execute(
-        "SELECT * FROM contests WHERE end > datetime('now') AND start <= datetime('now') ORDER BY end DESC")
-    future = db.execute(
-        "SELECT * FROM contests WHERE start > datetime('now') ORDER BY start DESC")
-    return render_template("contest/contests.html",
-                           past=past, current=current, future=future)
+def dl(path, filename):
+    return send_from_directory("dl/" + path, filename, as_attachment=True)
 
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    # Forget any user_id
+    # Forget user id
     session.clear()
 
     if request.method == "GET":
@@ -81,10 +88,9 @@ def login():
     # Reached using POST
 
     # Ensure username and password were submitted
-    if not request.form.get("username"):
-        return render_template("login.html", message="Username cannot be blank"), 400
-    if not request.form.get("password"):
-        return render_template("login.html", message="Password cannot be blank"), 400
+    if not request.form.get("username") or not request.form.get("password"):
+        return render_template("login.html",
+                               message="Username and password cannot be blank"), 400
 
     # Ensure username exists and password is correct
     rows = db.execute("SELECT * FROM users WHERE username = :username",
@@ -179,10 +185,13 @@ def confirm_register(token):
     except:
         token = 0
     if not token:
-        return render_template('login.html', message='Email verification link invalid')
+        flash("Email verification link invalid")
+        return redirect("/register")
     if datetime.strptime(token["expiration"], "%Y-%m-%dT%H:%M:%S.%f") < datetime.now():
-        db.execute("DELETE FROM users WHERE verified=0 and email=:email", email=token['email'])
-        return render_template('register.html', message='Email verification link expired; Please re-register')
+        db.execute(
+            "DELETE FROM users WHERE verified=0 and email=:email", email=token['email'])
+        flash("Email verification link expired; Please re-register")
+        return redirect("/register")
 
     rows = db.execute("UPDATE users SET verified=1 WHERE email=:email",
                       email=token['email'])
@@ -270,10 +279,9 @@ def reset_password_user(token):
         user_id = token['user_id']
     except:
         user_id = 0
-    if not user_id:
-        return render_template('login.html', message='Password reset link invalid')
-    if datetime.strptime(token["expiration"], "%Y-%m-%dT%H:%M:%S.%f") < datetime.now():
-        return render_template('login.html', message='Password reset link expired')
+    if not user_id or datetime.strptime(token["expiration"], "%Y-%m-%dT%H:%M:%S.%f") < datetime.now():
+        flash('Password reset link expired/invalid')
+        return redirect('/forgotpassword')
 
     if request.method == "GET":
         return render_template('resetpassword.html')
@@ -290,20 +298,17 @@ def reset_password_user(token):
     return redirect("/login")
 
 
-@app.route("/privacy")
-def privacy():
-    return render_template("privacy.html")
-
-
-@app.route("/terms")
-def terms():
-    return render_template("terms.html")
-
-
-@app.route("/dl/<path:filename>")
+@app.route("/contests")
 @login_required
-def dl(filename):
-    return send_from_directory("dl", filename, as_attachment=True)
+def contests():
+    past = db.execute(
+        "SELECT * FROM contests WHERE end < datetime('now') ORDER BY end DESC")
+    current = db.execute(
+        "SELECT * FROM contests WHERE end > datetime('now') AND start <= datetime('now') ORDER BY end DESC")
+    future = db.execute(
+        "SELECT * FROM contests WHERE start > datetime('now') ORDER BY start DESC")
+    return render_template("contest/contests.html",
+                           past=past, current=current, future=future)
 
 
 @app.route("/contest/<contest_id>")
@@ -347,8 +352,8 @@ def contest_drafts(contest_id):
 @login_required
 def contest_problem(contest_id, problem_id):
     # Ensure contest and problem exist
-    check1 = db.execute("SELECT * FROM contests WHERE id=:id", id=contest_id)
-    if len(check1) != 1:
+    check = db.execute("SELECT * FROM contests WHERE id=:id", id=contest_id)
+    if len(check) != 1:
         return render_template("contest/contest_noexist.html"), 404
 
     check = db.execute("SELECT * FROM :cidinfo WHERE id=:pid",
@@ -546,6 +551,57 @@ def contest_add_problem(contest_id):
 
     # Go to contest page on success
     return redirect("/contest/" + contest_id)
+
+
+@app.route('/contest/<contest_id>/problem/<problem_id>/export', methods=["GET", "POST"])
+@admin_required
+def export_contest_problem(contest_id, problem_id):
+    # Ensure contest exists
+    data1 = db.execute("SELECT * FROM contests WHERE id=:cid", cid=contest_id)
+    if len(data1) != 1:
+        return render_template("contest/contest_noexist.html"), 404
+
+    # Ensure problem exists
+    data = db.execute("SELECT * FROM :cidinfo WHERE id=:pid",
+                      cidinfo=contest_id + "info", pid=problem_id)
+    if len(data) != 1:
+        return render_template("contest/contest_problem_noexist.html"), 404
+
+    if request.method == "GET":
+        end = datetime.strptime(data1[0]["end"], "%Y-%m-%d %H:%M:%S")
+        if datetime.now() < end:
+            return render_template('contest/exportproblem.html', data=data[0],
+                                   message="Are you sure? The contest hasn't ended yet")
+
+        return render_template('contest/exportproblem.html', data=data[0])
+
+    # Reached via POST
+
+    new_id = contest_id + "-" + data[0]["id"]
+
+    check = db.execute("SELECT * FROM problems WHERE id=:id", id=new_id)
+    if len(check) != 0:
+        return render_template('contest/exportproblem.html', data=data[0],
+                               message="This problem has already been exported")
+
+    new_name = data1[0]["name"] + " - " + data[0]["name"]
+    
+    # Insert into problems databases
+
+    db.execute("BEGIN")
+    db.execute("INSERT INTO problems(id, name, description, point_value, category, flag, hints) VALUES(:id, :name, :description, :pv, :cat, :flag, :hints)",
+               id=new_id, name=new_name, description=data[0]["description"],
+               pv=data[0]["point_value"], cat=data[0]["category"], flag=data[0]["flag"],
+               hints=data[0]["hints"])
+    db.execute("ALTER TABLE problems_master ADD COLUMN :cpid boolean NOT NULL DEFAULT(0)",
+               cpid=new_id)
+    db.execute("""UPDATE problems_master SET :cpid = (SELECT :cid.:pid FROM :cid WHERE :cid.user_id = problems_master.user_id)
+               WHERE EXISTS (SELECT * FROM :cid WHERE problems_master.user_id = :cid.user_id)""",
+               cpid=new_id, cid=contest_id, pid=problem_id)
+    db.execute("COMMIT")
+
+
+    return redirect("/problem/" + new_id)
 
 
 @app.route('/problems')
@@ -893,7 +949,6 @@ def ban():
         return "That user doesn't exist!"
 
     user_id = int(user_id)
-
     banned_status = banned_status[0]["banned"]
 
     if user_id == session["user_id"]:
@@ -971,7 +1026,6 @@ def makeadmin():
         return "That user doesn't exist!"
 
     user_id = int(user_id)
-
     admin_status = admin_status[0]["admin"]
 
     if admin_status and session["user_id"] != 1:
@@ -1062,6 +1116,14 @@ def editcontest(contest_id):
     return redirect("/contests")
 
 
+@app.route("/admin/maintenance")
+@admin_required
+def maintenance():
+    global maintenance_mode
+    maintenance_mode = not maintenance_mode
+    return "Enabled maintenance mode" if maintenance_mode else "Disabled maintenance mode"
+
+
 def errorhandler(e):
     if not isinstance(e, HTTPException):
         e = InternalServerError()
@@ -1080,56 +1142,3 @@ for code in default_exceptions:
 @app.route("/teapot")
 def teapot():
     return render_template("error/418.html"), 418
-
-
-
-
-@app.route('/contest/<contest_id>/problem/<problem_id>/export', methods=["GET", "POST"])
-@admin_required
-def export_contest_problem(contest_id, problem_id):
-    # Ensure contest exists
-    data1 = db.execute("SELECT * FROM contests WHERE id=:cid", cid=contest_id)
-    if len(data1) != 1:
-        return render_template("contest/contest_noexist.html"), 404
-
-    # Ensure problem exists
-    data = db.execute("SELECT * FROM :cidinfo WHERE id=:pid",
-                      cidinfo=contest_id + "info", pid=problem_id)
-    if len(data) != 1:
-        return render_template("contest/contest_problem_noexist.html"), 404
-
-    if request.method == "GET":
-        end = datetime.strptime(data1[0]["end"], "%Y-%m-%d %H:%M:%S")
-        if datetime.now() < end:
-            return render_template('contest/exportproblem.html', data=data[0],
-                                   message="Are you sure? The contest hasn't ended yet")
-
-        return render_template('contest/exportproblem.html', data=data[0])
-
-    # Reached via POST
-
-    new_id = contest_id + "-" + data[0]["id"]
-
-    check = db.execute("SELECT * FROM problems WHERE id=:id", id=new_id)
-    if len(check) != 0:
-        return render_template('contest/exportproblem.html', data=data[0],
-                               message="This problem has already been exported")
-
-    new_name = data1[0]["name"] + " - " + data[0]["name"]
-    
-    # Insert into problems databases
-
-    db.execute("BEGIN")
-    db.execute("INSERT INTO problems(id, name, description, point_value, category, flag, hints) VALUES(:id, :name, :description, :pv, :cat, :flag, :hints)",
-               id=new_id, name=new_name, description=data[0]["description"],
-               pv=data[0]["point_value"], cat=data[0]["category"], flag=data[0]["flag"],
-               hints=data[0]["hints"])
-    db.execute("ALTER TABLE problems_master ADD COLUMN :cpid boolean NOT NULL DEFAULT(0)",
-               cpid=new_id)
-    db.execute("""UPDATE problems_master SET :cpid = (SELECT :cid.:pid FROM :cid WHERE :cid.user_id = problems_master.user_id)
-               WHERE EXISTS (SELECT * FROM :cid WHERE problems_master.user_id = :cid.user_id)""",
-               cpid=new_id, cid=contest_id, pid=problem_id)
-    db.execute("COMMIT")
-
-
-    return redirect("/problem/" + new_id)
