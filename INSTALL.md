@@ -27,6 +27,7 @@ CREATE TABLE 'problems' ('id' varchar(64) NOT NULL, 'name' varchar(256) NOT NULL
 CREATE TABLE 'contests' ('id' varchar(32) NOT NULL, 'name' varchar(256) NOT NULL, 'start' datetime NOT NULL, 'end' datetime NOT NULL, 'description' text, 'scoreboard_visible' boolean NOT NULL DEFAULT (1));
 CREATE TABLE 'announcements' ('id' integer PRIMARY KEY NOT NULL, 'name' varchar(256) NOT NULL, 'date' datetime NOT NULL, 'description' varchar(16384) NOT NULL);
 INSERT INTO 'users' VALUES(1, 'admin', 'pbkdf2:sha256:150000$XoLKRd3I$2dbdacb6a37de2168298e419c6c54e768d242aee475aadf1fa9e6c30aa02997f', 'e', datetime('now'), 1, 0, 1);
+INSERT INTO 'problems_master' ('user_id') VALUES(1);
 ```
 
 3.
@@ -52,4 +53,12 @@ You should also change the admin email to your email so that you can reset your 
 ```sql
 $ sqlite3 database.db
 sqlite> UPDATE 'users' SET email='YOUR EMAIL HERE' WHERE id=1;
+```
+Furthermore, when regular users log in for the first time, they will be directed to a helloworld problem. You should create a helloworld problem as a welcome/landing page. This problem must have an id of 'helloworld', without the single quotes. See below for an example helloworld problem:
+```
+Welcome to CTF Club!
+
+In each problem, you must find a flag hidden somewhere on the problem page, or inside one of the links in the problem statement. Make sure the flag you submit does not have extra spaces at the beginning/end, and has the same capitalization as the flag provided.
+
+The flag for this problem is: CTF{welcome_to_ctf_club}
 ```
