@@ -33,6 +33,7 @@ INSERT INTO 'problems_master' ('user_id') VALUES(1);
 3.
 ```bash
 $ python3 daily-tasks.py
+$ echo 'YOUR CLUB NAME' > info.txt
 $ cp default_settings.py settings.py
 $ nano settings.py
 ```

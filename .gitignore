@@ -11,3 +11,4 @@
 # Private config
 /settings.py
 /secret_key.txt
+/info.txt

@@ -6,4 +6,4 @@ To confirm your registration, click on the following link:
 
 If you have not requested for our website, please ignore this message.
 
-Marc Garneau Capture the Flag Club
+{{ CLUB_NAME }}

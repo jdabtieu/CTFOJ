@@ -20,6 +20,8 @@ app = Flask(__name__)
 maintenance_mode = False
 app.config.from_object('settings')
 app.config['SESSION_FILE_DIR'] = mkdtemp()
+with open('info.txt', 'r') as file:
+    app.jinja_env.globals['CLUB_NAME'] = file.readline().strip()
 
 # Configure session to use filesystem (instead of signed cookies)
 Session(app)
