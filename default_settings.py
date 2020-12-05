@@ -10,3 +10,6 @@ MAIL_USERNAME = "your email address"
 MAIL_PASSWORD = "your email password"
 MAIL_DEFAULT_SENDER = ("sender name", "sender email")
 CLUB_NAME = "your club name"
+SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE='Lax'
