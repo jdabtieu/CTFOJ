@@ -20,8 +20,7 @@ app = Flask(__name__)
 maintenance_mode = False
 app.config.from_object('settings')
 app.config['SESSION_FILE_DIR'] = mkdtemp()
-with open('info.txt', 'r') as file:
-    app.jinja_env.globals['CLUB_NAME'] = file.readline().strip()
+app.jinja_env.globals['CLUB_NAME'] = app.config['CLUB_NAME']
 
 # Configure session to use filesystem (instead of signed cookies)
 Session(app)
@@ -422,7 +421,7 @@ def publish_contest_problem(contest_id, problem_id):
 
     db.execute("UPDATE :cidinfo SET draft=0 WHERE id=:pid",
                cidinfo=contest_id + "info", pid=problem_id)
-    
+
     return redirect("/contest/" + contest_id + "/problem/" + problem_id)
 
 
@@ -587,7 +586,7 @@ def export_contest_problem(contest_id, problem_id):
                                message="This problem has already been exported")
 
     new_name = data1[0]["name"] + " - " + data[0]["name"]
-    
+
     # Insert into problems databases
 
     db.execute("BEGIN")

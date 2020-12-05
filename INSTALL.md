@@ -33,11 +33,10 @@ INSERT INTO 'problems_master' ('user_id') VALUES(1);
 3.
 ```bash
 $ python3 daily-tasks.py
-$ echo 'YOUR CLUB NAME' > info.txt
 $ cp default_settings.py settings.py
 $ nano settings.py
 ```
-In settings.py, you should add your email credentials as indicated by default_settings.py. Additionally, you may change the other email settings if you do not use Gmail.
+In settings.py, you should add your email credentials as indicated by default_settings.py. Additionally, you may change the other email settings if you do not use Gmail. Finally, you should add a custom name for your club.
 
 # Running in Debug Mode
 ```
