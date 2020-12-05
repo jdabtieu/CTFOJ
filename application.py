@@ -1164,3 +1164,11 @@ for code in default_exceptions:
 @app.route("/teapot")
 def teapot():
     return render_template("error/418.html"), 418
+
+@app.after_request
+def security_policies(response):
+    response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+    response.headers['X-XSS-Protection'] = '1; mode=block'
+    return response
