@@ -23,20 +23,28 @@ app = Flask(__name__)
 maintenance_mode = False
 try:
     app.config.from_object('settings')
-except: # when testing
+except:
     app.config.from_object('default_settings')
 app.config['SESSION_FILE_DIR'] = mkdtemp()
 app.jinja_env.globals['CLUB_NAME'] = app.config['CLUB_NAME']
 
 # Configure logging
-logging.basicConfig(filename=app.config['LOGGING_FILE_LOCATION'], level=logging.DEBUG, format='%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
-logging.getLogger().addHandler(logging.StreamHandler())
+try:
+    logging.basicConfig(filename=app.config['LOGGING_FILE_LOCATION'], level=logging.DEBUG, format='%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
+    logging.getLogger().addHandler(logging.StreamHandler())
+except: # when testing
+    logging.basicConfig(filename='application.log', level=logging.DEBUG, format='%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
+    logging.getLogger().addHandler(logging.StreamHandler())
 
 # Configure session to use filesystem (instead of signed cookies)
 Session(app)
 
 # Configure CS50 Library to use SQLite database
-db = SQL("sqlite:///database.db")
+try:
+    db = SQL("sqlite:///database.db")
+except: # when testing
+    open("database_test.db", "w").close()
+    db = SQL("sqlite:///database_test.db")
 
 # Configure flask-mail
 mail = Mail(app)
@@ -44,6 +52,9 @@ mail = Mail(app)
 # Configure flask-WTF
 csrf = CSRFProtect(app)
 csrf.init_app(app)
+
+def testing_database_setup(database):
+    db = database
 
 @app.before_request
 def check_for_maintenance():
