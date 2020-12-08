@@ -21,7 +21,10 @@ from helpers import (admin_required, contest_retrieve, generate_password,
 
 app = Flask(__name__)
 maintenance_mode = False
-app.config.from_object('settings')
+try:
+    app.config.from_object('settings')
+except: # when testing
+    app.config.from_object('default_settings')
 app.config['SESSION_FILE_DIR'] = mkdtemp()
 app.jinja_env.globals['CLUB_NAME'] = app.config['CLUB_NAME']
 
