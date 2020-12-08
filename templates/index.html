@@ -8,7 +8,7 @@
 {% for announcement in data %}
     <div class="card" style="margin: 16px 0 16px 0;">
         <h3>{{ announcement["name"] }}</h3>
-        <p class="dt">{{ announcement["date"] }}</p>
+        <p>Posted <span class="dt">{{ announcement["date"] }}</span></p>
         {{ announcement["description"] | safe }}
         {% if session["admin"] %}
         <a href="/admin/editannouncement/{{ announcement["id"] }}" style="position: absolute; top: 12px; right: 36px;">
@@ -21,15 +21,6 @@
     </div>
 {% endfor %}
 <script>
-    document.querySelectorAll(".dt").forEach(function (e) {
-        var split = e.innerHTML.split(" ");
-            var date_split = split[0].split("-");
-            var final = date_split[1] + "/" + date_split[2] + "/" + date_split[0] + " " + split[1];
-        var parsed = new Date(final + " UTC").toString().split(" ");
-        e.innerHTML = "Posted: " + parsed[1] + " " + parsed[2] + ", " + parsed[3] + " " + parsed[4];
-        e.classList.remove("dt");
-    });
-
     function deleteAnnouncement(e) {
         var aid = e.getAttribute("aid");
         window.location.href = "/admin/deleteannouncement?aid=" + aid;

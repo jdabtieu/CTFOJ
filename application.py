@@ -60,6 +60,11 @@ def check_for_maintenance():
 @login_required
 def index():
     announcements = db.execute("SELECT * FROM announcements ORDER BY id DESC")
+    for i in range(len(announcements)):
+        aid = announcements[i]["id"]
+        file = open('metadata/announcements/' + str(aid) + '.md', 'r')
+        announcements[i]["description"] = file.read()
+        file.close()
     return render_template("index.html", data=announcements)
 
 
@@ -1046,12 +1051,15 @@ def createannouncement():
                                message="You have not entered all required fields"), 400
 
     name = request.form.get("name")
-    description = request.form.get("description") \
-                              .replace("\r", "") \
-                              .replace("\n", "<br>\n")
+    description = request.form.get("description")
 
-    db.execute("INSERT INTO announcements (name, description, date) VALUES (:name, :description, datetime('now'))",
-               name=name, description=description)
+    db.execute("INSERT INTO announcements (name, date) VALUES (:name, datetime('now'))",
+               name=name)
+    aid = db.execute("SELECT * FROM announcements ORDER BY date DESC")[0]["id"]
+
+    f = open('metadata/announcements/' + str(aid) + '.md', 'w')
+    f.write(description)
+    f.close()
 
     # Go to problems page on success
     return redirect("/")
@@ -1060,11 +1068,12 @@ def createannouncement():
 @app.route("/admin/deleteannouncement")
 @admin_required
 def delete_announcement():
-    a_id = request.args.get("aid")
-    if not a_id:
+    aid = request.args.get("aid")
+    if not aid:
         return "Must provide announcement ID", 400
 
-    db.execute("DELETE FROM announcements WHERE id=:id", id=a_id)
+    db.execute("DELETE FROM announcements WHERE id=:id", id=aid)
+    os.remove('metadata/announcements/' + aid + '.md')
 
     return redirect("/")
 
@@ -1131,16 +1140,16 @@ def editannouncement(a_id):
     if len(data) == 0:
         return redirect("/")
 
-    data[0]["description"] = data[0]["description"].replace("<br>", "")
+    file = open('metadata/announcements/' + a_id + '.md', 'r')
+    data[0]["description"] = file.read()
+    file.close()
 
     if request.method == "GET":
         return render_template('admin/editannouncement.html', data=data[0])
 
     # Reached via POST
     new_name = request.form.get("name")
-    new_description = request.form.get("description") \
-                                  .replace("\r", "") \
-                                  .replace("\n", "<br>\n")
+    new_description = request.form.get("description")
 
     if not new_name:
         return render_template('admin/editannouncement.html',
@@ -1149,8 +1158,14 @@ def editannouncement(a_id):
         return render_template('admin/editannouncement.html',
                                data=data[0], message="Description cannot be empty"), 400
 
-    db.execute("UPDATE announcements SET name=:name, description=:description WHERE id=:a_id",
-               name=new_name, description=new_description, a_id=a_id)
+    # Update database
+    db.execute("UPDATE announcements SET name=:name WHERE id=:a_id",
+               name=new_name, a_id=a_id)
+
+    file = open('metadata/announcements/' + a_id + '.md', 'w')
+    file.write(new_description)
+    file.close()
+
     return redirect("/")
 
 

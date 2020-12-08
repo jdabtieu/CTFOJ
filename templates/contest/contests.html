@@ -10,8 +10,8 @@
 {% for contest in future %}
     <div class="card" style="margin: 16px 0 16px 0;">
         <h3><a href="/contest/{{ contest["id"] }}">{{ contest["name"] }}</a></h3>
-        <p class="start dt" style="margin-bottom: 0;">{{ contest["start"] }}</p>
-        <p class="end dt">{{ contest["end"] }}</p>
+        <p style="margin-bottom: 0;">Start: <span class="dt">{{ contest["start"] }}</span></p>
+        <p style="margin-bottom: 0;">End: <span class="dt">{{ contest["end"] }}</span></p>
         {{ contest["description"] | safe }}
         {% if session["admin"] %}
             <a href="/admin/editcontest/{{ contest["id"] }}" style="position: absolute; top: 12px; right: 36px;">
@@ -31,8 +31,8 @@
 {% for contest in current %}
     <div class="card" style="margin: 16px 0 16px 0;">
         <h3><a href="/contest/{{ contest["id"] }}">{{ contest["name"] }}</a></h3>
-        <p class="start dt" style="margin-bottom: 0;">{{ contest["start"] }}</p>
-        <p class="end dt">{{ contest["end"] }}</p>
+        <p style="margin-bottom: 0;">Start: <span class="dt">{{ contest["start"] }}</span></p>
+        <p style="margin-bottom: 0;">End: <span class="dt">{{ contest["end"] }}</span></p>
         {{ contest["description"] | safe }}
         {% if session["admin"] %}
             <a href="/admin/editcontest/{{ contest["id"] }}" style="position: absolute; top: 12px; right: 36px">
@@ -52,8 +52,8 @@
 {% for contest in past %}
     <div class="card" style="margin: 16px 0 16px 0;">
         <h3><a href="/contest/{{ contest["id"] }}">{{ contest["name"] }}</a></h3>
-        <p class="start dt" style="margin-bottom: 0;">{{ contest["start"] }}</p>
-        <p class="end dt">{{ contest["end"] }}</p>
+        <p style="margin-bottom: 0;">Start: <span class="dt">{{ contest["start"] }}</span></p>
+        <p style="margin-bottom: 0;">End: <span class="dt">{{ contest["end"] }}</span></p>
         {{ contest["description"] | safe }}
         {% if session["admin"] %}
             <a href="/admin/editcontest/{{ contest["id"] }}" style="position: absolute; top: 12px; right: 36px">
@@ -65,22 +65,4 @@
         {% endif %}
     </div>
 {% endfor %}
-<script>
-    document.querySelectorAll(".dt").forEach(function (e) {
-        var split = e.innerHTML.split(" ");
-            var date_split = split[0].split("-");
-            var final = date_split[1] + "/" + date_split[2] + "/" + date_split[0] + " " + split[1];
-        var parsed = new Date(final + " UTC").toString().split(" ");
-        e.innerHTML = parsed[1] + " " + parsed[2] + ", " + parsed[3] + " " + parsed[4];
-        e.classList.remove("dt");
-    });
-    
-    document.querySelectorAll(".start").forEach(function (e) {
-        e.innerHTML = "Start: " + e.innerHTML
-    });
-
-    document.querySelectorAll(".end").forEach(function (e) {
-        e.innerHTML = "End: " + e.innerHTML;
-    });
-</script>
 {% endblock %}

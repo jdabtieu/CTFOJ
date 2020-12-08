@@ -6,8 +6,10 @@ db = cs50.SQL("sqlite:///database.db")
 os.makedirs('metadata')
 os.makedirs('metadata/problems')
 os.makedirs('metadata/contests')
+os.makedirs('metadata/announcements')
 problems = db.execute("SELECT * FROM problems")
 contests = db.execute("SELECT * FROM contests")
+announcements = db.execute("SELECT * FROM announcements")
 
 for problem in problems:
 	pid = problem["id"]
@@ -77,3 +79,23 @@ for contest in contests:
 	db.execute("ALTER TABLE :cidtmp RENAME TO :cidinfo",
 			   cidtmp=cid + "info_tmp", cidinfo=cid + "info")
 	db.execute("COMMIT")
+
+for announcement in announcements:
+	aid = announcement["id"]
+	description = announcement["description"]
+	if description is None:
+		description = ""
+	f = open('metadata/announcements/' + str(aid) + '.md', 'w')
+	f.write(description)
+	f.close()
+
+db.execute("BEGIN")
+db.execute("CREATE TABLE 'announcements_tmp' ('id' integer PRIMARY KEY NOT NULL, 'name' varchar(256) NOT NULL, 'date' datetime NOT NULL)")
+
+for announcement in announcements:
+	db.execute("INSERT INTO announcements_tmp VALUES(?, ?, ?)",
+			   announcement["id"], announcement["name"], announcement["date"])
+
+db.execute("DROP TABLE announcements")
+db.execute("ALTER TABLE announcements_tmp RENAME TO announcements")
+db.execute("COMMIT")
