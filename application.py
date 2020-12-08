@@ -63,8 +63,8 @@ def index():
     for i in range(len(announcements)):
         aid = announcements[i]["id"]
 
-        announcements[i]["description"] =
-            read_file('metadata/announcements/' + str(aid) + '.md')
+        announcements[i]["description"] = read_file(
+            'metadata/announcements/' + str(aid) + '.md')
 
     return render_template("index.html", data=announcements)
 
@@ -320,6 +320,15 @@ def contests():
         "SELECT * FROM contests WHERE end > datetime('now') AND start <= datetime('now') ORDER BY end DESC")
     future = db.execute(
         "SELECT * FROM contests WHERE start > datetime('now') ORDER BY start DESC")
+    for contest in past:
+        cid = contest["id"]
+        contest["description"] = read_file('metadata/contests/' + cid + '/description.md')
+    for contest in current:
+        cid = contest["id"]
+        contest["description"] = read_file('metadata/contests/' + cid + '/description.md')
+    for contest in future:
+        cid = contest["id"]
+        contest["description"] = read_file('metadata/contests/' + cid + '/description.md')
     return render_template("contest/contests.html",
                            past=past, current=current, future=future)
 
@@ -908,19 +917,23 @@ def admin_createcontest():
         return render_template("admin/createcontest.html",
                                message="Contest cannot end before it starts!"), 400
 
-    description = request.form.get("description") \
-                              .replace("\r", "") \
-                              .replace("\n", "<br>\n")
+    description = request.form.get("description")
     scoreboard_visible = bool(request.form.get("scoreboard_visible"))
+    if not description:
+        return render_template("admin/createcontest.html",
+                               message="Description cannot be empty!"), 400
 
-    db.execute("INSERT INTO contests (id, name, start, end, description, scoreboard_visible) VALUES (:id, :name, datetime(:start), datetime(:end), :description, :scoreboard_visible)",
+    db.execute("INSERT INTO contests (id, name, start, end, scoreboard_visible) VALUES (:id, :name, datetime(:start), datetime(:end), :scoreboard_visible)",
                id=contest_id, name=contest_name, start=start, end=end,
-               description=description, scoreboard_visible=scoreboard_visible)
+               scoreboard_visible=scoreboard_visible)
     db.execute("CREATE TABLE :cid ('user_id' integer NOT NULL, 'points' INTEGER NOT NULL DEFAULT (0) , 'lastAC' datetime)", cid=contest_id)
-    db.execute("CREATE TABLE :cidinfo ('id' varchar(32) NOT NULL, 'name' varchar(256) NOT NULL, 'category' varchar(32) NOT NULL, 'flag' varchar(256) NOT NULL, 'description' varchar(16384), 'hints' varchar(16384), 'point_value' INTEGER NOT NULL DEFAULT (0), 'draft' boolean NOT NULL DEFAULT(0))",
+    db.execute("CREATE TABLE :cidinfo ('id' varchar(32) NOT NULL, 'name' varchar(256) NOT NULL, 'category' varchar(32) NOT NULL, 'flag' varchar(256) NOT NULL, 'point_value' INTEGER NOT NULL DEFAULT (0), 'draft' boolean NOT NULL DEFAULT(0))",
                cidinfo=contest_id + "info")
 
     os.makedirs('metadata/contests/' + contest_id)
+    file = open('metadata/contests/' + contest_id + '/description.md', 'w')
+    file.write(description)
+    file.close()
 
     return redirect("/contest/" + contest_id)
 
@@ -1164,16 +1177,15 @@ def editcontest(contest_id):
     if len(data) == 0:
         return redirect("/contests")
 
-    data[0]["description"] = data[0]["description"].replace("<br>", "")
+    data[0]["description"] = read_file(
+        'metadata/contests/' + contest_id + '/description.md')
 
     if request.method == "GET":
         return render_template('admin/editcontest.html', data=data[0])
 
     # Reached via POST
     new_name = request.form.get("name")
-    new_description = request.form.get("description") \
-                                  .replace("\r", "") \
-                                  .replace("\n", "<br>\n")
+    new_description = request.form.get("description")
     start = request.form.get("start")
     end = request.form.get("end")
 
@@ -1191,9 +1203,8 @@ def editcontest(contest_id):
         return render_template("admin/editcontest.html",
                                message="Contest cannot end before it starts!"), 400
 
-    db.execute("UPDATE contests SET name=:name, description=:description, start=datetime(:start), end=datetime(:end) WHERE id=:cid",
-               name=new_name, description=new_description, start=start, end=end,
-               cid=contest_id)
+    db.execute("UPDATE contests SET name=:name, start=datetime(:start), end=datetime(:end) WHERE id=:cid",
+               name=new_name, start=start, end=end, cid=contest_id)
     return redirect("/contests")
 
 

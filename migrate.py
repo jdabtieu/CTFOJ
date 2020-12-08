@@ -2,6 +2,7 @@ import os
 import cs50
 
 db = cs50.SQL("sqlite:///database.db")
+contests = db.execute("SELECT * FROM contests")
 
 os.makedirs('metadata')
 os.makedirs('metadata/problems')
@@ -79,6 +80,23 @@ for contest in contests:
 	db.execute("ALTER TABLE :cidtmp RENAME TO :cidinfo",
 			   cidtmp=cid + "info_tmp", cidinfo=cid + "info")
 	db.execute("COMMIT")
+
+
+	description = contest["description"]
+	f = open('metadata/contests/' + cid + '/description.md', 'w')
+	f.write(description)
+	f.close()
+
+db.execute("BEGIN")
+db.execute("CREATE TABLE 'contests_tmp' ('id' varchar(32) NOT NULL, 'name' varchar(256) NOT NULL, 'start' datetime NOT NULL, 'end' datetime NOT NULL, 'scoreboard_visible' boolean NOT NULL DEFAULT(1))")
+for contest in contests:
+	db.execute("INSERT INTO contests_tmp VALUES(?, ?, ?, ?, ?)",
+			   contest["id"], contest["name"], contest["start"], contest["end"],
+			   contest["scoreboard_visible"])
+
+db.execute("DROP TABLE contests")
+db.execute("ALTER TABLE contests_tmp RENAME TO contests")
+db.execute("COMMIT")
 
 for announcement in announcements:
 	aid = announcement["id"]
