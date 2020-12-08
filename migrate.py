@@ -1,6 +1,22 @@
 import os
 import cs50
+import shutil
+import sys
 
+msg = """Before migrating, please confirm the following:
+ - You have shut down the app. (Maintenance mode does not count)
+ - You have made a backup of the database
+ - You have write permissions in the current directory
+ - No other process is using the database
+Please note that migration is a one-way operation, and you will not be able to revert to the pervious version without a backup.
+Are you sure you wish to migrate? [y/n] """
+
+confirm = input(msg)
+if confirm != 'y':
+	print('Aborting...')
+	sys.exit()
+
+shutil.copy2('database.db', 'database.db.bak')
 db = cs50.SQL("sqlite:///database.db")
 contests = db.execute("SELECT * FROM contests")
 
@@ -117,3 +133,5 @@ for announcement in announcements:
 db.execute("DROP TABLE announcements")
 db.execute("ALTER TABLE announcements_tmp RENAME TO announcements")
 db.execute("COMMIT")
+
+print('Migration completed.')

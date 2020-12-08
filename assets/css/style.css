@@ -7,7 +7,7 @@
     width: 100%;
 }
 
-.hint {
+#hint {
     display: none;
     margin-top: 8px;
 }

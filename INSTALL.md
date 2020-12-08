@@ -32,12 +32,7 @@ INSERT INTO 'problems_master' ('user_id') VALUES(1);
 
 3.
 ```bash
-$ mkdir logs
-$ mkdir dl
-$ mkdir metadata
-$ mkdir metadata/contests
-$ mkdir metadata/problems
-$ mkdir metadata/announcements
+$ mkdir logs dl metadata metadata/contests metadata/problems metadata/announcements
 $ touch logs/application.log
 $ python3 daily_tasks.py
 $ cp default_settings.py settings.py
