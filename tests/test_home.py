@@ -1,5 +1,3 @@
-import json
-
 def test_home(client):
     '''Test if there are any homepage internal server errors.'''
     result = client.get('/')
