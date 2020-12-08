@@ -33,11 +33,11 @@ INSERT INTO 'problems_master' ('user_id') VALUES(1);
 3.
 ```bash
 $ mkdir logs
-$ python3 daily-tasks.py
+$ python3 daily_tasks.py
 $ cp default_settings.py settings.py
 $ nano settings.py
 ```
-In settings.py, you should add your email credentials as indicated by default_settings.py. Additionally, you may change the other email settings if you do not use Gmail. Finally, you should add a custom name for your club.
+In settings.py, you should add your email credentials as indicated by default_settings.py. Additionally, you may change the other email settings if you do not use Gmail. Finally, you should add a custom name for your club and change any other settings that you wish to change.
 
 # Running in Debug Mode
 ```
@@ -53,13 +53,10 @@ An admin account has been created in step 2. You can log in to it using the cred
 You should also change the admin email to your email so that you can reset your password in the future through the web app.
 ```sql
 $ sqlite3 database.db
-sqlite> UPDATE 'users' SET email='YOUR EMAIL HERE' WHERE id=1;
+sqlite3> UPDATE 'users' SET email='YOUR EMAIL HERE' WHERE id=1;
 ```
 Furthermore, when regular users log in for the first time, they will be directed to a helloworld problem. You should create a helloworld problem as a welcome/landing page. This problem must have an id of 'helloworld', without the single quotes. See below for an example helloworld problem:
-```
-Welcome to CTF Club!
-
-In each problem, you must find a flag hidden somewhere on the problem page, or inside one of the links in the problem statement. Make sure the flag you submit does not have extra spaces at the beginning/end, and has the same capitalization as the flag provided.
-
-The flag for this problem is: CTF{welcome_to_ctf_club}
+```sql
+$ sqlite3 database.db
+sqlite3> INSERT INTO 'problems' VALUES('helloworld', 'Hello World', 'Welcome to CTF Club! In each problem, you must find a flag hidden somewhere on the problem page.', 1, 'general', 'CTF{your_first_ctf_flag}', 'The flag starts with CTF{', 'The flag ends with }', 0);
 ```
