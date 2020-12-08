@@ -8,7 +8,7 @@
 # We have attempted to detect the languages in your repository. Please check
 # the `language` matrix defined below to confirm you have the correct set of
 # supported CodeQL languages.
-# Changes from default: add security_hardening branch
+# Changes from default: add security_hardening and tests branches
 name: "CodeQL"
 
 on:
@@ -16,10 +16,12 @@ on:
     branches: 
       - master
       - security_hardening
+      - tests
   pull_request:
     branches:
       - master
       - security_hardening
+      - tests
   schedule:
     - cron: '34 6 * * 2'
 
