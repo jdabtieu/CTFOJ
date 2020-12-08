@@ -1,5 +1,6 @@
 import os
 import sys
+import shutil
 from datetime import datetime, timedelta
 from tempfile import mkdtemp
 
@@ -367,6 +368,13 @@ def contest_problem(contest_id, problem_id):
     if len(check1) != 1 and session["admin"] != 1:
         return render_template("contest/contest_problem_noexist.html"), 404
 
+    file = open('metadata/contests/' + contest_id + '/' + problem_id + '/description.md' ,'r')
+    check[0]["description"] = file.read()
+    file.close()
+    file = open('metadata/contests/' + contest_id + '/' + problem_id + '/hints.md', 'r')
+    check[0]["hints"] = file.read()
+    file.close()
+
     if request.method == "GET":
         return render_template("contest/contest_problem.html", data=check[0])
 
@@ -401,8 +409,8 @@ def contest_problem(contest_id, problem_id):
         db.execute("UPDATE :cid SET :pid=1, lastAC=datetime('now'), points=points+:points WHERE user_id=:uid",
                    cid=contest_id, pid=problem_id, points=points, uid=session["user_id"])
 
-    return render_template("contest/contest_problem.html", data=check[0],
-                           status="success",
+    return render_template("contest/contest_problem.html",
+                           data=check[0], status="success",
                            message="Congratulations! You have solved this problem!")
 
 
@@ -439,11 +447,12 @@ def edit_contest_problem(contest_id, problem_id):
     if len(data) != 1:
         return render_template("contest/contest_problem_noexist.html"), 404
 
-    if data[0]["description"]:
-        data[0]["description"] = data[0]["description"].replace("<br>", "")
-
-    if data[0]["hints"]:
-        data[0]["hints"] = data[0]["hints"].replace("<br>", "")
+    file = open('metadata/contests/' + contest_id + '/' + problem_id + '/description.md', 'r')
+    data[0]["description"] = file.read()
+    file.close()
+    file = open('metadata/contests/' + contest_id + '/' + problem_id + '/hints.md', 'r')
+    data[0]["hints"] = file.read()
+    file.close()
 
     if request.method == "GET":
         return render_template('problem/editproblem.html', data=data[0])
@@ -454,18 +463,23 @@ def edit_contest_problem(contest_id, problem_id):
         return render_template('problem/editproblem.html', data=data[0])
 
     new_name = request.form.get("name")
-    new_description = request.form.get("description") \
-                                  .replace("\r", "") \
-                                  .replace("\n", "<br>\n")
+    new_description = request.form.get("description")
     new_hint = request.form.get("hints")
-    if new_hint:
-        new_hint = request.form.get("hints") \
-                               .replace("\r", "") \
-                               .replace("\n", "<br>\n")
+    if not new_description:
+        new_description = ""
+    if not new_hint:
+        new_hint = ""
 
-    db.execute("UPDATE :cidinfo SET description=:description, name=:name, hints=:hints WHERE id=:pid",
-               cidinfo=contest_id + "info", description=new_description,
-               name=new_name, hints=new_hint, pid=problem_id)
+    db.execute("UPDATE :cidinfo SET name=:name WHERE id=:pid",
+               cidinfo=contest_id + "info", name=new_name, pid=problem_id)
+
+    file = open('metadata/contests/' + contest_id + '/' + problem_id + '/description.md', 'w')
+    file.write(new_description)
+    file.close()
+    file = open('metadata/contests/' + contest_id + '/' + problem_id + '/hints.md', 'w')
+    file.write(new_hint)
+    file.close()
+
     return redirect(request.path[:-5])
 
 
@@ -513,12 +527,8 @@ def contest_add_problem(contest_id):
 
     problem_id = request.form.get("id")
     name = request.form.get("name")
-    description = request.form.get("description") \
-                              .replace("\r", "") \
-                              .replace("\n", "<br>\n")
-    hints = request.form.get("hints") \
-                        .replace("\r", "") \
-                        .replace("\n", "<br>\n")
+    description = request.form.get("description")
+    hints = request.form.get("hints")
     point_value = request.form.get("point_value")
     category = request.form.get("category")
     flag = request.form.get("flag")
@@ -543,12 +553,19 @@ def contest_add_problem(contest_id):
         description += '<br><a href="/' + filepath + filename + '">' + filename + '</a>'
 
     # Modify problems table
-    db.execute("INSERT INTO :cidinfo (id, name, description, hints, point_value, category, flag, draft) VALUES (:id, :name, :description, :hints, :point_value, :category, :flag, :draft)",
+    db.execute("INSERT INTO :cidinfo (id, name, point_value, category, flag, draft) VALUES (:id, :name, :point_value, :category, :flag, :draft)",
                cidinfo=contest_id + "info", id=problem_id, name=name,
-               description=description, hints=hints, point_value=point_value,
-               category=category, flag=flag, draft=draft)
+               point_value=point_value, category=category, flag=flag, draft=draft)
     db.execute("ALTER TABLE :cid ADD COLUMN :problem_id boolean NOT NULL DEFAULT (0)",
                cid=contest_id, problem_id=problem_id)
+
+    os.makedirs('metadata/contests/' + contest_id + '/' + problem_id)
+    file = open('metadata/contests/' + contest_id + '/' + problem_id + '/description.md', 'w')
+    file.write(description)
+    file.close()
+    file = open('metadata/contests/' + contest_id + '/' + problem_id + '/hints.md', 'w')
+    file.write(hints)
+    file.close()
 
     # Go to contest page on success
     return redirect("/contest/" + contest_id)
@@ -588,7 +605,6 @@ def export_contest_problem(contest_id, problem_id):
     new_name = data1[0]["name"] + " - " + data[0]["name"]
 
     # Insert into problems databases
-
     db.execute("BEGIN")
     db.execute("INSERT INTO problems(id, name, description, point_value, category, flag, hints) VALUES(:id, :name, :description, :pv, :cat, :flag, :hints)",
                id=new_id, name=new_name, description=data[0]["description"],
@@ -601,6 +617,16 @@ def export_contest_problem(contest_id, problem_id):
                cpid=new_id, cid=contest_id, pid=problem_id)
     db.execute("COMMIT")
 
+    os.makedirs('metadata/problems/' + new_id)
+    file = open('metadata/problems/' + new_id + '/description.md', 'w')
+    file.write(data[0]["description"])
+    file.close()
+    file = open('metadata/problems/' + new_id + '/hints.md', 'w')
+    file.write(data[0]["hints"])
+    file.close()
+    file = open('metadata/problems/' + new_id + '/editorial.md', 'w')
+    file.write("")
+    file.close()
 
     return redirect("/problem/" + new_id)
 
@@ -896,6 +922,8 @@ def admin_createcontest():
     db.execute("CREATE TABLE :cidinfo ('id' varchar(32) NOT NULL, 'name' varchar(256) NOT NULL, 'category' varchar(32) NOT NULL, 'flag' varchar(256) NOT NULL, 'description' varchar(16384), 'hints' varchar(16384), 'point_value' INTEGER NOT NULL DEFAULT (0), 'draft' boolean NOT NULL DEFAULT(0))",
                cidinfo=contest_id + "info")
 
+    os.makedirs('metadata/contests/' + contest_id)
+
     return redirect("/contest/" + contest_id)
 
 
@@ -1054,6 +1082,8 @@ def delete_contest(contest_id):
     db.execute("DROP TABLE :cid", cid=contest_id)
     db.execute("DROP TABLE :cidinfo", cidinfo=contest_id + "info")
     db.execute("COMMIT")
+    os.remove('metadata')
+    shutil.rmtree('metadata/contests/' + contest_id)
 
     return redirect("/contests")
 
