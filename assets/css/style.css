@@ -7,6 +7,11 @@
     width: 100%;
 }
 
+.hint {
+    display: none;
+    margin-top: 8px;
+}
+
 /****************** CONTEST PAGE LAYOUT **********************/
 #contest-description-container, #contest-description-container-keep-open {
      position: fixed;
