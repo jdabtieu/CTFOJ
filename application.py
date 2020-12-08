@@ -217,7 +217,8 @@ def register():
 def confirm_register(token):
     try:
         token = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
-    except:
+    except Exception as e:
+        sys.stderr.write(str(e))
         token = 0
     if not token:
         flash("Email verification link invalid")
@@ -311,7 +312,8 @@ def reset_password_user(token):
     try:
         token = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
         user_id = token['user_id']
-    except:
+    except Exception as e:
+        sys.stderr.write(str(e))
         user_id = 0
     if not user_id or datetime.strptime(token["expiration"], "%Y-%m-%dT%H:%M:%S.%f") < datetime.now():
         flash('Password reset link expired/invalid')
@@ -405,7 +407,7 @@ def contest_problem(contest_id, problem_id):
         return render_template("contest/contest_problem_noexist.html"), 404
 
     check1 = db.execute("SELECT * FROM :cidinfo WHERE id=:pid AND draft=0",
-                       cidinfo=contest_id + "info", pid=problem_id)
+                        cidinfo=contest_id + "info", pid=problem_id)
     if len(check1) != 1 and session["admin"] != 1:
         return render_template("contest/contest_problem_noexist.html"), 404
 
