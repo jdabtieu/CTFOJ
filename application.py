@@ -45,7 +45,8 @@ csrf.init_app(app)
 def check_for_maintenance():
     # crappy if/elses used here for future expandability
     global maintenance_mode
-    if session:
+    # don't block the user if they only have the csrf token
+    if ("csrf_token" in session and len(session) > 1) or (not "csrf_token" in session and len(session)):
         if not session["admin"]:
             if maintenance_mode:
                 return render_template("error/maintenance.html"), 503
