@@ -1,4 +1,5 @@
 import os
+import logging
 import sys
 from datetime import datetime, timedelta
 from tempfile import mkdtemp
@@ -21,6 +22,9 @@ maintenance_mode = False
 app.config.from_object('settings')
 app.config['SESSION_FILE_DIR'] = mkdtemp()
 app.jinja_env.globals['CLUB_NAME'] = app.config['CLUB_NAME']
+
+# Configure logging
+logging.basicConfig(filename=app.config['LOGGING_FILE_LOCATION'], level=logging.DEBUG, format='%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
 
 # Configure session to use filesystem (instead of signed cookies)
 Session(app)
