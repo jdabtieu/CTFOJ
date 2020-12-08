@@ -16,7 +16,7 @@ from werkzeug.exceptions import (HTTPException, InternalServerError,
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from helpers import (admin_required, contest_retrieve, generate_password,
-                     login_required, send_email)
+                     login_required, send_email, read_file)
 
 app = Flask(__name__)
 maintenance_mode = False
@@ -62,9 +62,10 @@ def index():
     announcements = db.execute("SELECT * FROM announcements ORDER BY id DESC")
     for i in range(len(announcements)):
         aid = announcements[i]["id"]
-        file = open('metadata/announcements/' + str(aid) + '.md', 'r')
-        announcements[i]["description"] = file.read()
-        file.close()
+
+        announcements[i]["description"] =
+            read_file('metadata/announcements/' + str(aid) + '.md')
+
     return render_template("index.html", data=announcements)
 
 
@@ -378,12 +379,10 @@ def contest_problem(contest_id, problem_id):
     if len(check1) != 1 and session["admin"] != 1:
         return render_template("contest/contest_problem_noexist.html"), 404
 
-    file = open('metadata/contests/' + contest_id + '/' + problem_id + '/description.md' ,'r')
-    check[0]["description"] = file.read()
-    file.close()
-    file = open('metadata/contests/' + contest_id + '/' + problem_id + '/hints.md', 'r')
-    check[0]["hints"] = file.read()
-    file.close()
+    check[0]["description"] = read_file(
+        'metadata/contests/' + contest_id + '/' + problem_id + '/description.md')
+    check[0]["hints"] = read_file(
+        'metadata/contests/' + contest_id + '/' + problem_id + '/hints.md')
 
     if request.method == "GET":
         return render_template("contest/contest_problem.html", data=check[0])
@@ -457,12 +456,10 @@ def edit_contest_problem(contest_id, problem_id):
     if len(data) != 1:
         return render_template("contest/contest_problem_noexist.html"), 404
 
-    file = open('metadata/contests/' + contest_id + '/' + problem_id + '/description.md', 'r')
-    data[0]["description"] = file.read()
-    file.close()
-    file = open('metadata/contests/' + contest_id + '/' + problem_id + '/hints.md', 'r')
-    data[0]["hints"] = file.read()
-    file.close()
+    data[0]["description"] = read_file(
+        'metadata/contests/' + contest_id + '/' + problem_id + '/description.md')
+    data[0]["hints"] = read_file(
+        'metadata/contests/' + contest_id + '/' + problem_id + '/hints.md')
 
     if request.method == "GET":
         return render_template('problem/editproblem.html', data=data[0])
@@ -675,15 +672,12 @@ def problem(problem_id):
         return render_template("problem/problem_noexist.html"), 404
 
     # Retrieve problem description and hints
-    file = open('metadata/problems/' + problem_id + '/description.md', 'r')
-    data[0]["description"] = file.read()
-    file.close()
-    file = open('metadata/problems/' + problem_id + '/hints.md', 'r')
-    data[0]["hints"] = file.read()
-    file.close()
-    file = open('metadata/problems/' + problem_id + '/editorial.md', 'r')
-    data[0]["editorial"] = file.read()
-    file.close()
+    data[0]["description"] = read_file(
+        'metadata/problems/' + problem_id + '/description.md')
+    data[0]["hints"] = read_file(
+        'metadata/problems/' + problem_id + '/hints.md')
+    data[0]["editorial"] = read_file(
+        'metadata/problems/' + problem_id + '/editorial.md')
 
     if request.method == "GET":
         return render_template('problem/problem.html', data=data[0])
@@ -742,9 +736,7 @@ def problem_editorial(problem_id):
         return render_template("problem/problem_noexist.html"), 404
 
     # Ensure editorial exists
-    file = open('metadata/problems/' + problem_id + '/editorial.md', 'r')
-    editorial = file.read()
-    file.close()
+    editorial = read_file('metadata/problems/' + problem_id + '/editorial.md')
     if not editorial:
         return render_template("problem/problem_noeditorial.html"), 404
 
@@ -761,12 +753,10 @@ def editproblem(problem_id):
     if len(data) == 0:
         return render_template("problem/problem_noexist.html"), 404
 
-    file = open('metadata/problems/' + problem_id + '/description.md', 'r')
-    data[0]['description'] = file.read()
-    file.close()
-    file = open('metadata/problems/' + problem_id + '/hints.md', 'r')
-    data[0]['hints'] = file.read()
-    file.close()
+    data[0]['description'] = read_file(
+        'metadata/problems/' + problem_id + '/description.md')
+    data[0]['hints'] = read_file(
+        'metadata/problems/' + problem_id + '/hints.md')
 
     if request.method == "GET":
         return render_template('problem/editproblem.html', data=data[0])
@@ -803,9 +793,7 @@ def problem_editeditorial(problem_id):
     if len(data) == 0:
         return render_template("problem/problem_noexist.html"), 404
 
-    file = open('metadata/problems/' + problem_id + '/editorial.md', 'r')
-    data[0]['editorial'] = file.read()
-    file.close()
+    data[0]['editorial'] = read_file('metadata/problems/' + problem_id + '/editorial.md')
 
     if request.method == "GET":
         return render_template('problem/editeditorial.html', data=data[0])
@@ -1140,10 +1128,8 @@ def editannouncement(a_id):
     if len(data) == 0:
         return redirect("/")
 
-    file = open('metadata/announcements/' + a_id + '.md', 'r')
-    data[0]["description"] = file.read()
-    file.close()
-
+    data[0]["description"] = read_file('metadata/announcements/' + a_id + '.md')
+    
     if request.method == "GET":
         return render_template('admin/editannouncement.html', data=data[0])
 
