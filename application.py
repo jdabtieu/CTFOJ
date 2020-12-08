@@ -638,6 +638,17 @@ def problem(problem_id):
     if len(check) != 1 and session["admin"] != 1:
         return render_template("problem/problem_noexist.html"), 404
 
+    # Retrieve problem description and hints
+    file = open('metadata/problems/' + problem_id + '/description.md', 'r')
+    data[0]["description"] = file.read()
+    file.close()
+    file = open('metadata/problems/' + problem_id + '/hints.md', 'r')
+    data[0]["hints"] = file.read()
+    file.close()
+    file = open('metadata/problems/' + problem_id + '/editorial.md', 'r')
+    data[0]["editorial"] = file.read()
+    file.close()
+
     if request.method == "GET":
         return render_template('problem/problem.html', data=data[0])
 
@@ -681,7 +692,7 @@ def publish_problem(problem_id):
 @app.route('/problem/<problem_id>/editorial')
 @login_required
 def problem_editorial(problem_id):
-    data = db.execute("SELECT name, editorial FROM problems WHERE id=:problem_id",
+    data = db.execute("SELECT * FROM problems WHERE id=:problem_id",
                       problem_id=problem_id)
 
     # Ensure problem exists
@@ -695,11 +706,13 @@ def problem_editorial(problem_id):
         return render_template("problem/problem_noexist.html"), 404
 
     # Ensure editorial exists
-    if data[0]["editorial"] == None:
+    file = open('metadata/problems/' + problem_id + '/editorial.md', 'r')
+    editorial = file.read()
+    file.close()
+    if not editorial:
         return render_template("problem/problem_noeditorial.html"), 404
 
-    if request.method == "GET":
-        return render_template('problem/problemeditorial.html', data=data[0])
+    return render_template('problem/problemeditorial.html', data=data[0], ed=editorial)
 
 
 @app.route('/problem/<problem_id>/edit', methods=["GET", "POST"])
@@ -712,11 +725,12 @@ def editproblem(problem_id):
     if len(data) == 0:
         return render_template("problem/problem_noexist.html"), 404
 
-    if data[0]["description"]:
-        data[0]["description"] = data[0]["description"].replace("<br>", "")
-
-    if data[0]["hints"]:
-        data[0]["hints"] = data[0]["hints"].replace("<br>", "")
+    file = open('metadata/problems/' + problem_id + '/description.md', 'r')
+    data[0]['description'] = file.read()
+    file.close()
+    file = open('metadata/problems/' + problem_id + '/hints.md', 'r')
+    data[0]['hints'] = file.read()
+    file.close()
 
     if request.method == "GET":
         return render_template('problem/editproblem.html', data=data[0])
@@ -727,18 +741,19 @@ def editproblem(problem_id):
         return render_template('problem/editproblem.html', data=data[0])
 
     new_name = request.form.get("name")
-    new_description = request.form.get("description") \
-                                  .replace("\r", "") \
-                                  .replace("\n", "<br>\n")
+    new_description = request.form.get("description")
     new_hint = request.form.get("hints")
-    if new_hint:
-        new_hint = request.form.get("hints") \
-                               .replace("\r", "") \
-                               .replace("\n", "<br>\n")
+    if not new_hint:
+        new_hint = ""
 
-    db.execute("UPDATE problems SET description=:description, name=:name, hints=:hints WHERE id=:problem_id",
-               description=new_description, name=new_name, hints=new_hint,
-               problem_id=problem_id)
+    db.execute("UPDATE problems SET name=:name WHERE id=:problem_id",
+               name=new_name, problem_id=problem_id)
+    file = open('metadata/problems/' + problem_id + '/description.md', 'w')
+    file.write(new_description)
+    file.close()
+    file = open('metadata/problems/' + problem_id + '/hints.md', 'w')
+    file.write(new_hint)
+    file.close()
     return redirect("/problem/" + problem_id)
 
 
@@ -752,24 +767,22 @@ def problem_editeditorial(problem_id):
     if len(data) == 0:
         return render_template("problem/problem_noexist.html"), 404
 
-    if data[0]["editorial"]:
-        data[0]["editorial"] = data[0]["editorial"].replace("<br>", "")
+    file = open('metadata/problems/' + problem_id + '/editorial.md', 'r')
+    data[0]['editorial'] = file.read()
+    file.close()
 
     if request.method == "GET":
         return render_template('problem/editeditorial.html', data=data[0])
 
     # Reached via POST
 
-    new_editorial = request.form.get("editorial") \
-                                .replace("\r", "") \
-                                .replace("\n", "<br>\n")
-
+    new_editorial = request.form.get("editorial")
     if not new_editorial:
-        db.execute("UPDATE problems SET editorial=NULL WHERE id=:problem_id",
-                   problem_id=problem_id)
+        new_editorial = ""
 
-    db.execute("UPDATE problems SET editorial=:editorial WHERE id=:problem_id",
-               editorial=new_editorial, problem_id=problem_id)
+    file = open('metadata/problems/' + problem_id + '/editorial.md', 'w')
+    file.write(new_editorial)
+    file.close()
     return redirect("/problem/" + problem_id)
 
 
@@ -900,16 +913,16 @@ def createproblem():
 
     problem_id = request.form.get("id")
     name = request.form.get("name")
-    description = request.form.get("description") \
-                              .replace("\r", "") \
-                              .replace("\n", "<br>\n")
-    hints = request.form.get("hints") \
-                        .replace("\r", "") \
-                        .replace("\n", "<br>\n")
+    description = request.form.get("description")
+    hints = request.form.get("hints")
     point_value = request.form.get("point_value")
     category = request.form.get("category")
     flag = request.form.get("flag")
     draft = 1 if request.form.get("draft") else 0
+    if not description:
+        description = ""
+    if not hints:
+        hints = ""
 
     # Ensure problem does not already exist
     problem_info = db.execute("SELECT * FROM problems WHERE id=:problem_id OR name=:name",
@@ -926,11 +939,21 @@ def createproblem():
         description += '<br><a href="/dl/' + filename + '">' + filename + '</a>'
 
     # Modify problems table
-    db.execute("INSERT INTO problems (id, name, description, hints, point_value, category, flag, draft) VALUES (:id, :name, :description, :hints, :point_value, :category, :flag, :draft)",
-               id=problem_id, name=name, description=description, hints=hints,
-               point_value=point_value, category=category, flag=flag, draft=draft)
+    db.execute("INSERT INTO problems (id, name, point_value, category, flag, draft) VALUES (:id, :name, :point_value, :category, :flag, :draft)",
+               id=problem_id, name=name, point_value=point_value, category=category,
+               flag=flag, draft=draft)
     db.execute("ALTER TABLE problems_master ADD COLUMN :problem_id boolean NOT NULL DEFAULT (0)",
                problem_id=problem_id)
+    os.makedirs('metadata/problems/' + problem_id)
+    f = open('metadata/problems/' + problem_id + '/description.md', 'w')
+    f.write(description)
+    f.close()
+    f = open('metadata/problems/' + problem_id + '/hints.md', 'w')
+    f.write(hints)
+    f.close()
+    f = open('metadata/problems/' + problem_id + '/editorial.md', 'w')
+    f.write("")
+    f.close()
 
     # Go to problems page on success
     return redirect("/problems")

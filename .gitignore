@@ -1,5 +1,6 @@
-# Problem download files
+# Problem files
 /dl/
+/metadata/
 
 # Database
 /database.db
