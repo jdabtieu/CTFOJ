@@ -16,5 +16,6 @@
     <input class="form-control form-group" type="text" id="name" name="name" placeholder="Name" value="{{ data["name"] }}" required>
     <textarea class="form-control form-group" id="description" name="description" rows="20" placeholder="Description" required>{{ data["description"] }}</textarea>
     <input class="btn btn-primary" type="submit" id="submit" name="submit" value="Edit">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 </form>
 {% endblock %}

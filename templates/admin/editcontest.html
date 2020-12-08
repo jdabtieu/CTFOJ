@@ -18,6 +18,7 @@
     <input class="form-control form-group dtl" type="text" id="start" name="start" placeholder="Start Date & Time" value="{{ data["start"] }}" required>
     <input class="form-control form-group dtl" type="text" id="end" name="end" placeholder="End Date & Time" value="{{ data["end"] }}" required>
     <input class="btn btn-primary" type="submit" id="submit" name="submit" value="Edit">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 </form>
 <script>
 	$(".dtl").focus(function() {
