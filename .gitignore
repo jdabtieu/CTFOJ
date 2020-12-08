@@ -1,5 +1,6 @@
-# Problem download files
+# Problem files
 /dl/
+/metadata/
 
 # Database
 /database.db
@@ -13,4 +14,4 @@
 /secret_key.txt
 
 # Logs
-/logs/*
+/logs/
