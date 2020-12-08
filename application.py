@@ -1,15 +1,14 @@
 import os
 import logging
-import sys
 import shutil
 from datetime import datetime, timedelta
 from tempfile import mkdtemp
 
 import jwt
 from cs50 import SQL
-from flask import (Flask, abort, flash, redirect, render_template, request,
-                   send_from_directory, session, url_for)
-from flask_mail import Mail, Message
+from flask import (Flask, flash, redirect, render_template, request,
+                   send_from_directory, session)
+from flask_mail import Mail
 from flask_session import Session
 from flask_wtf.csrf import CSRFProtect
 from werkzeug.exceptions import (HTTPException, InternalServerError,
@@ -23,7 +22,8 @@ app = Flask(__name__)
 maintenance_mode = False
 try:
     app.config.from_object('settings')
-except:
+except Exception as e:
+    sys.stderr.write(str(e))
     app.config.from_object('default_settings')
 app.config['SESSION_FILE_DIR'] = mkdtemp()
 app.jinja_env.globals['CLUB_NAME'] = app.config['CLUB_NAME']
@@ -32,7 +32,8 @@ app.jinja_env.globals['CLUB_NAME'] = app.config['CLUB_NAME']
 try:
     logging.basicConfig(filename=app.config['LOGGING_FILE_LOCATION'], level=logging.DEBUG, format='%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
     logging.getLogger().addHandler(logging.StreamHandler())
-except: # when testing
+except Exception as e:  # when testing
+    sys.stderr.write(str(e))
     logging.basicConfig(filename='application.log', level=logging.DEBUG, format='%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
     logging.getLogger().addHandler(logging.StreamHandler())
 
@@ -42,26 +43,26 @@ Session(app)
 # Configure CS50 Library to use SQLite database
 try:
     db = SQL("sqlite:///database.db")
-except: # when testing
+except Exception as e:  # when testing
+    sys.stderr.write(str(e))
     open("database_test.db", "w").close()
     db = SQL("sqlite:///database_test.db")
 
 # Configure flask-mail
 mail = Mail(app)
 
+
 # Configure flask-WTF
 csrf = CSRFProtect(app)
 csrf.init_app(app)
 
-def testing_database_setup(database):
-    db = database
 
 @app.before_request
 def check_for_maintenance():
     # crappy if/elses used here for future expandability
     global maintenance_mode
     # don't block the user if they only have the csrf token
-    if ("csrf_token" in session and len(session) > 1) or (not "csrf_token" in session and len(session)):
+    if ("csrf_token" in session and len(session) > 1) or ("csrf_token" not in session and len(session)):
         if not session["admin"]:
             if maintenance_mode:
                 return render_template("error/maintenance.html"), 503
@@ -226,8 +227,7 @@ def confirm_register(token):
         flash("Email verification link expired; Please re-register")
         return redirect("/register")
 
-    rows = db.execute("UPDATE users SET verified=1 WHERE email=:email",
-                      email=token['email'])
+    db.execute("UPDATE users SET verified=1 WHERE email=:email", email=token['email'])
 
     # Log user in
     user = db.execute(
