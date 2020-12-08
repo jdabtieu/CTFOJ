@@ -1148,7 +1148,7 @@ def editannouncement(a_id):
         return redirect("/")
 
     data[0]["description"] = read_file('metadata/announcements/' + a_id + '.md')
-    
+
     if request.method == "GET":
         return render_template('admin/editannouncement.html', data=data[0])
 

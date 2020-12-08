@@ -5,6 +5,7 @@
 # Database
 /database.db
 /database.db.bak
+/database_test.db
 
 # Python Cache
 /__pycache__/
