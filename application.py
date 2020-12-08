@@ -10,6 +10,7 @@ from flask import (Flask, abort, flash, redirect, render_template, request,
                    send_from_directory, session, url_for)
 from flask_mail import Mail, Message
 from flask_session import Session
+from flask_wtf.csrf import CSRFProtect
 from werkzeug.exceptions import (HTTPException, InternalServerError,
                                  default_exceptions)
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -36,11 +37,16 @@ db = SQL("sqlite:///database.db")
 # Configure flask-mail
 mail = Mail(app)
 
+# Configure flask-WTF
+csrf = CSRFProtect(app)
+csrf.init_app(app)
+
 @app.before_request
 def check_for_maintenance():
     # crappy if/elses used here for future expandability
     global maintenance_mode
-    if session:
+    # don't block the user if they only have the csrf token
+    if ("csrf_token" in session and len(session) > 1) or (not "csrf_token" in session and len(session)):
         if not session["admin"]:
             if maintenance_mode:
                 return render_template("error/maintenance.html"), 503

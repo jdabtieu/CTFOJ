@@ -11,3 +11,4 @@ MAIL_PASSWORD = "your email password"
 MAIL_DEFAULT_SENDER = ("sender name", "sender email")
 CLUB_NAME = "your club name"
 LOGGING_FILE_LOCATION = 'logs/application.log'
+SESSION_COOKIE_SAMESITE = 'Lax'

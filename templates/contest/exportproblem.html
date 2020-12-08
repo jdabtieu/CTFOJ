@@ -15,5 +15,6 @@
 Are you sure you want to export {{ data["name"] }} to the Practice tab?
 <form method="post">
     <input class="btn btn-primary" type="submit" value="Confirm">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 </form>
 {% endblock %}

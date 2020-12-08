@@ -23,6 +23,7 @@
         <label for="scoreboard_visible">Scoreboard Visible?</label>
     </div>
     <input class="btn btn-primary" type="submit" value="Create Contest">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 </form>
 <script>
     $(".dtl").focus(function() {

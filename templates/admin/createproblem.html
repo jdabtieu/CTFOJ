@@ -26,5 +26,6 @@
         <label for="draft">Draft?</label>
     </div>
     <input class="btn btn-primary" type="submit" id="submit" name="submit" value="Create">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 </form>
 {% endblock %}

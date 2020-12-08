@@ -17,7 +17,7 @@
     <input class="form-control form-group" name="password" placeholder="Password" type="password" required>
     <button class="btn btn-primary" type="submit">Log In</button>
     <a href="/forgotpassword" class="btn btn-secondary white">Forgot Password</a>
-
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 </form>
 <script>
     $("form").submit(() => {

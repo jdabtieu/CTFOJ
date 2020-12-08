@@ -50,6 +50,7 @@
                     <option value="WA">WA</option>
                 </select>
                 <input class="btn btn-primary" type="submit" value="Filter!">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             </form>
         </div>
     </div>
