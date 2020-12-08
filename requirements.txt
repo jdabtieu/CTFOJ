@@ -1,8 +1,9 @@
-cs50==5.1.0
-Flask==1.1.2
+Flask-Mail==0.9.1
 Flask-Session==0.3.2
 Flask-WTF==0.14.3
+Flask==1.1.2
 Werkzeug==1.0.1
-requests==2.24.0
-Flask-Mail==0.9.1
+cs50==5.1.0
 pyjwt==1.7.1
+pytest==6.1.2
+requests==2.24.0
