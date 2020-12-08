@@ -946,7 +946,7 @@ def admin_createcontest():
     db.execute("INSERT INTO contests (id, name, start, end, scoreboard_visible) VALUES (:id, :name, datetime(:start), datetime(:end), :scoreboard_visible)",
                id=contest_id, name=contest_name, start=start, end=end,
                scoreboard_visible=scoreboard_visible)
-    db.execute("CREATE TABLE :cid ('user_id' integer NOT NULL, 'points' INTEGER NOT NULL DEFAULT (0) , 'lastAC' datetime)", cid=contest_id)
+    db.execute("CREATE TABLE :cid ('user_id' integer NOT NULL, 'points' INTEGER NOT NULL DEFAULT (0), 'lastAC' datetime)", cid=contest_id)
     db.execute("CREATE TABLE :cidinfo ('id' varchar(32) NOT NULL, 'name' varchar(256) NOT NULL, 'category' varchar(32) NOT NULL, 'flag' varchar(256) NOT NULL, 'point_value' INTEGER NOT NULL DEFAULT (0), 'draft' boolean NOT NULL DEFAULT(0))",
                cidinfo=contest_id + "info")
 
