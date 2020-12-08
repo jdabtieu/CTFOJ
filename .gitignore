@@ -12,3 +12,6 @@
 # Private config
 /settings.py
 /secret_key.txt
+
+# Logs
+/logs/*

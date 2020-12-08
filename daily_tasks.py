@@ -1,3 +1,5 @@
+import datetime
+import os
 import secrets
 import shutil
 
@@ -8,3 +10,8 @@ shutil.copy2('database.db', 'database.db.bak')
 secret = secrets.token_hex(48)  # 384 bits
 with open('secret_key.txt', 'w') as file:
     file.write(secret)
+
+# rotate logs
+timestamp = datetime.date.strftime(datetime.datetime.now(), "%d-%m-%Y")
+shutil.copy2("logs/application.log", f"logs/{timestamp}-application.log")
+os.remove("logs/application.log")
