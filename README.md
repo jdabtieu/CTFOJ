@@ -16,7 +16,7 @@ the "Admin Tools" interface. This includes the ability to create practice proble
 Additionally, you will be able to manage users and view submissions.
 
 ## Contributing
-Contributors are welcome. If you want to help, feel free to submit a pull request or open an issue.
+Contributors are welcome. If you want to help, feel free to submit a pull request or open an issue. Please do not commit or push directly to master, unless absolutely necessary.
 
 #### Code Style
 We encourage you to follow the [PEP 8](https://www.python.org/dev/peps/pep-0008/) style guide for 
