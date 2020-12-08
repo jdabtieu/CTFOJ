@@ -9,10 +9,12 @@ on:
     branches: 
       - master
       - security_hardening
+      - tests
   pull_request:
     branches:
       - master
       - security_hardening
+      - tests
 
 jobs:
   build:
