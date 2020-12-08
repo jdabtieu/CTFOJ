@@ -5,7 +5,7 @@ try:
         SECRET_KEY = secret_key
 except:
     secret = secrets.token_hex(48)  # 384 bits
-    with open('secret_key.txt', 'r+') as file:
+    with open('secret_key.txt', 'w+') as file:
         file.write(secret)
         secret_key = file.readline().strip()
         SECRET_KEY = secret_key
