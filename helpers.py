@@ -74,3 +74,9 @@ def generate_password():
 def send_email(subject, sender, recipients, text, mail):
     message = Message(subject, sender=sender, recipients=recipients, body=text)
     mail.send(message)
+
+def read_file(filename):
+    file = open(filename, 'r')
+    contents = file.read()
+    file.close()
+    return contents
