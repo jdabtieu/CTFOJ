@@ -32,6 +32,7 @@ INSERT INTO 'problems_master' ('user_id') VALUES(1);
 
 3.
 ```bash
+$ mkdir logs
 $ python3 daily-tasks.py
 $ cp default_settings.py settings.py
 $ nano settings.py
