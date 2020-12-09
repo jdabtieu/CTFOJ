@@ -191,7 +191,7 @@ def register():
     if len(rows) > 0:
         return render_template("register.html", message="Email already exists"), 409
 
-    exp = datetime.now() + timedelta(seconds=1800)
+    exp = datetime.utcnow() + timedelta(seconds=1800)
     email = request.form.get('email')
     token = jwt.encode(
         {
@@ -226,7 +226,7 @@ def confirm_register(token):
     if not token:
         flash("Email verification link invalid")
         return redirect("/register")
-    if datetime.strptime(token["expiration"], "%Y-%m-%dT%H:%M:%S.%f") < datetime.now():
+    if datetime.strptime(token["expiration"], "%Y-%m-%dT%H:%M:%S.%f") < datetime.utcnow():
         db.execute(
             "DELETE FROM users WHERE verified=0 and email=:email", email=token['email'])
         flash("Email verification link expired; Please re-register")
@@ -289,7 +289,7 @@ def forgotpassword():
                       email=request.form.get("email"))
 
     if len(rows) == 1:
-        exp = datetime.now() + timedelta(seconds=1800)
+        exp = datetime.utcnow() + timedelta(seconds=1800)
         token = jwt.encode(
             {
                 'user_id': rows[0]["id"],
@@ -314,7 +314,7 @@ def reset_password_user(token):
     except Exception as e:
         sys.stderr.write(str(e))
         user_id = 0
-    if not user_id or datetime.strptime(token["expiration"], "%Y-%m-%dT%H:%M:%S.%f") < datetime.now():
+    if not user_id or datetime.strptime(token["expiration"], "%Y-%m-%dT%H:%M:%S.%f") < datetime.utcnow():
         flash('Password reset link expired/invalid')
         return redirect('/forgotpassword')
 
@@ -559,7 +559,7 @@ def contest_add_problem(contest_id):
 
     # Ensure contest hasn't ended
     end = datetime.strptime(contest_info[0]["end"], "%Y-%m-%d %H:%M:%S")
-    if datetime.now() > end:
+    if datetime.utcnow() > end:
         return render_template("admin/createproblem.html",
                                message="This contest has already ended!"), 403
 
@@ -629,7 +629,7 @@ def export_contest_problem(contest_id, problem_id):
 
     if request.method == "GET":
         end = datetime.strptime(data1[0]["end"], "%Y-%m-%d %H:%M:%S")
-        if datetime.now() < end:
+        if datetime.utcnow() < end:
             return render_template('contest/exportproblem.html', data=data[0],
                                    message="Are you sure? The contest hasn't ended yet")
 
