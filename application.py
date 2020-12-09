@@ -73,15 +73,6 @@ def check_for_maintenance():
             return render_template("error/maintenance.html"), 503
         elif not session['admin']:
             return render_template("error/maintenance.html"), 503
-        elif session['admin'] and request.path == "/admin/maintenance":
-            maintenance_mode = False
-            return "Successfully disabled maintenance mode."
-    else:
-        if session:
-            if 'admin' in session:
-                if session['admin'] and request.path == "/admin/maintenance":
-                    maintenance_mode = True
-                    return "Successfully enabled maintenance mode."
 
 
 @app.route("/")
