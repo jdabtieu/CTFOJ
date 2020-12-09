@@ -1,6 +1,6 @@
 # This workflow will install Python dependencies, run tests and lint with a single version of Python
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
-# Changes from default: python 3.9, security_hardening and tests branches, flake8 annotations
+# Changes from default: python 3.9, security_hardening and tests branches, flake8 annotations, codecov
 
 name: Python application
 
@@ -18,10 +18,12 @@ on:
 
 jobs:
   build:
-
-    runs-on: ubuntu-latest
-
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
     steps:
+    - name: Check out repository
     - uses: actions/checkout@v2
     - name: Set up Python 3.9
       uses: actions/setup-python@v2
@@ -30,7 +32,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install flake8 pytest
+        pip install flake8 pytest pytest-cov
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Flake8 Annotator
       uses: rbialon/flake8-annotations@v1
@@ -43,4 +45,12 @@ jobs:
     - name: Test with pytest
       run: |
         python -m pytest
-
+    - name: Generate coverage report
+      run: pytest --cov=./ --cov-report=xml
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v1
+      with: 
+        file: ./coverage.xml 
+        flags: unittests
+        env_vars: OS,PYTHON
+        verbose: true
