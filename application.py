@@ -136,8 +136,7 @@ def login():
     # Ensure username exists and password is correct
     rows = db.execute("SELECT * FROM users WHERE username = :username",
                       username=request.form.get("username"))
-    password = rows[0]["password"]
-    if len(rows) != 1 or not check_password_hash(password, request.form.get("password")):
+    if len(rows) != 1 or not check_password_hash(rows[0]["password"], request.form.get("password")):
         return render_template("login.html", message="Incorrect username/password"), 401
 
     # Ensure user is not banned
@@ -178,13 +177,11 @@ def register():
     if not request.form.get("username"):
         return render_template("register.html", message="Username cannot be blank"), 400
 
-    password = request.form.get("password")
-
     # Ensure password is not blank
-    if not password or len(password) < 8:
+    if not request.form.get("password") or len(request.form.get("password")) < 8:
         return render_template("register.html",
                                message="Password must be at least 8 characters"), 400
-    if not request.form.get("confirmation") or password != request.form.get("confirmation"):
+    if not request.form.get("confirmation") or request.form.get("password") != request.form.get("confirmation"):
         return render_template("register.html", message="Passwords do not match"), 400
 
     # Ensure username and email do not already exist
