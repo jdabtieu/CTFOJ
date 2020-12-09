@@ -1,6 +1,6 @@
 # This workflow will install Python dependencies, run tests and lint with a single version of Python
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
-# Changes from default: python 3.9, security_hardening and tests branches, flake8 annotations
+# Changes from default: python 3.9, security_hardening and tests branches, flake8 annotations, codecov
 
 name: Python application
 
@@ -43,3 +43,6 @@ jobs:
     - name: Test with pytest
       run: |
         python -m pytest
+    - name: Codecov
+      uses: codecov/codecov-action@v1.0.15
+
