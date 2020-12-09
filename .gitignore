@@ -17,3 +17,7 @@
 
 # Logs
 /logs/
+
+# Coverage reports
+.coverage
+coverage.xml

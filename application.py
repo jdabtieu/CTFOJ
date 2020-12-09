@@ -35,7 +35,8 @@ try:
     logging.getLogger().addHandler(logging.StreamHandler())
 except Exception as e:  # when testing
     sys.stderr.write(str(e))
-    logging.basicConfig(filename='application.log', level=logging.DEBUG, format='%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
+    os.mkdir('logs')
+    logging.basicConfig(filename='logs/application.log', level=logging.DEBUG, format='%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
     logging.getLogger().addHandler(logging.StreamHandler())
 
 # Configure session to use filesystem (instead of signed cookies)
@@ -79,7 +80,7 @@ def check_for_maintenance():
                 if session['admin'] and request.path == "/admin/maintenance":
                     maintenance_mode = True
                     return "Successfully enabled maintenance mode."
-                    
+
 
 @app.route("/")
 @login_required
