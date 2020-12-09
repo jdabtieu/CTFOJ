@@ -1,4 +1,6 @@
 # CTFOJ
+![Build Status](https://github.com/jdabtieu/CTFOJ/workflows/Python%20application/badge.svg)
+![CodeQL Analysis](https://github.com/jdabtieu/CTFOJ/workflows/CodeQL/badge.svg)
 
 CTFOJ is a open-source online judge to host capture-the-flag problems and contests. It is primarily designed for small-medium sized CTF clubs.
 
