@@ -688,7 +688,7 @@ def export_contest_problem(contest_id, problem_id):
                         cid=contest_id, pid=problem_id)
     for row in solved:
         db.execute("INSERT INTO problem_solved(user_id, problem_id) VALUES(:uid, :pid)",
-                   uid=row['user_id'], pid=rows['problem_id'])
+                   uid=row['user_id'], pid=row['problem_id'])
 
     db.execute("COMMIT")
 
