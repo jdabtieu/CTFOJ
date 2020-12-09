@@ -11,3 +11,7 @@ def test_assets(client):
     result = client.get('/assets/js/dateconvert.js')
     assert result.status_code == 200
     assert b'Page Not Found' not in result.data
+
+    result = client.get('/static/favicon.png')
+    assert result.status_code == 200
+    assert b'Page Not Found' not in result.data
