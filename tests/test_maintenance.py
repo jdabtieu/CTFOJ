@@ -24,3 +24,8 @@ def test_maintenance(client, database):
     result = client.get('/', follow_redirects = True)
     assert result.status_code == 503
     assert b'maintenance' in result.data
+
+    client.post('/login', data = {'username': 'admin', 'password': 'CTFOJadmin'}, follow_redirects = True)
+    result = client.get('/admin/maintenance', follow_redirects=True)
+    assert result.status_code == 200
+    assert b'Disabled' in result.data  # disable mode for other tests

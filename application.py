@@ -64,7 +64,7 @@ def check_for_maintenance():
     # crappy if/elses used here for future expandability
     global maintenance_mode
     # don't block the user if they only have the csrf token
-    if maintenance_mode:
+    if maintenance_mode and request.path != '/login':
         if not session:
             return render_template("error/maintenance.html"), 503
         elif not session['admin']:
@@ -694,8 +694,10 @@ def problems():
     solve_data = db.execute("SELECT * FROM problems_master WHERE user_id=:user_id",
                             user_id=session["user_id"])
     data = db.execute("SELECT * FROM problems WHERE draft=0 ORDER BY id ASC")
-
-    return render_template('problem/problems.html', data=data, data2=solve_data[0])
+    if solve_data:
+        return render_template('problem/problems.html', data=data, data2=solve_data[0])
+    else:
+        return render_template('problem/problems.html', data=data)
 
 
 @app.route('/problems/draft')
