@@ -34,27 +34,29 @@ def admin_required(f):
 
 
 def contest_retrieve(session, request, db, contestid):
-    solve_info = db.execute(
-        "SELECT * FROM :cid WHERE user_id=:id", cid=contestid, id=session["user_id"])
+    solved_info = db.execute("SELECT problem_id FROM contest_solved WHERE contest_id=:cid AND user_id=:id",
+        cid=contestid, id=session["user_id"])
 
-    if len(solve_info) == 0:
-        db.execute("INSERT INTO :cid (user_id) VALUES(:id)",
-                   cid=contestid, id=session["user_id"])
-        solve_info = db.execute("SELECT * FROM :cid WHERE user_id=:id",
-                                cid=contestid, id=session["user_id"])[0]
-    else:
-        solve_info = solve_info[0]
+    if len(solved_info) == 0:
+        db.execute("INSERT INTO contest_users (contest_id, user_id) VALUES(:cid, :id)",
+            cid=contestid, id=session["user_id"])
+        solved_info = db.execute("SELECT problem_id FROM contest_solved WHERE contest_id=:cid AND user_id=:id",
+            cid=contestid, id=session["user_id"])
+
+    solved_data = set()
+    for row in solved_info:
+        solved_data.add(row["problem_id"])
 
     data = []
 
-    info = db.execute("SELECT * FROM :cidinfo WHERE draft=0 ORDER BY category ASC, id ASC",
-                      cidinfo=contestid + "info")
+    info = db.execute("SELECT * FROM contest_problems WHERE contest_id=:cid AND draft=0 ORDER BY category ASC, problem_id ASC",
+        cid=contestid)
     for row in info:
         keys = {
             "name": row["name"],
             "category": row["category"],
-            "id": row["id"],
-            "solved": solve_info[row["id"]],
+            "id": row["problem_id"],
+            "solved": 1 if row["problem_id"] in solved_data else 0,
             "point_value": row["point_value"]
         }
         data.insert(len(data), keys)

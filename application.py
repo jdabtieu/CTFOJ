@@ -241,10 +241,6 @@ def confirm_register(token):
     session["username"] = user["username"]
     session["admin"] = False
 
-    # Create entry in problems database
-    db.execute(
-        "INSERT INTO problems_master (user_id) VALUES(:user_id)", user_id=user["id"])
-
     return redirect("/problem/helloworld")
 
 
@@ -392,8 +388,8 @@ def contest_drafts(contest_id):
     title = contest_info[0]["name"]
 
     return render_template("contest/draft_problems.html", title=title,
-                           data=db.execute("SELECT * FROM :cidinfo WHERE draft=1",
-                                           cidinfo=contest_id + "info"))
+                           data=db.execute("SELECT * FROM context_problems WHERE contest_id=:cid AND draft=1",
+                                           cid=contest_id))
 
 
 @app.route("/contest/<contest_id>/problem/<problem_id>", methods=["GET", "POST"])
@@ -404,13 +400,14 @@ def contest_problem(contest_id, problem_id):
     if len(check) != 1:
         return render_template("contest/contest_noexist.html"), 404
 
-    check = db.execute("SELECT * FROM :cidinfo WHERE id=:pid",
-                       cidinfo=contest_id + "info", pid=problem_id)
+    check = db.execute("SELECT * FROM contest_problems WHERE contest_id=:cid AND problem_id=:pid",
+                        cid=contest_id, pid=problem_id)
     if len(check) != 1:
         return render_template("contest/contest_problem_noexist.html"), 404
 
-    check1 = db.execute("SELECT * FROM :cidinfo WHERE id=:pid AND draft=0",
-                        cidinfo=contest_id + "info", pid=problem_id)
+    # check problem exists
+    check1 = db.execute("SELECT * FROM contest_problems WHERE contest_id=:cid AND problem_id=:pid AND draft=0",
+                        cid=contest_id, pid=problem_id)
     if len(check1) != 1 and session["admin"] != 1:
         return render_template("contest/contest_problem_noexist.html"), 404
 
@@ -425,7 +422,8 @@ def contest_problem(contest_id, problem_id):
     # Reached via POST
 
     # Ensure contest hasn't ended
-    end = datetime.strptime(check1[0]["end"], "%Y-%m-%d %H:%M:%S")
+    end = db.execute("SELECT end FROM contests WHERE id=:id", id=contest_id)
+    end = datetime.strptime(end[0]["end"], "%Y-%m-%d %H:%M:%S")
     if datetime.now() > end:
         return render_template("contest/contest_problem.html", data=check[0],
                                status="fail", message="This contest has ended.")
@@ -446,12 +444,17 @@ def contest_problem(contest_id, problem_id):
                uid=session["user_id"], pid=problem_id, cid=contest_id)
 
     # Check if user has already found this flag
-    check1 = db.execute("SELECT * FROM :cid WHERE user_id=:uid",
-                        cid=contest_id, uid=session["user_id"])[0][problem_id]
+    check1 = db.execute("SELECT * FROM contest_solved WHERE contest_id=:cid AND user_id=:uid AND problem_id=:pid",
+                        cid=contest_id, uid=session["user_id"], pid=problem_id)
+
+    check1 = 0 if len(check1) == 0 else 1
+
     if not check1:
         points = check[0]["point_value"]
-        db.execute("UPDATE :cid SET :pid=1, lastAC=datetime('now'), points=points+:points WHERE user_id=:uid",
-                   cid=contest_id, pid=problem_id, points=points, uid=session["user_id"])
+        db.execute("INSERT INTO contest_solved(contest_id, user_id, problem_id) VALUES(:cid, :uid, :pid)",
+                    cid=contest_id, pid=problem_id, uid=session["user_id"])
+        db.execute("UPDATE contest_users SET lastAC=datetime('now'), points=points+:points WHERE contest_id=:cid AND user_id=:uid",
+                     cid=contest_id, points=points, uid=session["user_id"])
 
     return render_template("contest/contest_problem.html",
                            data=check[0], status="success",
@@ -466,13 +469,14 @@ def publish_contest_problem(contest_id, problem_id):
     if len(check) != 1:
         return render_template("contest/contest_noexist.html"), 404
 
-    check = db.execute("SELECT * FROM :cidinfo WHERE id=:pid",
-                       cidinfo=contest_id + "info", pid=problem_id)
+    check = db.execute("SELECT * FROM contest_problems WHERE contest_id=:cid AND problem_id=:pid",
+                        cid=contest_id, pid=problem_id)
+
     if len(check) != 1:
         return render_template("contest/contest_problem_noexist.html"), 404
 
-    db.execute("UPDATE :cidinfo SET draft=0 WHERE id=:pid",
-               cidinfo=contest_id + "info", pid=problem_id)
+    db.execute("UPDATE contest_problems SET draft=0 WHERE problem_id=:pid AND contest_id=:cid",
+                pid=problem_id, cid=contest_id)
 
     return redirect("/contest/" + contest_id + "/problem/" + problem_id)
 
@@ -486,8 +490,8 @@ def edit_contest_problem(contest_id, problem_id):
         return render_template("contest/contest_noexist.html"), 404
 
     # Ensure problem exists
-    data = db.execute("SELECT * FROM :cidinfo WHERE id=:pid",
-                      cidinfo=contest_id + "info", pid=problem_id)
+    data = db.execute("SELECT name FROM contest_problems WHERE contest_id=:cid AND problem_id=:pid",
+                      cid=contest_id, pid=problem_id)
     if len(data) != 1:
         return render_template("contest/contest_problem_noexist.html"), 404
 
@@ -512,8 +516,8 @@ def edit_contest_problem(contest_id, problem_id):
     if not new_hint:
         new_hint = ""
 
-    db.execute("UPDATE :cidinfo SET name=:name WHERE id=:pid",
-               cidinfo=contest_id + "info", name=new_name, pid=problem_id)
+    db.execute("UPDATE contest_problems SET name=:name WHERE contest_id=:cid AND problem_id=:pid",
+                name=new_name, cid=contest_id, pid=problem_id)
 
     file = open('metadata/contests/' + contest_id + '/' + problem_id + '/description.md', 'w')
     file.write(new_description)
@@ -538,7 +542,7 @@ def contest_scoreboard(contest_id):
         return redirect("/contest/" + contest_id)
 
     # Render page
-    data = db.execute("SELECT username, points, lastAC FROM :cid JOIN users on user_id=users.id ORDER BY points DESC, lastAC ASC",
+    data = db.execute("SELECT user_id, points, lastAC FROM contest_users JOIN users on user_id=users.id ORDER BY points DESC, lastAC ASC",
                       cid=contest_id)
     return render_template("contest/contestscoreboard.html",
                            title=contest_info[0]["name"], data=data)
@@ -577,9 +581,8 @@ def contest_add_problem(contest_id):
     draft = 1 if request.form.get("draft") else 0
 
     # Ensure problem does not already exist
-    problem_info = db.execute("SELECT * FROM :cidinfo WHERE id=:problem_id OR name=:name",
-                              cidinfo=contest_id + "info", problem_id=problem_id,
-                              name=name)
+    problem_info = db.execute("SELECT * FROM contest_problems WHERE contest_id=:cid AND (problem_id=:pid OR name=:name)",
+                                cid=contest_id, pid=problem_id, name=name)
     if len(problem_info) != 0:
         return render_template("admin/createproblem.html",
                                message="A problem with this name or ID already exists"), 409
@@ -595,11 +598,8 @@ def contest_add_problem(contest_id):
         description += '<br><a href="/' + filepath + filename + '">' + filename + '</a>'
 
     # Modify problems table
-    db.execute("INSERT INTO :cidinfo (id, name, point_value, category, flag, draft) VALUES (:id, :name, :point_value, :category, :flag, :draft)",
-               cidinfo=contest_id + "info", id=problem_id, name=name,
-               point_value=point_value, category=category, flag=flag, draft=draft)
-    db.execute("ALTER TABLE :cid ADD COLUMN :problem_id boolean NOT NULL DEFAULT (0)",
-               cid=contest_id, problem_id=problem_id)
+    db.execute("INSERT INTO contest_problems(contest_id, problem_id, name, point_value, category, flag, draft) VALUES(:cid, :pid, :name, :point_value, :category, :flag, :draft)",
+                cid=contest_id, pid=problem_id, name=name, point_value=point_value, category=category, flag=flag, draft=draft)
 
     os.makedirs('metadata/contests/' + contest_id + '/' + problem_id)
     file = open('metadata/contests/' + contest_id + '/' + problem_id + '/description.md', 'w')
@@ -622,8 +622,8 @@ def export_contest_problem(contest_id, problem_id):
         return render_template("contest/contest_noexist.html"), 404
 
     # Ensure problem exists
-    data = db.execute("SELECT * FROM :cidinfo WHERE id=:pid",
-                      cidinfo=contest_id + "info", pid=problem_id)
+    data = db.execute("SELECT * FROM contest_problems WHERE contest_id=cid AND problem_id=:pid",
+                        cid=contest_id, pid=problem_id)
     if len(data) != 1:
         return render_template("contest/contest_problem_noexist.html"), 404
 
@@ -652,11 +652,13 @@ def export_contest_problem(contest_id, problem_id):
                id=new_id, name=new_name, description=data[0]["description"],
                pv=data[0]["point_value"], cat=data[0]["category"], flag=data[0]["flag"],
                hints=data[0]["hints"])
-    db.execute("ALTER TABLE problems_master ADD COLUMN :cpid boolean NOT NULL DEFAULT(0)",
-               cpid=new_id)
-    db.execute("""UPDATE problems_master SET :cpid = (SELECT :cid.:pid FROM :cid WHERE :cid.user_id = problems_master.user_id)
-               WHERE EXISTS (SELECT * FROM :cid WHERE problems_master.user_id = :cid.user_id)""",
-               cpid=new_id, cid=contest_id, pid=problem_id)
+
+    solved = db.execute("SELECT user_id, problem_id FROM contest_solved WHERE contest_id=:cid AND problem_id=:pid",
+                        cid=contest_id, pid=problem_id)
+    for row in solved:
+        db.execute("INSERT INTO problem_solved(user_id, problem_id) VALUES(:uid, :pid)",
+                    uid=row['user_id'], pid=rows['problem_id'])
+
     db.execute("COMMIT")
 
     os.makedirs('metadata/problems/' + new_id)
@@ -676,11 +678,15 @@ def export_contest_problem(contest_id, problem_id):
 @app.route('/problems')
 @login_required
 def problems():
-    solve_data = db.execute("SELECT * FROM problems_master WHERE user_id=:user_id",
-                            user_id=session["user_id"])
+    solved_data = db.execute("SELECT problem_id FROM problem_solved WHERE user_id=:uid",
+                                uid=session["user_id"])
+    solved = set()
+    for row in solved_data:
+        solved.add(row["problem_id"])
+
     data = db.execute("SELECT * FROM problems WHERE draft=0 ORDER BY id ASC")
 
-    return render_template('problem/problems.html', data=data, data2=solve_data[0])
+    return render_template('problem/problems.html', data=data, solved=solved)
 
 
 @app.route('/problems/draft')
@@ -917,13 +923,6 @@ def admin_createcontest():
         return render_template("admin/createcontest.html",
                                message="Contest ID cannot have spaces"), 400
 
-    # Ensure contest ID won't overwrite any core tables
-    banned = ["problems", "problems_master", "submissions",
-              "users", "contests", "announcements"]
-    if contest_id in banned:
-        return render_template("admin/createcontest.html",
-                               message="You may not use that as a contest ID"), 409
-
     contest_name = request.form.get("contest_name")
 
     # Ensure contest doesn't already exist
@@ -952,9 +951,6 @@ def admin_createcontest():
     db.execute("INSERT INTO contests (id, name, start, end, scoreboard_visible) VALUES (:id, :name, datetime(:start), datetime(:end), :scoreboard_visible)",
                id=contest_id, name=contest_name, start=start, end=end,
                scoreboard_visible=scoreboard_visible)
-    db.execute("CREATE TABLE :cid ('user_id' integer NOT NULL, 'points' INTEGER NOT NULL DEFAULT (0), 'lastAC' datetime)", cid=contest_id)
-    db.execute("CREATE TABLE :cidinfo ('id' varchar(32) NOT NULL, 'name' varchar(256) NOT NULL, 'category' varchar(32) NOT NULL, 'flag' varchar(256) NOT NULL, 'point_value' INTEGER NOT NULL DEFAULT (0), 'draft' boolean NOT NULL DEFAULT(0))",
-               cidinfo=contest_id + "info")
 
     os.makedirs('metadata/contests/' + contest_id)
     file = open('metadata/contests/' + contest_id + '/description.md', 'w')
@@ -1007,8 +1003,7 @@ def createproblem():
     db.execute("INSERT INTO problems (id, name, point_value, category, flag, draft) VALUES (:id, :name, :point_value, :category, :flag, :draft)",
                id=problem_id, name=name, point_value=point_value, category=category,
                flag=flag, draft=draft)
-    db.execute("ALTER TABLE problems_master ADD COLUMN :problem_id boolean NOT NULL DEFAULT (0)",
-               problem_id=problem_id)
+
     os.makedirs('metadata/problems/' + problem_id)
     f = open('metadata/problems/' + problem_id + '/description.md', 'w')
     f.write(description)
@@ -1120,8 +1115,11 @@ def delete_contest(contest_id):
 
     db.execute("BEGIN")
     db.execute("DELETE FROM contests WHERE id=:cid", cid=contest_id)
-    db.execute("DROP TABLE :cid", cid=contest_id)
-    db.execute("DROP TABLE :cidinfo", cidinfo=contest_id + "info")
+
+    db.execute("DELETE FROM contest_users WHERE contest_id=:cid", cid=contest_id)
+    db.execute("DELETE FROM contest_solved WHERE contest_id=:cid", cid=contest_id)
+    db.execute("DELETE FROM contest_problems WHERE contest_id=:cid", cid=contest_id)
+
     db.execute("COMMIT")
     os.remove('metadata')
     shutil.rmtree('metadata/contests/' + contest_id)
