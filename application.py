@@ -63,20 +63,23 @@ def check_for_maintenance():
     # crappy if/elses used here for future expandability
     global maintenance_mode
     # don't block the user if they only have the csrf token
-    if ("csrf_token" in session and len(session) > 1) or ("csrf_token" not in session and len(session)):
-        if not session["admin"]:
-            if maintenance_mode:
-                return render_template("error/maintenance.html"), 503
-            else:
-                return
-        else:
-            return
-    else:
-        if maintenance_mode:
+    if maintenance_mode:
+        if not session:
             return render_template("error/maintenance.html"), 503
-        else:
-            return
-
+        elif 'admin' not in session:
+            return render_template("error/maintenance.html"), 503
+        elif not session['admin']:
+            return render_template("error/maintenance.html"), 503
+        elif session['admin'] and request.path == "/admin/maintenance":
+            maintenance_mode = False
+            return "Successfully disabled maintenance mode."
+    else:
+        if session:
+            if 'admin' in session:
+                if session['admin'] and request.path == "/admin/maintenance":
+                    maintenance_mode = True
+                    return "Successfully enabled maintenance mode."
+                    
 
 @app.route("/")
 @login_required
