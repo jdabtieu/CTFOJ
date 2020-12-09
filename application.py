@@ -447,7 +447,7 @@ def contest_problem(contest_id, problem_id):
     check1 = db.execute("SELECT * FROM contest_solved WHERE contest_id=:cid AND user_id=:uid AND problem_id=:pid",
                         cid=contest_id, uid=session["user_id"], pid=problem_id)
 
-    check1 = 0 if len(check1) == 0 else 1
+    check1 = (len(check1) == 0)
 
     if not check1:
         points = check[0]["point_value"]
@@ -455,6 +455,7 @@ def contest_problem(contest_id, problem_id):
                     cid=contest_id, pid=problem_id, uid=session["user_id"])
         db.execute("UPDATE contest_users SET lastAC=datetime('now'), points=points+:points WHERE contest_id=:cid AND user_id=:uid",
                      cid=contest_id, points=points, uid=session["user_id"])
+        print('BAF2 458')
 
     return render_template("contest/contest_problem.html",
                            data=check[0], status="success",
@@ -542,8 +543,9 @@ def contest_scoreboard(contest_id):
         return redirect("/contest/" + contest_id)
 
     # Render page
-    data = db.execute("SELECT user_id, points, lastAC FROM contest_users JOIN users on user_id=users.id ORDER BY points DESC, lastAC ASC",
+    data = db.execute("SELECT user_id, points, lastAC, username FROM contest_users JOIN users on user_id=users.id WHERE contest_users.contest_id=:cid ORDER BY points DESC, lastAC ASC",
                       cid=contest_id)
+    print(data)
     return render_template("contest/contestscoreboard.html",
                            title=contest_info[0]["name"], data=data)
 
@@ -738,8 +740,9 @@ def problem(problem_id):
         return render_template('problem/problem.html', data=data[0], status="fail",
                                message="The flag you submitted was incorrect")
 
-    db.execute("UPDATE problems_master SET :problem_id=1 WHERE user_id=:user_id",
-               problem_id=problem_id, user_id=session["user_id"])
+    db.execute("INSERT INTO problem_solved(user_id, problem_id) VALUES(:uid, :pid)",
+                uid=session["user_id"], pid=problem_id)
+
     return render_template('problem/problem.html', data=data[0], status="success",
                            message="Congratulations! You have solved this problem!")
 

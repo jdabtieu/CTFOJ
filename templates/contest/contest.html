@@ -33,7 +33,7 @@
                     <img class="svg-red icon" src="/assets/images/times.svg" onerror="this.src='/assets/images/times.png'"></img>
                 {% endif %}
             </td>
-            <td><a href="{{ request.path }}/problem/{{ row["id"] }}">{{ row["name"] }}</a></td>
+            <td><a href="{{ request.path }}/problem/{{ row["problem_id"] }}">{{ row["name"] }}</a></td>
             <td>{{ row["category"] }}</td>
             <td>{{ row["point_value"] }}</td>
         </tr>
