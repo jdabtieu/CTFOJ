@@ -33,34 +33,6 @@ def admin_required(f):
     return decorated_function
 
 
-def contest_retrieve(session, request, db, contestid):
-    solve_info = db.execute(
-        "SELECT * FROM :cid WHERE user_id=:id", cid=contestid, id=session["user_id"])
-
-    if len(solve_info) == 0:
-        db.execute("INSERT INTO :cid (user_id) VALUES(:id)",
-                   cid=contestid, id=session["user_id"])
-        solve_info = db.execute("SELECT * FROM :cid WHERE user_id=:id",
-                                cid=contestid, id=session["user_id"])[0]
-    else:
-        solve_info = solve_info[0]
-
-    data = []
-
-    info = db.execute("SELECT * FROM :cidinfo WHERE draft=0 ORDER BY category ASC, id ASC",
-                      cidinfo=contestid + "info")
-    for row in info:
-        keys = {
-            "name": row["name"],
-            "category": row["category"],
-            "id": row["id"],
-            "solved": solve_info[row["id"]],
-            "point_value": row["point_value"]
-        }
-        data.insert(len(data), keys)
-    return data
-
-
 def generate_password():
     password = secrets.token_urlsafe(16)
     return password
