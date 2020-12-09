@@ -375,7 +375,7 @@ def contest(contest_id):
                    cid=contest_id, id=session["user_id"])
         solve_info = db.execute("SELECT * FROM :cid WHERE user_id=:id",
                                 cid=contest_id, id=session["user_id"])
-    
+
     solve_info = solve_info[0]
 
     data = []

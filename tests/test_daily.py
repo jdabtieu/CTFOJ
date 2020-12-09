@@ -17,3 +17,5 @@ def test_daily(client):
     assert result.status_code == 404
     result = client.get('/database.db.bak')
     assert result.status_code == 404
+
+os.remove('database.db')
