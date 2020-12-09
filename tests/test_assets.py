@@ -8,6 +8,6 @@ def test_assets(client):
     assert result.status_code != 404
     assert b'Page Not Found' not in result.data
     
-    result = client.get('/assets/js/dateconvert.css')
+    result = client.get('/assets/js/dateconvert.js')
     assert result.status_code != 404
     assert b'Page Not Found' not in result.data
