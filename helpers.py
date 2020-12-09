@@ -4,6 +4,7 @@ from functools import wraps
 from flask import redirect, request, session
 from flask_mail import Message
 
+from datetime import datetime
 
 def login_required(f):
     """
@@ -37,10 +38,12 @@ def contest_retrieve(session, request, db, contestid):
     solved_info = db.execute("SELECT * FROM contest_users WHERE contest_id=:cid AND user_id=:uid",
         cid=contestid, uid=session["user_id"])
 
-    if len(solved_info) == 0:
+    end = db.execute("SELECT end FROM contests WHERE id=:id", id=contestid)
+    end = datetime.strptime(end[0]["end"], "%Y-%m-%d %H:%M:%S")
+
+    if len(solved_info) == 0 and datetime.utcnow() < end:
         db.execute("INSERT INTO contest_users (contest_id, user_id) VALUES(:cid, :uid)",
             cid=contestid, uid=session["user_id"])
-        print('BAF ON helpers.py 43')
 
     solved_info = db.execute("SELECT problem_id FROM contest_solved WHERE contest_id=:cid AND user_id=:uid",
                                 cid=contestid, uid=session["user_id"])
@@ -58,7 +61,6 @@ def contest_retrieve(session, request, db, contestid):
             "problem_id": row["problem_id"],
             "name": row["name"],
             "category": row["category"],
-            "user_id": row["problem_id"],
             "solved": 1 if row["problem_id"] in solved_data else 0,
             "point_value": row["point_value"]
         }

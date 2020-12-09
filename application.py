@@ -365,7 +365,7 @@ def contest(contest_id):
 
     # Ensure contest started or user is admin
     start = datetime.strptime(contest_info[0]["start"], "%Y-%m-%d %H:%M:%S")
-    if datetime.now() < start and not session["admin"]:
+    if datetime.utcnow() < start and not session["admin"]:
         return redirect("/")
 
     title = contest_info[0]["name"]
@@ -388,7 +388,7 @@ def contest_drafts(contest_id):
     title = contest_info[0]["name"]
 
     return render_template("contest/draft_problems.html", title=title,
-                           data=db.execute("SELECT * FROM context_problems WHERE contest_id=:cid AND draft=1",
+                           data=db.execute("SELECT * FROM contest_problems WHERE contest_id=:cid AND draft=1",
                                            cid=contest_id))
 
 
@@ -424,7 +424,7 @@ def contest_problem(contest_id, problem_id):
     # Ensure contest hasn't ended
     end = db.execute("SELECT end FROM contests WHERE id=:id", id=contest_id)
     end = datetime.strptime(end[0]["end"], "%Y-%m-%d %H:%M:%S")
-    if datetime.now() > end:
+    if datetime.utcnow() > end:
         return render_template("contest/contest_problem.html", data=check[0],
                                status="fail", message="This contest has ended.")
 
@@ -449,13 +449,12 @@ def contest_problem(contest_id, problem_id):
 
     check1 = (len(check1) == 0)
 
-    if not check1:
+    if check1:
         points = check[0]["point_value"]
         db.execute("INSERT INTO contest_solved(contest_id, user_id, problem_id) VALUES(:cid, :uid, :pid)",
                     cid=contest_id, pid=problem_id, uid=session["user_id"])
         db.execute("UPDATE contest_users SET lastAC=datetime('now'), points=points+:points WHERE contest_id=:cid AND user_id=:uid",
                      cid=contest_id, points=points, uid=session["user_id"])
-        print('BAF2 458')
 
     return render_template("contest/contest_problem.html",
                            data=check[0], status="success",
@@ -545,7 +544,6 @@ def contest_scoreboard(contest_id):
     # Render page
     data = db.execute("SELECT user_id, points, lastAC, username FROM contest_users JOIN users on user_id=users.id WHERE contest_users.contest_id=:cid ORDER BY points DESC, lastAC ASC",
                       cid=contest_id)
-    print(data)
     return render_template("contest/contestscoreboard.html",
                            title=contest_info[0]["name"], data=data)
 
