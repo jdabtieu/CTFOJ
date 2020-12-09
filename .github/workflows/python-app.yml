@@ -6,15 +6,9 @@ name: build
 
 on:
   push:
-    branches:
-      - master
-      - security_hardening
-      - tests
+    branches: '*'
   pull_request:
-    branches:
-      - master
-      - security_hardening
-      - tests
+    branches: '*'
 
 jobs:
   build:
