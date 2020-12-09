@@ -31,11 +31,19 @@ app.jinja_env.globals['CLUB_NAME'] = app.config['CLUB_NAME']
 
 # Configure logging
 try:
-    logging.basicConfig(filename=app.config['LOGGING_FILE_LOCATION'], level=logging.DEBUG, format='%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
+    logging.basicConfig(
+        filename=app.config['LOGGING_FILE_LOCATION'],
+        level=logging.DEBUG,
+        format='%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s',
+    )
     logging.getLogger().addHandler(logging.StreamHandler())
 except Exception as e:  # when testing
     sys.stderr.write(str(e))
-    logging.basicConfig(filename='application.log', level=logging.DEBUG, format='%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
+    logging.basicConfig(
+        filename='application.log',
+        level=logging.DEBUG,
+        format='%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s',
+    )
     logging.getLogger().addHandler(logging.StreamHandler())
 
 # Configure session to use filesystem (instead of signed cookies)
@@ -79,7 +87,7 @@ def check_for_maintenance():
                 if session['admin'] and request.path == "/admin/maintenance":
                     maintenance_mode = True
                     return "Successfully enabled maintenance mode."
-                    
+
 
 @app.route("/")
 @login_required
@@ -133,7 +141,8 @@ def login():
     # Ensure username exists and password is correct
     rows = db.execute("SELECT * FROM users WHERE username = :username",
                       username=request.form.get("username"))
-    if len(rows) != 1 or not check_password_hash(rows[0]["password"], request.form.get("password")):
+    password = rows[0]["password"]
+    if len(rows) != 1 or not check_password_hash(password, request.form.get("password")):
         return render_template("login.html", message="Incorrect username/password"), 401
 
     # Ensure user is not banned
@@ -174,11 +183,13 @@ def register():
     if not request.form.get("username"):
         return render_template("register.html", message="Username cannot be blank"), 400
 
+    password = request.form.get("password")
+
     # Ensure password is not blank
-    if not request.form.get("password") or len(request.form.get("password")) < 8:
+    if not password or len(password) < 8:
         return render_template("register.html",
                                message="Password must be at least 8 characters"), 400
-    if not request.form.get("confirmation") or request.form.get("password") != request.form.get("confirmation"):
+    if not request.form.get("confirmation") or password != request.form.get("confirmation"):
         return render_template("register.html", message="Passwords do not match"), 400
 
     # Ensure username and email do not already exist
@@ -401,7 +412,7 @@ def contest_problem(contest_id, problem_id):
         return render_template("contest/contest_noexist.html"), 404
 
     check = db.execute("SELECT * FROM contest_problems WHERE contest_id=:cid AND problem_id=:pid",
-                        cid=contest_id, pid=problem_id)
+                       cid=contest_id, pid=problem_id)
     if len(check) != 1:
         return render_template("contest/contest_problem_noexist.html"), 404
 
@@ -452,9 +463,9 @@ def contest_problem(contest_id, problem_id):
     if check1:
         points = check[0]["point_value"]
         db.execute("INSERT INTO contest_solved(contest_id, user_id, problem_id) VALUES(:cid, :uid, :pid)",
-                    cid=contest_id, pid=problem_id, uid=session["user_id"])
+                   cid=contest_id, pid=problem_id, uid=session["user_id"])
         db.execute("UPDATE contest_users SET lastAC=datetime('now'), points=points+:points WHERE contest_id=:cid AND user_id=:uid",
-                     cid=contest_id, points=points, uid=session["user_id"])
+                   cid=contest_id, points=points, uid=session["user_id"])
 
     return render_template("contest/contest_problem.html",
                            data=check[0], status="success",
@@ -470,13 +481,13 @@ def publish_contest_problem(contest_id, problem_id):
         return render_template("contest/contest_noexist.html"), 404
 
     check = db.execute("SELECT * FROM contest_problems WHERE contest_id=:cid AND problem_id=:pid",
-                        cid=contest_id, pid=problem_id)
+                       cid=contest_id, pid=problem_id)
 
     if len(check) != 1:
         return render_template("contest/contest_problem_noexist.html"), 404
 
     db.execute("UPDATE contest_problems SET draft=0 WHERE problem_id=:pid AND contest_id=:cid",
-                pid=problem_id, cid=contest_id)
+               pid=problem_id, cid=contest_id)
 
     return redirect("/contest/" + contest_id + "/problem/" + problem_id)
 
@@ -517,7 +528,7 @@ def edit_contest_problem(contest_id, problem_id):
         new_hint = ""
 
     db.execute("UPDATE contest_problems SET name=:name WHERE contest_id=:cid AND problem_id=:pid",
-                name=new_name, cid=contest_id, pid=problem_id)
+               name=new_name, cid=contest_id, pid=problem_id)
 
     file = open('metadata/contests/' + contest_id + '/' + problem_id + '/description.md', 'w')
     file.write(new_description)
@@ -582,7 +593,7 @@ def contest_add_problem(contest_id):
 
     # Ensure problem does not already exist
     problem_info = db.execute("SELECT * FROM contest_problems WHERE contest_id=:cid AND (problem_id=:pid OR name=:name)",
-                                cid=contest_id, pid=problem_id, name=name)
+                              cid=contest_id, pid=problem_id, name=name)
     if len(problem_info) != 0:
         return render_template("admin/createproblem.html",
                                message="A problem with this name or ID already exists"), 409
@@ -599,7 +610,7 @@ def contest_add_problem(contest_id):
 
     # Modify problems table
     db.execute("INSERT INTO contest_problems(contest_id, problem_id, name, point_value, category, flag, draft) VALUES(:cid, :pid, :name, :point_value, :category, :flag, :draft)",
-                cid=contest_id, pid=problem_id, name=name, point_value=point_value, category=category, flag=flag, draft=draft)
+               cid=contest_id, pid=problem_id, name=name, point_value=point_value, category=category, flag=flag, draft=draft)
 
     os.makedirs('metadata/contests/' + contest_id + '/' + problem_id)
     file = open('metadata/contests/' + contest_id + '/' + problem_id + '/description.md', 'w')
@@ -623,7 +634,7 @@ def export_contest_problem(contest_id, problem_id):
 
     # Ensure problem exists
     data = db.execute("SELECT * FROM contest_problems WHERE contest_id=cid AND problem_id=:pid",
-                        cid=contest_id, pid=problem_id)
+                      cid=contest_id, pid=problem_id)
     if len(data) != 1:
         return render_template("contest/contest_problem_noexist.html"), 404
 
@@ -657,7 +668,7 @@ def export_contest_problem(contest_id, problem_id):
                         cid=contest_id, pid=problem_id)
     for row in solved:
         db.execute("INSERT INTO problem_solved(user_id, problem_id) VALUES(:uid, :pid)",
-                    uid=row['user_id'], pid=rows['problem_id'])
+                   uid=row['user_id'], pid=rows['problem_id'])
 
     db.execute("COMMIT")
 
@@ -679,7 +690,7 @@ def export_contest_problem(contest_id, problem_id):
 @login_required
 def problems():
     solved_data = db.execute("SELECT problem_id FROM problem_solved WHERE user_id=:uid",
-                                uid=session["user_id"])
+                             uid=session["user_id"])
     solved = set()
     for row in solved_data:
         solved.add(row["problem_id"])
@@ -739,7 +750,7 @@ def problem(problem_id):
                                message="The flag you submitted was incorrect")
 
     db.execute("INSERT INTO problem_solved(user_id, problem_id) VALUES(:uid, :pid)",
-                uid=session["user_id"], pid=problem_id)
+               uid=session["user_id"], pid=problem_id)
 
     return render_template('problem/problem.html', data=data[0], status="success",
                            message="Congratulations! You have solved this problem!")
@@ -758,7 +769,6 @@ def publish_problem(problem_id):
     db.execute("UPDATE problems SET draft=0 WHERE id=:problem_id", problem_id=problem_id)
 
     return redirect("/problem/" + problem_id)
-
 
 
 @app.route('/problem/<problem_id>/editorial')
@@ -1177,7 +1187,7 @@ def editannouncement(a_id):
 
     if not new_name:
         return render_template('admin/editannouncement.html',
-                                data=data[0], message="Name cannot be empty"), 400
+                               data=data[0], message="Name cannot be empty"), 400
     if not new_description:
         return render_template('admin/editannouncement.html',
                                data=data[0], message="Description cannot be empty"), 400
@@ -1259,6 +1269,7 @@ for code in default_exceptions:
 @app.route("/teapot")
 def teapot():
     return render_template("error/418.html"), 418
+
 
 @app.after_request
 def security_policies(response):

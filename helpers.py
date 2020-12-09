@@ -6,6 +6,7 @@ from flask_mail import Message
 
 from datetime import datetime
 
+
 def login_required(f):
     """
     Decorate routes to require login.
@@ -36,17 +37,17 @@ def admin_required(f):
 
 def contest_retrieve(session, request, db, contestid):
     solved_info = db.execute("SELECT * FROM contest_users WHERE contest_id=:cid AND user_id=:uid",
-        cid=contestid, uid=session["user_id"])
+                             cid=contestid, uid=session["user_id"])
 
     end = db.execute("SELECT end FROM contests WHERE id=:id", id=contestid)
     end = datetime.strptime(end[0]["end"], "%Y-%m-%d %H:%M:%S")
 
     if len(solved_info) == 0 and datetime.utcnow() < end:
         db.execute("INSERT INTO contest_users (contest_id, user_id) VALUES(:cid, :uid)",
-            cid=contestid, uid=session["user_id"])
+                   cid=contestid, uid=session["user_id"])
 
     solved_info = db.execute("SELECT problem_id FROM contest_solved WHERE contest_id=:cid AND user_id=:uid",
-                                cid=contestid, uid=session["user_id"])
+                             cid=contestid, uid=session["user_id"])
 
     solved_data = set()
     for row in solved_info:
@@ -55,7 +56,7 @@ def contest_retrieve(session, request, db, contestid):
     data = []
 
     info = db.execute("SELECT * FROM contest_problems WHERE contest_id=:cid AND draft=0 ORDER BY category ASC, problem_id ASC",
-        cid=contestid)
+                      cid=contestid)
     for row in info:
         keys = {
             "problem_id": row["problem_id"],
@@ -76,6 +77,7 @@ def generate_password():
 def send_email(subject, sender, recipients, text, mail):
     message = Message(subject, sender=sender, recipients=recipients, body=text)
     mail.send(message)
+
 
 def read_file(filename):
     file = open(filename, 'r')
