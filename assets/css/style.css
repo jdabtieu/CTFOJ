@@ -12,6 +12,18 @@
     margin-top: 8px;
 }
 
+/****************** ADMIN MD LIVE PREVIEW ********************/
+textarea.md-preview {
+    min-height: 400px;
+    width: 49%;
+}
+div.md-preview {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 50%;
+}
+
 /****************** CONTEST PAGE LAYOUT **********************/
 #contest-description-container, #contest-description-container-keep-open {
      position: fixed;

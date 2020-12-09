@@ -15,8 +15,14 @@
 <form autocomplete="off" method="post" id="create" name="create" enctype=multipart/form-data>
     <input class="form-control form-group" type="text" id="id" name="id" placeholder="ID" required>
     <input class="form-control form-group" type="text" id="name" name="name" placeholder="Name" required>
-    <textarea class="form-control form-group" id="description" name="description" rows="20" placeholder="Description" required></textarea>
-    <textarea class="form-control form-group" id="hints" name="hints" rows="10" placeholder="Hints"></textarea>
+    <div style="position: relative;">
+        <textarea class="form-control form-group md-preview" id="description" name="description" rows="20" placeholder="Description" required></textarea>
+        <div id="description-out" class="md-preview"></div>
+    </div>
+    <div style="position: relative;">
+        <textarea class="form-control form-group md-preview" id="hints" name="hints" rows="20" placeholder="Hints" required></textarea>
+        <div id="hints-out" class="md-preview"></div>
+    </div>
     <input class="form-control form-group" type="number" id="point_value" name="point_value" placeholder="Point Value" required>
     <input class="form-control form-group" type="text" id="category" name="category" placeholder="Category" required>
     <input class="form-control form-group" type="text" id="flag" name="flag" placeholder="Flag" required>
@@ -28,4 +34,16 @@
     <input class="btn btn-primary" type="submit" id="submit" name="submit" value="Create">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 </form>
+<script>
+    $('#description').bind('input propertychange', function() {
+        var product = converter.makeHtml(this.value);
+        $('#description-out').html(product);
+        $('#description').css('height', $('#description-out').css('height'));
+    });
+    $('#hints').bind('input propertychange', function() {
+        var product = converter.makeHtml(this.value);
+        $('#hints-out').html(product);
+        $('#hints').css('height', $('#hints-out').css('height'));
+    });
+</script>
 {% endblock %}
