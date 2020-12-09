@@ -1,13 +1,8 @@
-import os
 import secrets
-import urllib.parse
-from datetime import datetime, timedelta
 from functools import wraps
 
-import jwt
-import requests
-from flask import redirect, render_template, request, session
-from flask_mail import Mail, Message
+from flask import redirect, request, session
+from flask_mail import Message
 
 
 def login_required(f):
