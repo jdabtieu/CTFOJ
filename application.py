@@ -694,10 +694,8 @@ def problems():
     solve_data = db.execute("SELECT * FROM problems_master WHERE user_id=:user_id",
                             user_id=session["user_id"])
     data = db.execute("SELECT * FROM problems WHERE draft=0 ORDER BY id ASC")
-    if solve_data:
-        return render_template('problem/problems.html', data=data, data2=solve_data[0])
-    else:
-        return render_template('problem/problems.html', data=data)
+
+    return render_template('problem/problems.html', data=data, data2=solve_data[0])
 
 
 @app.route('/problems/draft')
