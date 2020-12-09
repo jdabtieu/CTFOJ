@@ -18,13 +18,6 @@
     <button class="btn btn-primary" type="submit">Log In</button>
     <a href="/forgotpassword" class="btn btn-secondary white">Forgot Password</a>
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+    <input type="hidden" name="next" value="{{ request.args.get('next') }}">
 </form>
-<script>
-    $("form").submit(() => {
-        var next = new URL(window.location.href).searchParams.get("next");
-        if (next !== null) {
-            $("form").append('<input name="next" value="' + next + '" style="display: none">');
-        }
-    });
-</script>
 {% endblock %}
