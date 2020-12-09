@@ -1,8 +1,9 @@
 # CTFOJ
-[![Build](https://github.com/jdabtieu/CTFOJ/workflows/Python%20application/badge.svg)](https://github.com/jdabtieu/CTFOJ/actions)
+[![Build](https://github.com/jdabtieu/CTFOJ/workflows/build/badge.svg)](https://github.com/jdabtieu/CTFOJ/actions)
 [![CodeQL Analysis](https://github.com/jdabtieu/CTFOJ/workflows/CodeQL/badge.svg)](https://github.com/jdabtieu/CTFOJ/actions)
 [![Codecov Report](https://img.shields.io/codecov/c/github/jdabtieu/CTFOJ)](https://codecov.io/github/jdabtieu/CTFOJ/)
-[![GitHub release](https://img.shields.io/github/v/release/jdabtieu/CTFOJ)](https://github.com/jdabtieu/CTFOJ/releases)
+[![GitHub Release](https://img.shields.io/github/v/release/jdabtieu/CTFOJ)](https://github.com/jdabtieu/CTFOJ/releases)
+[![Github License](https://img.shields.io/github/license/jdabtieu/CTFOJ)](https://github.com/jdabtieu/CTFOJ/blob/master/LICENSE)
 
 CTFOJ is a open-source online judge to host capture-the-flag problems and contests. It is primarily designed for small-medium sized CTF clubs.
 
@@ -22,7 +23,7 @@ Additionally, you will be able to manage users and view submissions.
 ## Contributing
 Contributors are welcome. If you want to help, feel free to submit a pull request or open an issue. Please do not
 commit or push directly to master, unless absolutely necessary. Additionally,
-please make sure to test your changes thoroughly with our [test suite](https://github.com/jdabtieu/CTFOJ/tests).
+please make sure to test your changes thoroughly with our [test suite](https://github.com/jdabtieu/CTFOJ/tree/master/tests).
 
 Notice a security vulnerability? Refer to [SECURITY.md](SECURITY.md) to determine what to do.
 

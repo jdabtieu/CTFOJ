@@ -1,5 +1,4 @@
 import os
-import tempfile
 import pytest
 
 from cs50 import SQL

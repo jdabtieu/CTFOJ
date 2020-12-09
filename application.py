@@ -16,7 +16,7 @@ from werkzeug.exceptions import (HTTPException, InternalServerError,
                                  default_exceptions)
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from helpers import (admin_required, contest_retrieve, generate_password,
+from helpers import (admin_required, generate_password,
                      login_required, send_email, read_file)
 
 app = Flask(__name__)
@@ -39,11 +39,8 @@ try:
     logging.getLogger().addHandler(logging.StreamHandler())
 except Exception as e:  # when testing
     sys.stderr.write(str(e))
-    logging.basicConfig(
-        filename='application.log',
-        level=logging.DEBUG,
-        format='%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s',
-    )
+    os.mkdir('logs')
+    logging.basicConfig(filename='logs/application.log', level=logging.DEBUG, format='%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
     logging.getLogger().addHandler(logging.StreamHandler())
 
 # Configure session to use filesystem (instead of signed cookies)
@@ -71,10 +68,8 @@ def check_for_maintenance():
     # crappy if/elses used here for future expandability
     global maintenance_mode
     # don't block the user if they only have the csrf token
-    if maintenance_mode:
+    if maintenance_mode and request.path != '/login':
         if not session:
-            return render_template("error/maintenance.html"), 503
-        elif 'admin' not in session:
             return render_template("error/maintenance.html"), 503
         elif not session['admin']:
             return render_template("error/maintenance.html"), 503
@@ -384,8 +379,33 @@ def contest(contest_id):
     # Check for scoreboard permission
     scoreboard = contest_info[0]["scoreboard_visible"] or session["admin"]
 
+    solve_info = db.execute(
+        "SELECT * FROM :cid WHERE user_id=:id", cid=contest_id, id=session["user_id"])
+
+    if len(solve_info) == 0:
+        db.execute("INSERT INTO :cid (user_id) VALUES(:id)",
+                   cid=contest_id, id=session["user_id"])
+        solve_info = db.execute("SELECT * FROM :cid WHERE user_id=:id",
+                                cid=contest_id, id=session["user_id"])
+
+    solve_info = solve_info[0]
+
+    data = []
+
+    info = db.execute("SELECT * FROM :cidinfo WHERE draft=0 ORDER BY category ASC, id ASC",
+                      cidinfo=contest_id + "info")
+    for row in info:
+        keys = {
+            "name": row["name"],
+            "category": row["category"],
+            "id": row["id"],
+            "solved": solve_info[row["id"]],
+            "point_value": row["point_value"]
+        }
+        data.insert(len(data), keys)
+
     return render_template("contest/contest.html", title=title, scoreboard=scoreboard,
-                           data=contest_retrieve(session, request, db, contest_id))
+                           data=data)
 
 
 @app.route("/contest/<contest_id>/drafts")

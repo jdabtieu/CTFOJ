@@ -36,7 +36,6 @@ INSERT INTO 'users' VALUES(1, 'admin', 'pbkdf2:sha256:150000$XoLKRd3I$2dbdacb6a3
 3.
 ```bash
 $ mkdir logs dl metadata metadata/contests metadata/problems metadata/announcements
-$ touch logs/application.log
 $ python3 daily_tasks.py
 $ cp default_settings.py settings.py
 $ nano settings.py
