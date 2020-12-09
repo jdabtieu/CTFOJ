@@ -1,5 +1,3 @@
-from urllib.parse import urlparse
-
 def test_login(client, database):
     '''Test the login interface with pre-added account.'''
     result = client.get('/login')
