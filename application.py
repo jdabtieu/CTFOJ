@@ -535,7 +535,7 @@ def edit_contest_problem(contest_id, problem_id):
         return render_template('problem/editproblem.html', data=data[0])
 
     new_name = request.form.get("name")
-    new_description = request.form.get("description")
+    new_description = request.form.get("description").replace('\r', '')
     new_hint = request.form.get("hints")
     if not new_description:
         new_description = ""
@@ -839,7 +839,7 @@ def editproblem(problem_id):
         return render_template('problem/editproblem.html', data=data[0])
 
     new_name = request.form.get("name")
-    new_description = request.form.get("description")
+    new_description = request.form.get("description").replace('\r', '')
     new_hint = request.form.get("hints")
     if not new_hint:
         new_hint = ""
@@ -1209,7 +1209,7 @@ def editannouncement(a_id):
 
     # Reached via POST
     new_name = request.form.get("name")
-    new_description = request.form.get("description")
+    new_description = request.form.get("description").replace('\r', '')
 
     if not new_name:
         return render_template('admin/editannouncement.html',

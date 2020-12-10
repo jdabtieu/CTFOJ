@@ -6,16 +6,32 @@
 <h1>Edit Announcement</h1>
 {% if message %}
     <div class="alert alert-danger alert-dismissible fade show" role="alert">
-      {{ message }}
-      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
-      </button>
+        {{ message }}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
     </div>
 {% endif %}
 <form autocomplete="off" method="post" id="edit" name="edit">
     <input class="form-control form-group" type="text" id="name" name="name" placeholder="Name" value="{{ data["name"] }}" required>
-    <textarea class="form-control form-group" id="description" name="description" rows="20" placeholder="Description" required>{{ data["description"] }}</textarea>
+    <div style="position: relative;">
+        <textarea class="form-control form-group md-preview" id="description" name="description" rows="20" placeholder="Description" required>{{ data["description"] }}</textarea>
+        <div id="description-out" class="md-preview"></div>
+    </div>
     <input class="btn btn-primary" type="submit" id="submit" name="submit" value="Edit">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 </form>
+<script>
+    $(() => {
+        var product = converter.makeHtml(document.getElementById('description').value);
+        $('#description-out').html(product);
+        $('#description').css('height', $('#description-out').css('height'));
+    });
+
+    $('#description').bind('input propertychange', function() {
+        var product = converter.makeHtml(this.value);
+        $('#description-out').html(product);
+        $('#description').css('height', $('#description-out').css('height'));
+    });
+</script>
 {% endblock %}
