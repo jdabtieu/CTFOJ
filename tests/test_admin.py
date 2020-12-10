@@ -19,6 +19,6 @@ def test_admin(client, database):
     
     # Not logged in users should be redirected to the login page
     result_nouser = client.get('/admin/users')
-    assert result_user.status_code == 302
+    assert result_nouser.status_code == 302
     result_nouser = client.get('/admin/users', follow_redirects=True)
-    assert b'Log In' in result_nouser
+    assert b'Log In' in result_nouser.data
