@@ -6,6 +6,7 @@
 /database.db
 /database.db.bak
 /database_test.db
+database_test.db-journal
 
 # Python Cache
 /__pycache__/
