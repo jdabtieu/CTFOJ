@@ -885,15 +885,17 @@ def problem_editeditorial(problem_id):
 @app.route('/problem/<problem_id>/delete')
 @admin_required
 def delete_problem(problem_id):
-    # Work in progress
-    data = db.execute("SELECT * FROM problems WHERE id=:problem_id",
-                      problem_id=problem_id)
+    data = db.execute("SELECT * FROM problems WHERE id=:pid", pid=problem_id)
 
     # Ensure problem exists
     if len(data) == 0:
         return render_template("problem/problem_noexist.html"), 404
 
-    db.execute("DELETE FROM problems WHERE id=:id", id=problem_id)
+    db.execute("BEGIN")
+    db.execute("DELETE FROM problems WHERE id=:pid", pid=problem_id)
+    db.execute("DELETE FROM problem_solved WHERE problem_id=:pid", pid=problem_id)
+    db.execute("COMMIT")
+
     return redirect("/problems")
 
 
@@ -1151,12 +1153,11 @@ def delete_contest(contest_id):
 
     db.execute("BEGIN")
     db.execute("DELETE FROM contests WHERE id=:cid", cid=contest_id)
-
     db.execute("DELETE FROM contest_users WHERE contest_id=:cid", cid=contest_id)
     db.execute("DELETE FROM contest_solved WHERE contest_id=:cid", cid=contest_id)
     db.execute("DELETE FROM contest_problems WHERE contest_id=:cid", cid=contest_id)
-
     db.execute("COMMIT")
+
     shutil.rmtree('metadata/contests/' + contest_id)
 
     return redirect("/contests")
