@@ -469,14 +469,14 @@ def contest_problem(contest_id, problem_id):
     check1 = db.execute("SELECT * FROM contest_solved WHERE contest_id=:cid AND user_id=:uid AND problem_id=:pid",
                         cid=contest_id, uid=session["user_id"], pid=problem_id)
 
+    # check if user is in the contest
+    check2 = db.execute("SELECT * FROM contest_users WHERE contest_id=:cid AND user_id=:uid",
+                        cid=contest_id, uid=session["user_id"])
+    if len(check2) == 0:
+        db.execute("INSERT INTO contest_users(contest_id, user_id) VALUES (:cid, :uid)",
+                    cid=contest_id, uid=session["user_id"])
+
     if len(check1) == 0:
-        # check if user is in the contest
-        check2 = db.execute("SELECT * FROM contest_users WHERE contest_id=:cid AND user_id=:uid",
-                            cid=contest_id, uid=session["user_id"])
-        if len(check2) == 0:
-            db.execute("INSERT INTO contest_users(contest_id, user_id) VALUES (:cid, :uid)",
-                       cid=contest_id, uid=session["user_id"])
-        
         points = check[0]["point_value"]
         db.execute("INSERT INTO contest_solved(contest_id, user_id, problem_id) VALUES(:cid, :uid, :pid)",
                    cid=contest_id, pid=problem_id, uid=session["user_id"])
