@@ -22,3 +22,6 @@
 # Coverage reports
 .coverage
 coverage.xml
+
+# testing artifacts
+test_upload.txt
