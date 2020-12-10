@@ -1,5 +1,6 @@
 import secrets
 import re
+import requests
 from functools import wraps
 
 from flask import redirect, request, session
@@ -56,3 +57,13 @@ def verify_text(text):
     Check if text only contains A-Z, a-z, 0-9, underscores, and dashes
     """
     return bool(re.match(r'^[\w\-]+$', text))
+
+def check_captcha(secret, response, sitekey):
+    captcha = requests.post('https://hcaptcha.com/siteverify', data = {
+        'secret': secret,
+        'response': response,
+        'sitekey': sitekey
+    })
+    if not captcha.json()['success']:
+        return False
+    return True

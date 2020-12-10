@@ -17,7 +17,7 @@ from werkzeug.exceptions import HTTPException, InternalServerError, default_exce
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from helpers import (admin_required, generate_password, login_required, send_email,
-                     read_file, verify_text)
+                     read_file, verify_text, check_captcha)
 
 app = Flask(__name__)
 maintenance_mode = False
@@ -127,12 +127,7 @@ def login():
 
     # Ensure captcha is valid
     if app.config['USE_CAPTCHA']:
-        captcha = requests.post('https://hcaptcha.com/siteverify', data = {
-            'secret': app.config['HCAPTCHA_SECRET'],
-            'response': request.form.get('h-captcha-response'),
-            'sitekey': app.config['HCAPTCHA_SITE']
-        })
-        if not captcha.json()['success']:
+        if not check_captcha(app.config['HCAPTCHA_SECRET'], request.form.get('h-captcha-response'), app.config['HCAPTCHA_SITE']):
             return render_template("login.html",
                                    message="CAPTCHA invalid", site_key = app.config['HCAPTCHA_SITE']), 400
 
@@ -191,13 +186,8 @@ def register():
 
     # Ensure captcha is valid
     if app.config['USE_CAPTCHA']:
-        captcha = requests.post('https://hcaptcha.com/siteverify', data = {
-            'secret': app.config['HCAPTCHA_SECRET'],
-            'response': request.form.get('h-captcha-response'),
-            'sitekey': app.config['HCAPTCHA_SITE']
-        })
-        if not captcha.json()['success']:
-            return render_template("login.html",
+        if not check_captcha(app.config['HCAPTCHA_SECRET'], request.form.get('h-captcha-response'), app.config['HCAPTCHA_SITE']):
+            return render_template("register.html",
                                    message="CAPTCHA invalid", site_key = app.config['HCAPTCHA_SITE']), 400
 
     # Ensure username and email do not already exist
@@ -312,12 +302,7 @@ def forgotpassword():
 
     # Ensure captcha is valid
     if app.config['USE_CAPTCHA']:
-        captcha = requests.post('https://hcaptcha.com/siteverify', data = {
-            'secret': app.config['HCAPTCHA_SECRET'],
-            'response': request.form.get('h-captcha-response'),
-            'sitekey': app.config['HCAPTCHA_SITE']
-        })
-        if not captcha.json()['success']:
+        if not check_captcha(app.config['HCAPTCHA_SECRET'], request.form.get('h-captcha-response'), app.config['HCAPTCHA_SITE']):
             return render_template("forgotpassword.html",
                                    message="CAPTCHA invalid", site_key = app.config['HCAPTCHA_SITE']), 400
 
