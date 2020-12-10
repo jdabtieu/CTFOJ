@@ -1,4 +1,5 @@
 import secrets
+import re
 from functools import wraps
 
 from flask import redirect, request, session
@@ -48,3 +49,10 @@ def read_file(filename):
     contents = file.read()
     file.close()
     return contents
+
+
+def verify_text(text):
+    """
+    Check if text only contains A-Z, a-z, 0-9, underscores, and dashes
+    """
+    return bool(re.match(r'^[\w\-]+$', text))

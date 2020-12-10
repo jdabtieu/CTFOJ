@@ -12,12 +12,11 @@ from flask import (Flask, flash, redirect, render_template, request,
 from flask_mail import Mail
 from flask_session import Session
 from flask_wtf.csrf import CSRFProtect
-from werkzeug.exceptions import (HTTPException, InternalServerError,
-                                 default_exceptions)
+from werkzeug.exceptions import HTTPException, InternalServerError, default_exceptions
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from helpers import (admin_required, generate_password,
-                     login_required, send_email, read_file)
+from helpers import (admin_required, generate_password, login_required, send_email,
+                     read_file, verify_text)
 
 app = Flask(__name__)
 maintenance_mode = False
@@ -597,6 +596,12 @@ def contest_add_problem(contest_id):
     if not request.form.get("id") or not request.form.get("name") or not request.form.get("description") or not request.form.get("point_value") or not request.form.get("category") or not request.form.get("flag"):
         return render_template("admin/createproblem.html",
                                message="You have not entered all required fields"), 400
+                               
+    # Check if problem ID is valid
+    if not verify_text(request.form.get("id")):
+        return render_template("admin/createproblem.html",
+                               message="Invalid problem ID"), 400
+
 
     problem_id = request.form.get("id")
     name = request.form.get("name")
@@ -664,7 +669,7 @@ def export_contest_problem(contest_id, problem_id):
 
     # Reached via POST
 
-    new_id = contest_id + "-" + problem_id
+    new_id = contest_id + "-" + problem_id  # this should be safe already
 
     check = db.execute("SELECT * FROM problems WHERE id=:id", id=new_id)
     if len(check) != 0:
@@ -944,10 +949,10 @@ def admin_createcontest():
 
     contest_id = request.form.get("contest_id")
 
-    # Ensure contest ID doesn't contain spaces
-    if " " in contest_id:
+    # Ensure contest ID is valid
+    if not verify_text(contest_id):
         return render_template("admin/createcontest.html",
-                               message="Contest ID cannot have spaces"), 400
+                               message="Invalid contest ID"), 400
 
     contest_name = request.form.get("contest_name")
 
@@ -997,6 +1002,11 @@ def createproblem():
     if not request.form.get("id") or not request.form.get("name") or not request.form.get("description") or not request.form.get("point_value") or not request.form.get("category") or not request.form.get("flag"):
         return render_template("admin/createproblem.html",
                                message="You have not entered all required fields"), 400
+                               
+    # Check if problem ID is valid
+    if not verify_text(request.form.get("id")):
+        return render_template("admin/createproblem.html",
+                               message="Invalid problem ID"), 400
 
     problem_id = request.form.get("id")
     name = request.form.get("name")
