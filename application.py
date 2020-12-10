@@ -598,7 +598,7 @@ def contest_add_problem(contest_id):
     if not request.form.get("id") or not request.form.get("name") or not request.form.get("description") or not request.form.get("point_value") or not request.form.get("category") or not request.form.get("flag"):
         return render_template("admin/createproblem.html",
                                message="You have not entered all required fields"), 400
-                               
+
     # Check if problem ID is valid
     if not verify_text(request.form.get("id")):
         return render_template("admin/createproblem.html",
@@ -898,7 +898,8 @@ def delete_problem(problem_id):
     db.execute("DELETE FROM problems WHERE id=:pid", pid=problem_id)
     db.execute("DELETE FROM problem_solved WHERE problem_id=:pid", pid=problem_id)
     db.execute("COMMIT")
-
+    shutil.rmtree(f"metadata/problems/{problem_id}")
+    
     return redirect("/problems")
 
 
@@ -1007,7 +1008,7 @@ def createproblem():
     if not request.form.get("id") or not request.form.get("name") or not request.form.get("description") or not request.form.get("point_value") or not request.form.get("category") or not request.form.get("flag"):
         return render_template("admin/createproblem.html",
                                message="You have not entered all required fields"), 400
-                               
+
     # Check if problem ID is valid
     if not verify_text(request.form.get("id")):
         return render_template("admin/createproblem.html",
