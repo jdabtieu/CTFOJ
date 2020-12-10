@@ -1,11 +1,16 @@
 import os
 import shutil
+import sys
 
 def test_problem(client, database):
     '''Test that admins can create problems, users can submit to them, and flags can be validated successfully.'''
     database.execute("INSERT INTO 'users' VALUES(1, 'admin', 'pbkdf2:sha256:150000$XoLKRd3I$2dbdacb6a37de2168298e419c6c54e768d242aee475aadf1fa9e6c30aa02997f', 'e', datetime('now'), 1, 0, 1);")
     client.post('/login', data = {'username': 'admin', 'password': 'CTFOJadmin'})
 
+    try:
+        os.mkdir('dl')
+    except Exception as e:
+        sys.stderr.write(str(e))
     file = open("test_upload.txt", "w")
     file.write('ree')
     file.close()
@@ -29,3 +34,4 @@ def test_problem(client, database):
     result = client.get('/problem/helloworldtesting/delete', follow_redirects = True)
     assert result.status_code == 200
     assert b'helloworldtesting' not in result.data
+    shutil.rmtree('dl')
