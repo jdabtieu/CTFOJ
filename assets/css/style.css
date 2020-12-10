@@ -78,3 +78,7 @@ div.md-preview {
 .svg-green {
     filter: invert(57%) sepia(58%) saturate(3606%) hue-rotate(83deg) brightness(118%) contrast(125%);
 }
+
+table {
+    table-layout: fixed;
+}
