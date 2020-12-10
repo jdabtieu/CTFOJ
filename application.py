@@ -163,9 +163,11 @@ def register():
 
     # Reached using POST
 
-    # Ensure username is not blank
+    # Ensure username is valid
     if not request.form.get("username"):
         return render_template("register.html", message="Username cannot be blank"), 400
+    if not verify_text(request.form.get("username")):
+        return render_template("register.html", message="Invalid username"), 400
 
     # Ensure password is not blank
     if not request.form.get("password") or len(request.form.get("password")) < 8:
@@ -409,8 +411,8 @@ def contest_drafts(contest_id):
     title = contest_info[0]["name"]
 
     return render_template("contest/draft_problems.html", title=title,
-                           data=db.execute("SELECT * FROM contest_problems WHERE contest_id=:cid AND draft=1",
-                                           cid=contest_id))
+        data=db.execute("SELECT * FROM contest_problems WHERE contest_id=:cid AND draft=1",
+                        cid=contest_id))
 
 
 @app.route("/contest/<contest_id>/problem/<problem_id>", methods=["GET", "POST"])
@@ -1066,24 +1068,30 @@ def ban():
     if not user_id:
         return "Must provide user ID"
 
-    banned_status = db.execute("SELECT banned FROM users WHERE id=:id", id=user_id)
+    user = db.execute("SELECT * FROM users WHERE id=:id", id=user_id)
 
-    if len(banned_status) != 1:
+    if len(user) != 1:
         return "That user doesn't exist!"
 
     user_id = int(user_id)
-    banned_status = banned_status[0]["banned"]
+    user = user[0]
 
     if user_id == session["user_id"]:
         return "Cannot ban yourself!"
+
+    if user["admin"] and session["user_id"] != 1:
+        return "Only the super-admin can ban admins"
 
     if user_id == 1:
         return "Cannot ban super-admin"
 
     db.execute("UPDATE users SET banned=:status WHERE id=:id",
-               status=not banned_status, id=user_id)
+               status=not user["banned"], id=user_id)
 
-    return f"Successfully {'unbanned' if banned_status else 'banned'} user with ID " + str(user_id)
+    if user["banned"]:
+        return "Successfully unbanned " + user["username"]
+    else:
+        return "Successfully banned " + user["username"]
 
 
 @app.route("/admin/resetpass")
