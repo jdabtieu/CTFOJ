@@ -664,7 +664,7 @@ def export_contest_problem(contest_id, problem_id):
 
     # Reached via POST
 
-    new_id = contest_id + "-" + data[0]["id"]
+    new_id = contest_id + "-" + problem_id
 
     check = db.execute("SELECT * FROM problems WHERE id=:id", id=new_id)
     if len(check) != 0:
