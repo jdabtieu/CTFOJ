@@ -14,12 +14,14 @@
     </div>
 {% endif %}
 <form method="post">
+    <script src="https://hcaptcha.com/1/api.js" async defer></script>
     <input autocomplete="off" autofocus class="form-control form-group" name="username" placeholder="Username" type="text" required>
     <input class="form-control form-group" name="email" placeholder="Email Address" type="email" required>
     <input class="form-control form-group" name="password" placeholder="Password" type="password" required>
     <input class="form-control form-group" name="confirmation" placeholder="Confirmation" type="password" required>
     <button class="btn btn-primary" type="submit">Register</button>
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+    <hr>
+    <div class="h-captcha" data-sitekey= {{ site_key }} ></div>
 </form>
 <br>
 <p style="margin-top: 8px;">

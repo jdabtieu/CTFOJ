@@ -3,7 +3,6 @@ def test_pages(client, database):
     database.execute("INSERT INTO 'users' VALUES(2, 'normal_user', 'pbkdf2:sha256:150000$XoLKRd3I$2dbdacb6a37de2168298e419c6c54e768d242aee475aadf1fa9e6c30aa02997f', 'ctf.mgci+debug@email.com', datetime('now'), 0, 0, 1);")
 
     result = client.post('/login', data = {'username': 'normal_user', 'password': 'CTFOJadmin'}, follow_redirects = True)
-    print(result.data)
     assert result.status_code == 200
     assert b'Announcements' in result.data
 
@@ -34,9 +33,9 @@ def test_pages(client, database):
     result = client.get('/logout')
     assert result.status_code == 302
 
-    result = client.post('/forgotpassword?email=ctf.mgci+debug@email.com', follow_redirects = True)
+    result = client.post('/forgotpassword', data = {'email': 'ctf.mgci+debug@email.com'})
+    print(result.data)
     assert result.status_code == 200
-    assert b'password reset email' in result.data
 
     result = client.post('/login', data = {'username': 'normal_user', 'password': 'CTFOJadmin123'}, follow_redirects = True)
     assert result.status_code == 200

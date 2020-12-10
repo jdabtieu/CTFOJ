@@ -23,3 +23,6 @@ MAIL_DEFAULT_SENDER = ("sender name", "sender email")
 CLUB_NAME = "your club name"
 LOGGING_FILE_LOCATION = 'logs/application.log'
 SESSION_COOKIE_SAMESITE = 'Lax'
+USE_CAPTCHA = True
+HCAPTCHA_SECRET = 0xdeadbeef
+HCAPTCHA_SITE = 'site_key'
