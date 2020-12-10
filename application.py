@@ -1148,7 +1148,6 @@ def delete_contest(contest_id):
     db.execute("DELETE FROM contest_problems WHERE contest_id=:cid", cid=contest_id)
 
     db.execute("COMMIT")
-    os.remove('metadata')
     shutil.rmtree('metadata/contests/' + contest_id)
 
     return redirect("/contests")
