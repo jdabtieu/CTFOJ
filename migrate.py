@@ -8,7 +8,7 @@ msg = """Before migrating, please confirm the following:
  - You have made a backup of the database
  - You have write permissions in the current directory
  - No other process is using the database
-Please note that migration is a one-way operation, and you will not be able to revert to the pervious version without a backup.
+Please note that migration is a one-way operation, and you will not be able to revert to the previous version without a backup.
 Are you sure you wish to migrate? [y/n] """
 
 confirm = input(msg)
@@ -18,120 +18,61 @@ if confirm != 'y':
 
 shutil.copy2('database.db', 'database.db.bak')
 db = cs50.SQL("sqlite:///database.db")
-contests = db.execute("SELECT * FROM contests")
-
-os.makedirs('metadata')
-os.makedirs('metadata/problems')
-os.makedirs('metadata/contests')
-os.makedirs('metadata/announcements')
-problems = db.execute("SELECT * FROM problems")
-contests = db.execute("SELECT * FROM contests")
-announcements = db.execute("SELECT * FROM announcements")
-
-for problem in problems:
-    pid = problem["id"]
-    description = problem["description"]
-    editorial = problem["editorial"]
-    hints = problem["hints"]
-    if description is None:
-        description = ""
-    if editorial is None:
-        editorial = ""
-    if hints is None:
-        hints = ""
-    os.makedirs('metadata/problems/' + pid)
-    f = open('metadata/problems/' + pid + '/description.md', 'w')
-    f.write(description)
-    f.close()
-    f = open('metadata/problems/' + pid + '/hints.md', 'w')
-    f.write(hints)
-    f.close()
-    f = open('metadata/problems/' + pid + '/editorial.md', 'w')
-    f.write(editorial)
-    f.close()
 
 db.execute("BEGIN")
-db.execute("CREATE TABLE 'problems_tmp' ('id' varchar(64) NOT NULL, 'name' varchar(256) NOT NULL, 'point_value' integer NOT NULL DEFAULT (0), 'category' varchar(64), 'flag' varchar(256) NOT NULL, 'draft' boolean NOT NULL DEFAULT(0))")
 
-for problem in problems:
-    db.execute("INSERT INTO problems_tmp VALUES(?, ?, ?, ?, ?, ?)",
-               problem["id"], problem["name"], problem["point_value"],
-               problem["category"], problem["flag"], problem["draft"])
+# Copy problems_master to problems_solved
+problems_master = db.execute("SELECT * FROM problems_master")
+problems_list = db.execute("SELECT id FROM problems")
 
-db.execute("DROP TABLE problems")
-db.execute("ALTER TABLE problems_tmp RENAME TO problems")
-db.execute("COMMIT")
+db.execute("CREATE TABLE 'problem_solved' ('user_id' integer NOT NULL, 'problem_id' varchar(64) NOT NULL)")
+for user in problems_master:
+    for problem in problems_list:
+        if user[problem["id"]]:
+            db.execute("INSERT INTO problem_solved VALUES(:uid, :pid)", uid=user["user_id"], pid=problem["id"])
 
+db.execute("DROP TABLE problems_master")
+
+
+# Copy [contest_id]info to contest_problems
+contests = db.execute("SELECT * FROM contests")
+
+db.execute("CREATE TABLE 'contest_problems' ('contest_id' varchar(32) NOT NULL, 'problem_id' varchar(64) NOT NULL, 'name' varchar(256) NOT NULL, 'point_value' integer NOT NULL DEFAULT (0), 'category' varchar(64), 'flag' varchar(256) NOT NULL, 'draft' boolean NOT NULL DEFAULT(0))")
 
 for contest in contests:
-    os.makedirs('metadata/contests/' + contest["id"])
     cid = contest["id"]
+    cidinfo = db.execute("SELECT * FROM :cidinfo", cidinfo=cid + "info")
 
-    cp = db.execute("SELECT * FROM :cidinfo", cidinfo=cid + "info")
-    for problem in cp:
-        pid = problem["id"]
-        description = problem["description"]
-        hints = problem["hints"]
-        if description is None:
-            description = ""
-        if hints is None:
-            hints = ""
-        os.makedirs('metadata/contests/' + cid + '/' + pid)
-        f = open('metadata/contests/' + cid + '/' + pid + '/description.md', 'w')
-        f.write(description)
-        f.close()
-        f = open('metadata/contests/' + cid + '/' + pid + '/hints.md', 'w')
-        f.write(hints)
-        f.close()
-
-    db.execute("BEGIN")
-    db.execute("CREATE TABLE :cidtmp ('id' varchar(64) NOT NULL, 'name' varchar(256) NOT NULL, 'point_value' integer NOT NULL DEFAULT (0), 'category' varchar(64), 'flag' varchar(256) NOT NULL, 'draft' boolean NOT NULL DEFAULT(0))", cidtmp=cid + "info_tmp")
-
-    for problem in cp:
-        db.execute("INSERT INTO ? VALUES(?, ?, ?, ?, ?, ?)", cid + "info_tmp",
-                   problem["id"], problem["name"], problem["point_value"],
-                   problem["category"], problem["flag"], problem["draft"])
-
-    db.execute("DROP TABLE :cidinfo", cidinfo=cid + "info")
-    db.execute("ALTER TABLE :cidtmp RENAME TO :cidinfo",
-               cidtmp=cid + "info_tmp", cidinfo=cid + "info")
-    db.execute("COMMIT")
+    for problem in cidinfo:
+        db.execute("INSERT INTO 'contest_problems' VALUES(:cid, :pid, :name, :pv, :category, :flag, :draft)", cid=cid, pid=problem["id"], name=problem["name"], pv=problem["point_value"], category=problem["category"], flag=problem["flag"], draft=problem["draft"])
 
 
-    description = contest["description"]
-    f = open('metadata/contests/' + cid + '/description.md', 'w')
-    f.write(description)
-    f.close()
+# Copy contest users to contest_users
+db.execute("CREATE TABLE 'contest_users' ('contest_id' varchar(32) NOT NULL, 'user_id' integer NOT NULL, 'points' integer NOT NULL DEFAULT (0) , 'lastAC' datetime)")
 
-db.execute("BEGIN")
-db.execute("CREATE TABLE 'contests_tmp' ('id' varchar(32) NOT NULL, 'name' varchar(256) NOT NULL, 'start' datetime NOT NULL, 'end' datetime NOT NULL, 'scoreboard_visible' boolean NOT NULL DEFAULT(1))")
 for contest in contests:
-    db.execute("INSERT INTO contests_tmp VALUES(?, ?, ?, ?, ?)",
-               contest["id"], contest["name"], contest["start"], contest["end"],
-               contest["scoreboard_visible"])
+    cid = contest["id"]
+    users = db.execute("SELECT user_id, points, lastAC FROM :cid", cid=cid)
 
-db.execute("DROP TABLE contests")
-db.execute("ALTER TABLE contests_tmp RENAME TO contests")
-db.execute("COMMIT")
+    for user in users:
+        db.execute("INSERT INTO contest_users VALUES(:cid, :uid, :points, :lastAC)", cid=cid, uid=user["user_id"], points=user["points"], lastAC=user["lastAC"])
 
-for announcement in announcements:
-    aid = announcement["id"]
-    description = announcement["description"]
-    if description is None:
-        description = ""
-    f = open('metadata/announcements/' + str(aid) + '.md', 'w')
-    f.write(description)
-    f.close()
 
-db.execute("BEGIN")
-db.execute("CREATE TABLE 'announcements_tmp' ('id' integer PRIMARY KEY NOT NULL, 'name' varchar(256) NOT NULL, 'date' datetime NOT NULL)")
+# Copy contest solved problem to contest_solved
+db.execute("CREATE TABLE 'contest_solved' ('contest_id' varchar(32) NOT NULL, 'user_id' integer NOT NULL, 'problem_id' varchar(64) NOT NULL)")
 
-for announcement in announcements:
-    db.execute("INSERT INTO announcements_tmp VALUES(?, ?, ?)",
-               announcement["id"], announcement["name"], announcement["date"])
+for contest in contests:
+    cid=contest["id"]
+    users = db.execute("SELECT * FROM :cid", cid=cid)
+    cidinfo = db.execute("SELECT * FROM :cidinfo", cidinfo=cid + "info")
+    for user in users:
+        for problem in cidinfo:
+            if user[problem["id"]]:
+                db.execute("INSERT INTO contest_solved VALUES(:cid, :uid, :pid)", cid=cid, uid=user["user_id"], pid=problem["id"])
 
-db.execute("DROP TABLE announcements")
-db.execute("ALTER TABLE announcements_tmp RENAME TO announcements")
+    db.execute("DROP TABLE :cid", cid=cid)
+    db.execute("DROP TABLE :cidinfo", cidinfo=cid + "info")
+
 db.execute("COMMIT")
 
 print('Migration completed.')
