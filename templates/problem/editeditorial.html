@@ -17,7 +17,8 @@
         var product = converter.makeHtml(document.getElementById('editorial').value);
         $('#editorial-out').html(product);
         $('#editorial').css('height', $('#editorial-out').css('height'));
-    })
+    });
+    
     $('#editorial').bind('input propertychange', function() {
         var product = converter.makeHtml(this.value);
         $('#editorial-out').html(product);

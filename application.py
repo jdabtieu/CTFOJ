@@ -1246,7 +1246,7 @@ def editcontest(contest_id):
 
     # Reached via POST
     new_name = request.form.get("name")
-    new_description = request.form.get("description")
+    new_description = request.form.get("description").replace('\r', '')
     start = request.form.get("start")
     end = request.form.get("end")
 
@@ -1266,6 +1266,11 @@ def editcontest(contest_id):
 
     db.execute("UPDATE contests SET name=:name, start=datetime(:start), end=datetime(:end) WHERE id=:cid",
                name=new_name, start=start, end=end, cid=contest_id)
+
+    file = open('metadata/contests/' + contest_id + '/description.md', 'w')
+    file.write(new_description)
+    file.close()
+
     return redirect("/contests")
 
 
