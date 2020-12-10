@@ -8,6 +8,7 @@ from application import app
 @pytest.fixture
 def client():
     app.config['TESTING'] = True
+    app.config['USE_CAPTCHA'] = False
     app.config['WTF_CSRF_ENABLED'] = False
     return app.test_client()
 

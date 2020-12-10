@@ -1,6 +1,7 @@
 import os
 import sys
 import logging
+import requests
 import shutil
 from datetime import datetime, timedelta
 from tempfile import mkdtemp
@@ -108,36 +109,48 @@ def dl(path, filename):
     return send_from_directory("dl/" + path, filename, as_attachment=True)
 
 
+@csrf.exempt
 @app.route("/login", methods=["GET", "POST"])
 def login():
     # Forget user id
     session.clear()
 
     if request.method == "GET":
-        return render_template("login.html")
+        return render_template("login.html", site_key = app.config['HCAPTCHA_SITE'])
 
     # Reached using POST
 
     # Ensure username and password were submitted
     if not request.form.get("username") or not request.form.get("password"):
         return render_template("login.html",
-                               message="Username and password cannot be blank"), 400
+                               message="Username and password cannot be blank", site_key = app.config['HCAPTCHA_SITE']), 400
+
+    # Ensure captcha is valid
+    if app.config['USE_CAPTCHA']:
+        captcha = requests.post('https://hcaptcha.com/siteverify', data = {
+            'secret': app.config['HCAPTCHA_SECRET'],
+            'response': request.form.get('h-captcha-response'),
+            'sitekey': app.config['HCAPTCHA_SITE']
+        })
+        if not captcha.json()['success']:
+            return render_template("login.html",
+                                   message="CAPTCHA invalid", site_key = app.config['HCAPTCHA_SITE']), 400
 
     # Ensure username exists and password is correct
     rows = db.execute("SELECT * FROM users WHERE username = :username",
                       username=request.form.get("username"))
     if len(rows) != 1 or not check_password_hash(rows[0]["password"], request.form.get("password")):
-        return render_template("login.html", message="Incorrect username/password"), 401
+        return render_template("login.html", message="Incorrect username/password", site_key = app.config['HCAPTCHA_SITE']), 401
 
     # Ensure user is not banned
     if rows[0]["banned"]:
         return render_template("login.html",
-                               message="You are banned! Please message an admin to appeal the ban."), 403
+                               message="You are banned! Please message an admin to appeal the ban.", site_key = app.config['HCAPTCHA_SITE']), 403
 
     # Ensure user has confirmed account
     if not rows[0]["verified"]:
         return render_template("login.html",
-                               message="You have not confirmed your account yet. Please check your email."), 403
+                               message="You have not confirmed your account yet. Please check your email.", site_key = app.config['HCAPTCHA_SITE']), 403
 
     # Remember which user has logged in
     session["user_id"] = rows[0]["id"]
@@ -155,36 +168,47 @@ def logout():
     session.clear()
     return redirect("/")
 
-
+@csrf.exempt
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "GET":
-        return render_template("register.html")
+        return render_template("register.html", site_key = app.config['HCAPTCHA_SITE'])
 
     # Reached using POST
 
     # Ensure username is valid
     if not request.form.get("username"):
-        return render_template("register.html", message="Username cannot be blank"), 400
+        return render_template("register.html", message="Username cannot be blank", site_key = app.config['HCAPTCHA_SITE']), 400
     if not verify_text(request.form.get("username")):
-        return render_template("register.html", message="Invalid username"), 400
+        return render_template("register.html", message="Invalid username", site_key = app.config['HCAPTCHA_SITE']), 400
 
     # Ensure password is not blank
     if not request.form.get("password") or len(request.form.get("password")) < 8:
         return render_template("register.html",
-                               message="Password must be at least 8 characters"), 400
+                               message="Password must be at least 8 characters", site_key = app.config['HCAPTCHA_SITE']), 400
     if not request.form.get("confirmation") or request.form.get("password") != request.form.get("confirmation"):
-        return render_template("register.html", message="Passwords do not match"), 400
+        return render_template("register.html", message="Passwords do not match", site_key = app.config['HCAPTCHA_SITE']), 400
+
+    # Ensure captcha is valid
+    if app.config['USE_CAPTCHA']:
+        captcha = requests.post('https://hcaptcha.com/siteverify', data = {
+            'secret': app.config['HCAPTCHA_SECRET'],
+            'response': request.form.get('h-captcha-response'),
+            'sitekey': app.config['HCAPTCHA_SITE']
+        })
+        if not captcha.json()['success']:
+            return render_template("login.html",
+                                   message="CAPTCHA invalid", site_key = app.config['HCAPTCHA_SITE']), 400
 
     # Ensure username and email do not already exist
     rows = db.execute("SELECT * FROM users WHERE username = :username",
                       username=request.form.get("username"))
     if len(rows) > 0:
-        return render_template("register.html", message="Username already exists"), 409
+        return render_template("register.html", message="Username already exists", site_key = app.config['HCAPTCHA_SITE']), 409
     rows = db.execute("SELECT * FROM users WHERE email = :email",
                       email=request.form.get("email"))
     if len(rows) > 0:
-        return render_template("register.html", message="Email already exists"), 409
+        return render_template("register.html", message="Email already exists", site_key = app.config['HCAPTCHA_SITE']), 409
 
     exp = datetime.utcnow() + timedelta(seconds=1800)
     email = request.form.get('email')
@@ -208,7 +232,7 @@ def register():
                app.config['MAIL_DEFAULT_SENDER'], [email], text, mail)
 
     return render_template("register.html",
-                           message='An account creation confirmation email has been sent to the email address you provided. Be sure to check your spam folder!')
+                           message='An account creation confirmation email has been sent to the email address you provided. Be sure to check your spam folder!', site_key = app.config['HCAPTCHA_SITE'])
 
 
 @app.route('/confirmregister/<token>')
@@ -271,15 +295,32 @@ def changepassword():
     return redirect("/")
 
 
+@csrf.exempt
 @app.route("/forgotpassword", methods=["GET", "POST"])
 def forgotpassword():
     session.clear()
 
     if request.method == "GET":
-        return render_template("forgotpassword.html")
+        return render_template("forgotpassword.html", site_key = app.config['HCAPTCHA_SITE'])
 
     # Reached via POST
+
     email = request.form.get("email")
+    if not email:
+        return render_template("forgotpassword.html",
+                               message="Email cannot be blank"), 400
+
+    # Ensure captcha is valid
+    if app.config['USE_CAPTCHA']:
+        captcha = requests.post('https://hcaptcha.com/siteverify', data = {
+            'secret': app.config['HCAPTCHA_SECRET'],
+            'response': request.form.get('h-captcha-response'),
+            'sitekey': app.config['HCAPTCHA_SITE']
+        })
+        if not captcha.json()['success']:
+            return render_template("forgotpassword.html",
+                                   message="CAPTCHA invalid", site_key = app.config['HCAPTCHA_SITE']), 400
+
     rows = db.execute("SELECT * FROM users WHERE email = :email",
                       email=request.form.get("email"))
 
@@ -295,7 +336,8 @@ def forgotpassword():
         ).decode('utf-8')
         text = render_template('email/reset_password_text.txt',
                                username=rows[0]["username"], token=token)
-        send_email('Reset Your CTF Password',
+        if not app.config['TESTING']:
+            send_email('Reset Your CTF Password',
                    app.config['MAIL_DEFAULT_SENDER'], [email], text, mail)
     return render_template("forgotpassword.html",
                            message='If there is an account associated with that email, a password reset email has been sent')
@@ -899,7 +941,7 @@ def delete_problem(problem_id):
     db.execute("DELETE FROM problem_solved WHERE problem_id=:pid", pid=problem_id)
     db.execute("COMMIT")
     shutil.rmtree(f"metadata/problems/{problem_id}")
-    
+
     return redirect("/problems")
 
 
