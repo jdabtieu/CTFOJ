@@ -367,27 +367,30 @@ def contest(contest_id):
     # Check for scoreboard permission
     scoreboard = contest_info[0]["scoreboard_visible"] or session["admin"]
 
-    solve_info = db.execute(
-        "SELECT * FROM :cid WHERE user_id=:id", cid=contest_id, id=session["user_id"])
+    user_info = db.execute("SELECT * FROM contest_users WHERE contest_id=:cid AND user_id=:uid",
+                           cid=contest_id, uid=session["user_id"])
 
-    if len(solve_info) == 0:
-        db.execute("INSERT INTO :cid (user_id) VALUES(:id)",
-                   cid=contest_id, id=session["user_id"])
-        solve_info = db.execute("SELECT * FROM :cid WHERE user_id=:id",
-                                cid=contest_id, id=session["user_id"])
+    if len(user_info) == 0:
+        db.execute("INSERT INTO contest_users (contest_id, user_id) VALUES(:cid, :uid)",
+                   cid=contest_id, uid=session["user_id"])
 
-    solve_info = solve_info[0]
+    solved_info = db.execute("SELECT problem_id FROM contest_solved WHERE contest_id=:cid AND user_id=:uid",
+                             cid=contest_id, uid=session["user_id"])
+
+    solved_data = set()
+    for row in solved_info:
+        solved_data.add(row["problem_id"])
 
     data = []
 
-    info = db.execute("SELECT * FROM :cidinfo WHERE draft=0 ORDER BY category ASC, id ASC",
-                      cidinfo=contest_id + "info")
+    info = db.execute("SELECT * FROM contest_problems WHERE contest_id=:cid AND draft=0 ORDER BY category ASC, problem_id ASC",
+                      cid=contest_id)
     for row in info:
         keys = {
             "name": row["name"],
             "category": row["category"],
-            "id": row["id"],
-            "solved": solve_info[row["id"]],
+            "problem_id": row["problem_id"],
+            "solved": 1 if row["problem_id"] in solved_data else 0,
             "point_value": row["point_value"]
         }
         data.insert(len(data), keys)
@@ -466,9 +469,14 @@ def contest_problem(contest_id, problem_id):
     check1 = db.execute("SELECT * FROM contest_solved WHERE contest_id=:cid AND user_id=:uid AND problem_id=:pid",
                         cid=contest_id, uid=session["user_id"], pid=problem_id)
 
-    check1 = (len(check1) == 0)
-
-    if check1:
+    if len(check1) == 0:
+        # check if user is in the contest
+        check2 = db.execute("SELECT * FROM contest_users WHERE contest_id=:cid AND user_id=:uid",
+                            cid=contest_id, uid=session["user_id"])
+        if len(check2) == 0:
+            db.execute("INSERT INTO contest_users(contest_id, user_id) VALUES (:cid, :uid)",
+                       cid=contest_id, uid=session["user_id"])
+        
         points = check[0]["point_value"]
         db.execute("INSERT INTO contest_solved(contest_id, user_id, problem_id) VALUES(:cid, :uid, :pid)",
                    cid=contest_id, pid=problem_id, uid=session["user_id"])
@@ -641,7 +649,7 @@ def export_contest_problem(contest_id, problem_id):
         return render_template("contest/contest_noexist.html"), 404
 
     # Ensure problem exists
-    data = db.execute("SELECT * FROM contest_problems WHERE contest_id=cid AND problem_id=:pid",
+    data = db.execute("SELECT * FROM contest_problems WHERE contest_id=:cid AND problem_id=:pid",
                       cid=contest_id, pid=problem_id)
     if len(data) != 1:
         return render_template("contest/contest_problem_noexist.html"), 404
