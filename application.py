@@ -675,10 +675,9 @@ def export_contest_problem(contest_id, problem_id):
 
     # Insert into problems databases
     db.execute("BEGIN")
-    db.execute("INSERT INTO problems(id, name, description, point_value, category, flag, hints) VALUES(:id, :name, :description, :pv, :cat, :flag, :hints)",
-               id=new_id, name=new_name, description=data[0]["description"],
-               pv=data[0]["point_value"], cat=data[0]["category"], flag=data[0]["flag"],
-               hints=data[0]["hints"])
+    db.execute("INSERT INTO problems(id, name, point_value, category, flag) VALUES(:id, :name, :pv, :cat, :flag)",
+               id=new_id, name=new_name, pv=data[0]["point_value"],
+               cat=data[0]["category"], flag=data[0]["flag"])
 
     solved = db.execute("SELECT user_id, problem_id FROM contest_solved WHERE contest_id=:cid AND problem_id=:pid",
                         cid=contest_id, pid=problem_id)
@@ -690,10 +689,10 @@ def export_contest_problem(contest_id, problem_id):
 
     os.makedirs('metadata/problems/' + new_id)
     file = open('metadata/problems/' + new_id + '/description.md', 'w')
-    file.write(data[0]["description"])
+    file.write(read_file('metadata/contests/' + contest_id + '/' + problem_id + '/description.md'))
     file.close()
     file = open('metadata/problems/' + new_id + '/hints.md', 'w')
-    file.write(data[0]["hints"])
+    file.write(read_file('metadata/contests/' + contest_id + '/' + problem_id + '/hints.md'))
     file.close()
     file = open('metadata/problems/' + new_id + '/editorial.md', 'w')
     file.write("")
