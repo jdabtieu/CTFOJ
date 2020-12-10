@@ -5,8 +5,23 @@
 {% block main %}
 <h1>Edit Editorial for {{ data["name"] }}</h1>
 <form autocomplete="off" method="post">
-    <textarea class="form-control form-group" id="editorial" name="editorial" rows="20">{{ data["editorial"] if data["editorial"] else "" }}</textarea>
+	<div style="position: relative;">
+        <textarea class="form-control form-group md-preview" id="editorial" name="editorial" rows="20">{{ data["editorial"] if data["editorial"] else "" }}</textarea>
+        <div id="editorial-out" class="md-preview"></div>
+    </div>
     <input class="btn btn-primary" type="submit" id="submit" name="submit" value="Submit">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 </form>
+<script>
+    $(() => {
+        var product = converter.makeHtml(document.getElementById('editorial').value);
+        $('#editorial-out').html(product);
+        $('#editorial').css('height', $('#editorial-out').css('height'));
+    })
+    $('#editorial').bind('input propertychange', function() {
+        var product = converter.makeHtml(this.value);
+        $('#editorial-out').html(product);
+        $('#editorial').css('height', $('#editorial-out').css('height'));
+    });
+</script>
 {% endblock %}

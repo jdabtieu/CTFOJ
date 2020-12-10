@@ -15,7 +15,10 @@
 <form autocomplete="off" method="post" id="create" name="create">
     <input class="form-control form-group" type="text" id="contest_id" name="contest_id" placeholder="Contest ID" required>
     <input class="form-control form-group" type="text" id="contest_name" name="contest_name" placeholder="Contest Name" required>
-    <textarea class="form-control form-group" id="description" name="description" rows="20" placeholder="Description" required></textarea>
+    <div style="position: relative;">
+        <textarea class="form-control form-group md-preview" id="description" name="description" rows="20" placeholder="Description" required></textarea>
+        <div id="description-out" class="md-preview"></div>
+    </div>
     <input class="form-control form-group dtl" type="text" id="start" name="start" placeholder="Start Date & Time" required>
     <input class="form-control form-group dtl" type="text" id="end" name="end" placeholder="End Date & Time" required>
     <div class="form-control form-group" style="border: 0;">
@@ -28,6 +31,12 @@
 <script>
     $(".dtl").focus(function() {
         $(this).attr("type", "datetime-local");
+    });
+
+    $('#description').bind('input propertychange', function() {
+        var product = converter.makeHtml(this.value);
+        $('#description-out').html(product);
+        $('#description').css('height', $('#description-out').css('height'));
     });
 
     $("form").submit(function(event) {

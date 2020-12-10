@@ -4,7 +4,7 @@
 
 {% block main %}
 <h1><a href="{{ request.path[:-10] }}">{{ data["name"] }}</a> Editorial</h1>
-<div>
+<div class="showdown">
     {{ ed | safe }}
 </div>
 {% endblock %}

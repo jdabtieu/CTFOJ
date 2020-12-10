@@ -605,7 +605,7 @@ def contest_add_problem(contest_id):
 
     problem_id = request.form.get("id")
     name = request.form.get("name")
-    description = request.form.get("description")
+    description = request.form.get("description").replace('\r', '')
     hints = request.form.get("hints")
     point_value = request.form.get("point_value")
     category = request.form.get("category")
@@ -875,6 +875,7 @@ def problem_editeditorial(problem_id):
     new_editorial = request.form.get("editorial")
     if not new_editorial:
         new_editorial = ""
+    new_editorial = new_editorial.replace('\r', '')
 
     file = open('metadata/problems/' + problem_id + '/editorial.md', 'w')
     file.write(new_editorial)
@@ -975,7 +976,7 @@ def admin_createcontest():
         return render_template("admin/createcontest.html",
                                message="Contest cannot end before it starts!"), 400
 
-    description = request.form.get("description")
+    description = request.form.get("description").replace('\r', '')
     scoreboard_visible = bool(request.form.get("scoreboard_visible"))
     if not description:
         return render_template("admin/createcontest.html",
@@ -1012,7 +1013,7 @@ def createproblem():
 
     problem_id = request.form.get("id")
     name = request.form.get("name")
-    description = request.form.get("description")
+    description = request.form.get("description").replace('\r', '')
     hints = request.form.get("hints")
     point_value = request.form.get("point_value")
     category = request.form.get("category")
@@ -1111,7 +1112,7 @@ def createannouncement():
                                message="You have not entered all required fields"), 400
 
     name = request.form.get("name")
-    description = request.form.get("description")
+    description = request.form.get("description").replace('\r', '')
 
     db.execute("INSERT INTO announcements (name, date) VALUES (:name, datetime('now'))",
                name=name)
