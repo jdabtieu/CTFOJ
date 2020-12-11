@@ -5,6 +5,6 @@
 {% block main %}
 <h1><a href="{{ request.path[:-10] }}">{{ data["name"] }}</a> Editorial</h1>
 <div class="showdown">
-    {{ ed | safe }}
+    <textarea style="display: none;">{{ ed | safe }}</textarea>
 </div>
 {% endblock %}

@@ -25,13 +25,13 @@
 <div class="flex-container">
     <div style="flex: 3; padding: 4px; word-break: break-word;">
         <div id="description" class="showdown">
-            {{ data["description"] | safe }}
+            <textarea style="display: none;">{{ data["description"] | safe }}</textarea>
         </div>
         {% if data["hints"] %}
             <div style="margin-top: 16px;">
                 <a class="btn btn-secondary" id="togglehint" onclick="$('#hint').toggle()">Show/Hide Hints</a>
                 <div id="hint" class="card showdown">
-                    {{ data["hints"] | safe }}
+                    <textarea style="display: none;">{{ data["hints"] | safe }}</textarea>
                 </div>
             </div>
         {% endif %}

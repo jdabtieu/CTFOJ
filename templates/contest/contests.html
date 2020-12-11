@@ -13,7 +13,7 @@
         <p style="margin-bottom: 0;">Start: <span class="dt">{{ contest["start"] }}</span></p>
         <p style="margin-bottom: 0;">End: <span class="dt">{{ contest["end"] }}</span></p>
         <div class="showdown">
-            {{ contest["description"] | safe }}
+            <textarea style="display: none;">{{ contest["description"] | safe }}</textarea>
         </div>
         {% if session["admin"] %}
             <a href="/admin/editcontest/{{ contest["id"] }}" style="position: absolute; top: 12px; right: 36px;">
@@ -36,7 +36,7 @@
         <p style="margin-bottom: 0;">Start: <span class="dt">{{ contest["start"] }}</span></p>
         <p style="margin-bottom: 0;">End: <span class="dt">{{ contest["end"] }}</span></p>
         <div class="showdown">
-            {{ contest["description"] | safe }}
+            <textarea style="display: none;">{{ contest["description"] | safe }}</textarea>
         </div>
         {% if session["admin"] %}
             <a href="/admin/editcontest/{{ contest["id"] }}" style="position: absolute; top: 12px; right: 36px">
@@ -59,7 +59,7 @@
         <p style="margin-bottom: 0;">Start: <span class="dt">{{ contest["start"] }}</span></p>
         <p style="margin-bottom: 0;">End: <span class="dt">{{ contest["end"] }}</span></p>
         <div class="showdown">
-            {{ contest["description"] | safe }}
+            <textarea style="display: none;">{{ contest["description"] | safe }}</textarea>
         </div>
         {% if session["admin"] %}
             <a href="/admin/editcontest/{{ contest["id"] }}" style="position: absolute; top: 12px; right: 36px">

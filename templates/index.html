@@ -10,7 +10,7 @@
         <h3>{{ announcement["name"] }}</h3>
         <p>Posted <span class="dt">{{ announcement["date"] }}</span></p>
         <div class="showdown">
-            {{ announcement["description"] | safe }}
+            <textarea style="display: none;">{{ announcement["description"] | safe }}</textarea>
         </div>
         {% if session["admin"] %}
         <a href="/admin/editannouncement/{{ announcement["id"] }}" style="position: absolute; top: 12px; right: 36px;">
