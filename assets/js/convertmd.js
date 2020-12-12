@@ -1,4 +1,5 @@
 var converter = new showdown.Converter()
 $('.showdown').each(function() {
-    this.innerHTML = converter.makeHtml($(this).find('textarea')[0].value);
+    var toConvert = $(this).find('textarea')[0].value;
+    this.innerHTML = DOMPurify.sanitize(converter.makeHtml(toConvert));
 })
