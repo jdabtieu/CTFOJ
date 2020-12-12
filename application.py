@@ -28,6 +28,7 @@ except Exception as e:
     app.config.from_object('default_settings')
 app.config['SESSION_FILE_DIR'] = mkdtemp()
 app.jinja_env.globals['CLUB_NAME'] = app.config['CLUB_NAME']
+app.jinja_env.globals['USE_CAPTCHA'] = app.config['USE_CAPTCHA']
 
 # Configure logging
 try:

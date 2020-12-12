@@ -20,8 +20,10 @@
     <input class="form-control form-group" name="password" placeholder="Password" type="password" required>
     <input class="form-control form-group" name="confirmation" placeholder="Confirmation" type="password" required>
     <button class="btn btn-primary" type="submit">Register</button>
-    <hr>
-    <div class="h-captcha" data-sitekey= {{ site_key }} ></div>
+    {% if USE_CAPTCHA %}
+        <hr>
+        <div class="h-captcha" data-sitekey= {{ site_key }} ></div>
+    {% endif %}
 </form>
 <br>
 <p style="margin-top: 8px;">

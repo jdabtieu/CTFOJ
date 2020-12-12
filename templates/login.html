@@ -18,8 +18,10 @@
     <input class="form-control form-group" name="password" placeholder="Password" type="password" required>
     <button class="btn btn-primary" type="submit">Log In</button>
     <a href="/forgotpassword" class="btn btn-secondary white">Forgot Password</a>
-    <hr>
-    <div class="h-captcha" data-sitekey= {{ site_key }} ></div>
+    {% if USE_CAPTCHA %}
+        <hr>
+        <div class="h-captcha" data-sitekey= {{ site_key }} ></div>
+    {% endif %}
     <input type="hidden" name="next" value="{{ request.args.get('next') }}">
 </form>
 {% endblock %}
