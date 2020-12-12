@@ -107,10 +107,10 @@ def terms():
     return render_template("terms.html")
 
 
-@app.route("/dl/<path:path>/<filename>")
+@app.route("/dl/<path:filename>")
 @login_required
-def dl(path, filename):
-    return send_from_directory("dl/" + path, filename, as_attachment=True)
+def dl(filename):
+    return send_from_directory("dl/", filename, as_attachment=True)
 
 
 @csrf.exempt
