@@ -173,19 +173,24 @@ def logout():
     session.clear()
     return redirect("/")
 
+
 @csrf.exempt
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "GET":
-        return render_template("register.html", site_key = app.config['HCAPTCHA_SITE'])
+        return render_template("register.html", site_key=app.config['HCAPTCHA_SITE'])
 
     # Reached using POST
 
     # Ensure username is valid
     if not request.form.get("username"):
-        return render_template("register.html", message="Username cannot be blank", site_key = app.config['HCAPTCHA_SITE']), 400
+        return render_template("register.html",
+                               message="Username cannot be blank",
+                               site_key=app.config['HCAPTCHA_SITE']), 400
     if not verify_text(request.form.get("username")):
-        return render_template("register.html", message="Invalid username", site_key = app.config['HCAPTCHA_SITE']), 400
+        return render_template("register.html",
+                               message="Invalid username",
+                               site_key=app.config['HCAPTCHA_SITE']), 400
 
     # Ensure password is not blank
     if not request.form.get("password") or len(request.form.get("password")) < 8:
@@ -201,17 +206,22 @@ def register():
     if app.config['USE_CAPTCHA']:
         if not check_captcha(app.config['HCAPTCHA_SECRET'], request.form.get('h-captcha-response'), app.config['HCAPTCHA_SITE']):
             return render_template("register.html",
-                                   message="CAPTCHA invalid", site_key = app.config['HCAPTCHA_SITE']), 400
+                                   message="CAPTCHA invalid",
+                                   site_key=app.config['HCAPTCHA_SITE']), 400
 
     # Ensure username and email do not already exist
     rows = db.execute("SELECT * FROM users WHERE username = :username",
                       username=request.form.get("username"))
     if len(rows) > 0:
-        return render_template("register.html", message="Username already exists", site_key = app.config['HCAPTCHA_SITE']), 409
+        return render_template("register.html",
+                               message="Username already exists",
+                               site_key=app.config['HCAPTCHA_SITE']), 409
     rows = db.execute("SELECT * FROM users WHERE email = :email",
                       email=request.form.get("email"))
     if len(rows) > 0:
-        return render_template("register.html", message="Email already exists", site_key = app.config['HCAPTCHA_SITE']), 409
+        return render_template("register.html",
+                               message="Email already exists",
+                               site_key=app.config['HCAPTCHA_SITE']), 409
 
     exp = datetime.utcnow() + timedelta(seconds=1800)
     email = request.form.get('email')
@@ -235,7 +245,8 @@ def register():
                app.config['MAIL_DEFAULT_SENDER'], [email], text, mail)
 
     return render_template("register.html",
-                           message='An account creation confirmation email has been sent to the email address you provided. Be sure to check your spam folder!', site_key = app.config['HCAPTCHA_SITE'])
+                           message='An account creation confirmation email has been sent to the email address you provided. Be sure to check your spam folder!',
+                           site_key=app.config['HCAPTCHA_SITE'])
 
 
 @app.route('/confirmregister/<token>')
@@ -304,7 +315,8 @@ def forgotpassword():
     session.clear()
 
     if request.method == "GET":
-        return render_template("forgotpassword.html", site_key = app.config['HCAPTCHA_SITE'])
+        return render_template("forgotpassword.html",
+                               site_key=app.config['HCAPTCHA_SITE'])
 
     # Reached via POST
 
@@ -317,7 +329,8 @@ def forgotpassword():
     if app.config['USE_CAPTCHA']:
         if not check_captcha(app.config['HCAPTCHA_SECRET'], request.form.get('h-captcha-response'), app.config['HCAPTCHA_SITE']):
             return render_template("forgotpassword.html",
-                                   message="CAPTCHA invalid", site_key = app.config['HCAPTCHA_SITE']), 400
+                                   message="CAPTCHA invalid",
+                                   site_key=app.config['HCAPTCHA_SITE']), 400
 
     rows = db.execute("SELECT * FROM users WHERE email = :email",
                       email=request.form.get("email"))
@@ -515,7 +528,7 @@ def contest_problem(contest_id, problem_id):
                         cid=contest_id, uid=session["user_id"])
     if len(check2) == 0:
         db.execute("INSERT INTO contest_users(contest_id, user_id) VALUES (:cid, :uid)",
-                    cid=contest_id, uid=session["user_id"])
+                   cid=contest_id, uid=session["user_id"])
 
     if len(check1) == 0:
         points = check[0]["point_value"]
@@ -643,7 +656,6 @@ def contest_add_problem(contest_id):
     if not verify_text(request.form.get("id")):
         return render_template("admin/createproblem.html",
                                message="Invalid problem ID"), 400
-
 
     problem_id = request.form.get("id")
     name = request.form.get("name")
