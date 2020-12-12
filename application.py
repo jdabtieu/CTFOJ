@@ -141,17 +141,21 @@ def login():
     rows = db.execute("SELECT * FROM users WHERE username = :username",
                       username=request.form.get("username"))
     if len(rows) != 1 or not check_password_hash(rows[0]["password"], request.form.get("password")):
-        return render_template("login.html", message="Incorrect username/password", site_key = app.config['HCAPTCHA_SITE']), 401
+        return render_template("login.html",
+                               message="Incorrect username/password",
+                               site_key=app.config['HCAPTCHA_SITE']), 401
 
     # Ensure user is not banned
     if rows[0]["banned"]:
         return render_template("login.html",
-                               message="You are banned! Please message an admin to appeal the ban.", site_key = app.config['HCAPTCHA_SITE']), 403
+                               message="You are banned! Please message an admin to appeal the ban.",
+                               site_key=app.config['HCAPTCHA_SITE']), 403
 
     # Ensure user has confirmed account
     if not rows[0]["verified"]:
         return render_template("login.html",
-                               message="You have not confirmed your account yet. Please check your email.", site_key = app.config['HCAPTCHA_SITE']), 403
+                               message="You have not confirmed your account yet. Please check your email.",
+                               site_key=app.config['HCAPTCHA_SITE']), 403
 
     # Remember which user has logged in
     session["user_id"] = rows[0]["id"]
