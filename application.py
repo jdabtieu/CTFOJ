@@ -1,7 +1,6 @@
 import os
 import sys
 import logging
-import requests
 import shutil
 from datetime import datetime, timedelta
 from tempfile import mkdtemp
@@ -41,7 +40,11 @@ try:
 except Exception as e:  # when testing
     sys.stderr.write(str(e))
     os.mkdir('logs')
-    logging.basicConfig(filename='logs/application.log', level=logging.DEBUG, format='%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
+    logging.basicConfig(
+        filename='logs/application.log',
+        level=logging.DEBUG,
+        format='%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s'
+    )
     logging.getLogger().addHandler(logging.StreamHandler())
 
 # Configure session to use filesystem (instead of signed cookies)
@@ -117,20 +120,22 @@ def login():
     session.clear()
 
     if request.method == "GET":
-        return render_template("login.html", site_key = app.config['HCAPTCHA_SITE'])
+        return render_template("login.html", site_key=app.config['HCAPTCHA_SITE'])
 
     # Reached using POST
 
     # Ensure username and password were submitted
     if not request.form.get("username") or not request.form.get("password"):
         return render_template("login.html",
-                               message="Username and password cannot be blank", site_key = app.config['HCAPTCHA_SITE']), 400
+                               message="Username and password cannot be blank",
+                               site_key=app.config['HCAPTCHA_SITE']), 400
 
     # Ensure captcha is valid
     if app.config['USE_CAPTCHA']:
         if not check_captcha(app.config['HCAPTCHA_SECRET'], request.form.get('h-captcha-response'), app.config['HCAPTCHA_SITE']):
             return render_template("login.html",
-                                   message="CAPTCHA invalid", site_key = app.config['HCAPTCHA_SITE']), 400
+                                   message="CAPTCHA invalid",
+                                   site_key=app.config['HCAPTCHA_SITE']), 400
 
     # Ensure username exists and password is correct
     rows = db.execute("SELECT * FROM users WHERE username = :username",
@@ -181,9 +186,12 @@ def register():
     # Ensure password is not blank
     if not request.form.get("password") or len(request.form.get("password")) < 8:
         return render_template("register.html",
-                               message="Password must be at least 8 characters", site_key = app.config['HCAPTCHA_SITE']), 400
+                               message="Password must be at least 8 characters",
+                               site_key=app.config['HCAPTCHA_SITE']), 400
     if not request.form.get("confirmation") or request.form.get("password") != request.form.get("confirmation"):
-        return render_template("register.html", message="Passwords do not match", site_key = app.config['HCAPTCHA_SITE']), 400
+        return render_template("register.html",
+                               message="Passwords do not match",
+                               site_key=app.config['HCAPTCHA_SITE']), 400
 
     # Ensure captcha is valid
     if app.config['USE_CAPTCHA']:

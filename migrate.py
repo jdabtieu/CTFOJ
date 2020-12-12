@@ -1,4 +1,3 @@
-import os
 import cs50
 import shutil
 import sys

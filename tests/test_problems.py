@@ -28,7 +28,7 @@ def test_problem(client, database):
     result = client.get('/problem/helloworldtesting')
     assert result.status_code == 200
     assert b'a short fun problem' in result.data
-    
+
     # test if nonexistent problems don't exist
     result = client.get('/problem/idontexist', follow_redirects = True)
     assert result.status_code == 404
