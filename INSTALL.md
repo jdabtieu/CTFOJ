@@ -20,7 +20,7 @@ $ pip3 install -r requirements.txt
 ```sql
 $ sqlite3 database.db
 sqlite3>
-CREATE TABLE 'users' ('id' integer PRIMARY KEY NOT NULL, 'username' varchar(20) NOT NULL, 'password' varchar(64) NOT NULL, 'email' varchar(128), 'join_date' datetime NOT NULL DEFAULT (0) , 'admin' boolean NOT NULL DEFAULT (0) , 'banned' boolean NOT NULL DEFAULT (0), 'verified' boolean NOT NULL DEFAULT (0));
+CREATE TABLE 'users' ('id' integer PRIMARY KEY NOT NULL, 'username' varchar(20) NOT NULL, 'password' varchar(64) NOT NULL, 'email' varchar(128), 'join_date' datetime NOT NULL DEFAULT (0), 'admin' boolean NOT NULL DEFAULT (0), 'banned' boolean NOT NULL DEFAULT (0), 'verified' boolean NOT NULL DEFAULT (0), 'twofa' boolean NOT NULL DEFAULT (0));
 CREATE TABLE 'submissions' ('sub_id' integer PRIMARY KEY NOT NULL, 'date' datetime NOT NULL,'user_id' integer NOT NULL,'problem_id' varchar(32) NOT NULL,'contest_id' varchar(32), 'correct' boolean NOT NULL);
 CREATE TABLE 'problems' ('id' varchar(64) NOT NULL, 'name' varchar(256) NOT NULL, 'point_value' integer NOT NULL DEFAULT (0), 'category' varchar(64), 'flag' varchar(256) NOT NULL, 'draft' boolean NOT NULL DEFAULT(0));
 CREATE TABLE 'contests' ('id' varchar(32) NOT NULL, 'name' varchar(256) NOT NULL, 'start' datetime NOT NULL, 'end' datetime NOT NULL, 'scoreboard_visible' boolean NOT NULL DEFAULT (1));
@@ -29,7 +29,7 @@ CREATE TABLE 'contest_users' ('contest_id' varchar(32) NOT NULL, 'user_id' integ
 CREATE TABLE 'contest_solved' ('contest_id' varchar(32) NOT NULL, 'user_id' integer NOT NULL, 'problem_id' varchar(64) NOT NULL);
 CREATE TABLE 'contest_problems' ('contest_id' varchar(32) NOT NULL, 'problem_id' varchar(64) NOT NULL, 'name' varchar(256) NOT NULL, 'point_value' integer NOT NULL DEFAULT(0), 'category' varchar(64), 'flag' varchar(256) NOT NULL, 'draft' boolean NOT NULL DEFAULT(0));
 CREATE TABLE 'problem_solved' ('user_id' integer NOT NULL, 'problem_id' varchar(64) NOT NULL);
-INSERT INTO 'users' VALUES(1, 'admin', 'pbkdf2:sha256:150000$XoLKRd3I$2dbdacb6a37de2168298e419c6c54e768d242aee475aadf1fa9e6c30aa02997f', 'e', datetime('now'), 1, 0, 1);
+INSERT INTO 'users' VALUES(1, 'admin', 'pbkdf2:sha256:150000$XoLKRd3I$2dbdacb6a37de2168298e419c6c54e768d242aee475aadf1fa9e6c30aa02997f', 'e', datetime('now'), 1, 0, 1, 0);
 ```
 
 3.
@@ -39,7 +39,7 @@ $ python3 daily_tasks.py
 $ cp default_settings.py settings.py
 $ nano settings.py
 ```
-In settings.py, you should add your email credentials as indicated by default_settings.py. Additionally, you may change the other email settings if you do not use Gmail. Next, you should choose whether to use a CAPTCHA or not, and provide your hCaptcha site key and secret key if you are using a CAPTCHA. Finally, you should add a custom name for your club and change any other settings that you wish to change.
+In settings.py, you should add your email credentials as indicated by default_settings.py. Additionally, you may change the other email settings if you use a SMTP provider other than Gmail. Next, you should choose whether to use a CAPTCHA or not, and add your hCaptcha site and secret keys if you are using a CAPTCHA. Finally, you should add a custom name for your club and change any other settings that you wish to change.
 
 # Running in Debug Mode
 ```
@@ -51,15 +51,16 @@ If you do not want to export the FLASK_APP every time you reset your terminal, y
 Do not expose the app to the web using debug mode. You should run the app through nginx, Apache, or a similar service.
 
 # Logging in for the first time
-An admin account has been created in step 2. You can log in to it using the credentials `admin:CTFOJadmin`. Make sure you change your password immediately after logging in.
-You should also change the admin email to your email so that you can reset your password in the future through the web app.
+An admin account has been created in step 2. You can log in to it using the credentials `admin:CTFOJadmin`. Make sure you change your password immediately after logging in. You should also change the admin email to your email so that you can reset your password in the future through the web app. Next, it is recommended to enable 2FA for the account (this requires a valid email configuration).
 ```sql
 $ sqlite3 database.db
-sqlite3> UPDATE 'users' SET email='YOUR EMAIL HERE' WHERE id=1;
+sqlite3>
+UPDATE 'users' SET email='YOUR EMAIL HERE' WHERE id=1;
+UPDATE 'users' SET twofa=1WHERE id=1;
 ```
 Furthermore, when regular users log in for the first time, they will be directed to a helloworld problem. You should create a helloworld problem as a welcome/landing page. This problem must have an id of 'helloworld', without the single quotes. You can do this on the 'Create Problem' page in the admin toolbar, once logged in. Markdown is supported. See below for an example helloworld problem:
 ```
-Welcome to CTF Club! In each problem, you must find a flag hidden somewhere on the problem page.
+**Welcome to CTF Club!** In each problem, you must find a flag hidden somewhere on the problem page.
 
 The flag for this problem is: `CTF{your_first_ctf_flag}`
 ```
