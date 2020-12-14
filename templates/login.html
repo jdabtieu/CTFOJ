@@ -22,6 +22,8 @@
         <hr>
         <div class="h-captcha" data-sitekey= {{ site_key }} ></div>
     {% endif %}
-    <input type="hidden" name="next" value="{{ request.args.get('next') }}">
+    {% if request.args.get('next') %}
+        <input type="hidden" name="next" value="{{ request.args.get('next') }}">
+    {% endif %}
 </form>
 {% endblock %}
