@@ -157,6 +157,28 @@ def login():
                                message="You have not confirmed your account yet. Please check your email.",
                                site_key=app.config['HCAPTCHA_SITE']), 403
 
+    # implement 2fa verification via email
+    if rows[0]["twofa"]:
+        exp = datetime.utcnow() + timedelta(seconds=1800)
+        email = rows[0]["email"]
+        token = jwt.encode(
+            {
+                'email': email,
+                'expiration': exp.isoformat()
+            },
+            app.config['SECRET_KEY'],
+            algorithm='HS256'
+        ).decode('utf-8')
+        text = render_template('email/confirm_login_text.txt',
+                               username=request.form.get('username'), token=token)
+
+        send_email('Confirm Your CTF Login',
+                   app.config['MAIL_DEFAULT_SENDER'], [email], text, mail)
+
+        return render_template("login.html",
+                               message='A login confirmation email has been sent to the email address you provided. Be sure to check your spam folder!',
+                               site_key=app.config['HCAPTCHA_SITE'])
+
     # Remember which user has logged in
     session["user_id"] = rows[0]["id"]
     session["username"] = rows[0]["username"]
@@ -276,6 +298,30 @@ def confirm_register(token):
 
     return redirect("/problem/helloworld")
 
+@app.route('/confirmlogin/<token>')
+def confirm_login(token):
+    try:
+        token = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+    except Exception as e:
+        sys.stderr.write(str(e))
+        token = 0
+    if not token:
+        return render_template("login.html",
+                               message="Login verification link invalid",
+                               site_key=app.config['HCAPTCHA_SITE'])
+    if datetime.strptime(token["expiration"], "%Y-%m-%dT%H:%M:%S.%f") < datetime.utcnow():
+        return render_template("login.html",
+                               message="Login verification link expired; Please re-login",
+                               site_key=app.config['HCAPTCHA_SITE'])
+
+    # Log user in
+    user = db.execute(
+        "SELECT * FROM users WHERE email = :email", email=token['email'])[0]
+    session["user_id"] = user["id"]
+    session["username"] = user["username"]
+    session["admin"] = False
+
+    return redirect("/problem/helloworld")
 
 @app.route("/changepassword", methods=["GET", "POST"])
 @login_required
