@@ -324,7 +324,7 @@ def confirm_login(token):
 
     return redirect("/")
 
-@app.route("/changepassword", methods=["GET", "POST"])
+@app.route("/settings/changepassword", methods=["GET", "POST"])
 @login_required
 def changepassword():
     if request.method == "GET":
@@ -353,8 +353,25 @@ def changepassword():
                new=generate_password_hash(request.form.get("newPassword")),
                id=session["user_id"])
 
-    return redirect("/")
+    return render_template("settings.html", message="Password change successful")
 
+@login_required
+@app.route("/settings")
+def settings():
+    return render_template("settings.html")
+
+@login_required
+@app.route("/settings/toggle2fa")
+def toggle2fa():
+    rows = db.execute("SELECT * FROM users WHERE id = :id",
+                      id=session["user_id"])
+
+    if rows[0]["twofa"]:
+        db.execute("UPDATE users SET twofa = 0 WHERE id = :id", id=session["user_id"])
+        return render_template("settings.html", message="2FA successfully disabled")
+    else:
+        db.execute("UPDATE users SET twofa = 1 WHERE id = :id", id=session["user_id"])
+        return render_template("settings.html", message="2FA successfully enabled")
 
 @csrf.exempt
 @app.route("/forgotpassword", methods=["GET", "POST"])
