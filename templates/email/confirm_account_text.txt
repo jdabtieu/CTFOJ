@@ -4,6 +4,6 @@ To confirm your registration, click on the following link:
 
 {{ url_for('confirm_register', token=token, _external=True) }}
 
-If you have not requested for our website, please ignore this message.
+If you have not registered for our website, please ignore this message.
 
 {{ CLUB_NAME }}

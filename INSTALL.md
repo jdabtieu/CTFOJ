@@ -56,7 +56,7 @@ An admin account has been created in step 2. You can log in to it using the cred
 $ sqlite3 database.db
 sqlite3>
 UPDATE 'users' SET email='YOUR EMAIL HERE' WHERE id=1;
-UPDATE 'users' SET twofa=1WHERE id=1;
+UPDATE 'users' SET twofa=1 WHERE id=1;
 ```
 Furthermore, when regular users log in for the first time, they will be directed to a helloworld problem. You should create a helloworld problem as a welcome/landing page. This problem must have an id of 'helloworld', without the single quotes. You can do this on the 'Create Problem' page in the admin toolbar, once logged in. Markdown is supported. See below for an example helloworld problem:
 ```
