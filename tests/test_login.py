@@ -36,10 +36,3 @@ def test_login(client, database):
     result = client.post('/login', data = {'username': 'user2', 'password': 'CTFOJadmin'}, follow_redirects = True)
     assert result.status_code == 403
     assert b'not confirmed' in result.data
-
-    result = client.get('/confirmlogin/badtoken')
-    assert b'invalid' in result.data
-
-    database.execute("INSERT INTO 'users' VALUES(4, 'paranoia', 'pbkdf2:sha256:150000$XoLKRd3I$2dbdacb6a37de2168298e419c6c54e768d242aee475aadf1fa9e6c30aa02997f', 'e', datetime('now'), 0, 0, 1, 1);")
-    result = client.post('/login', data = {'username': 'paranoia', 'password': 'CTFOJadmin'}, follow_redirects = True)
-    assert b'confirmation email' in result.data
