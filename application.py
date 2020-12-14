@@ -171,7 +171,7 @@ def login():
         ).decode('utf-8')
         text = render_template('email/confirm_login_text.txt',
                                username=request.form.get('username'), token=token)
-                               
+
         if not app.config['TESTING']:
             send_email('Confirm Your CTF Login',
                    app.config['MAIL_DEFAULT_SENDER'], [email], text, mail)
@@ -295,7 +295,7 @@ def confirm_register(token):
         "SELECT * FROM users WHERE email = :email", email=token['email'])[0]
     session["user_id"] = user["id"]
     session["username"] = user["username"]
-    session["admin"] = False
+    session["admin"] = False  # ensure no one can get admin right after registering
 
     return redirect("/problem/helloworld")
 
@@ -320,9 +320,9 @@ def confirm_login(token):
         "SELECT * FROM users WHERE email = :email", email=token['email'])[0]
     session["user_id"] = user["id"]
     session["username"] = user["username"]
-    session["admin"] = False
+    session["admin"] = user["admin"]
 
-    return redirect("/problem/helloworld")
+    return redirect("/")
 
 @app.route("/changepassword", methods=["GET", "POST"])
 @login_required
