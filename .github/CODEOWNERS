@@ -4,3 +4,5 @@
 LICENSE                 @ComputerGenius152  
 /templates/terms.html   @ComputerGenius152
 /templates/privacy.html @ComputerGenius152
+default_settings.py     @ComputerGenius152
+/tests                  @ComputerGenius152
