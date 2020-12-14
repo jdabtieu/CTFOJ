@@ -8,11 +8,10 @@ Please refer to the chart below for versions with security support
 | ----------- | ------------------ |
 | Prereleases | :x:                |
 | Betas       | :x:                |
-| 1.1.0       | :white_check_mark: |
-| 1.0.0       | :white_check_mark: |
-| < 1.0.0     | :x:                |
+| 1.2.0       | :white_check_mark: |
+| < 1.2.0     | :x:                |
 
-As you can tell, it is strongly recommended to always be on the latest stable version.
+As you can tell, it is strongly recommended to always be on the latest stable version. It is strongly recommended to run the application on a modern Linux distribution.
 
 ## Reporting a Vulnerability
 
