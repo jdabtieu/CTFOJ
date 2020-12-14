@@ -1,0 +1,9 @@
+Dear {{ username }},
+
+To confirm your login, click on the following link:
+
+{{ url_for('confirm_login', token=token, _external=True) }}
+
+If you have not tried to login in, please change your password as it may have been compromised.
+
+{{ CLUB_NAME }}
