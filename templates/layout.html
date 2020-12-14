@@ -41,10 +41,10 @@
                                 </div>
                             </li>
                         {% endif %}
-                        <li><a class="nav-link" href="/changepassword">Change Password</a></li>
                     </ul>
                     <ul class="navbar-nav ml-auto">
                         <li class="nav-link white">Welcome, {{ session.username }}</li>
+                        <li><a class="nav-link" href="/settings">Settings</a></li>
                         <li><a class="nav-link" href="/logout">Log Out</a></li>
                     </ul>
                 {% else %}
@@ -63,7 +63,7 @@
             <hr>
             <p class="text-center">© 2020, {{ CLUB_NAME }}. Source code available <a href="https://github.com/jdabtieu/CTFOJ">here</a>.</p>
         </footer>
-        
+
         <script src="/assets/js/showdown.min.js"></script>
         <script src="/assets/js/purify.min.js"></script>
         <script src="/assets/js/convertmd.js"></script>

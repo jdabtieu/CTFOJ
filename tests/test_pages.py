@@ -22,13 +22,17 @@ def test_pages(client, database):
     assert result.status_code == 200
     assert b'Future Contests' in result.data
 
-    result = client.get('/changepassword')
+    result = client.get('/settings/changepassword')
     assert result.status_code == 200
     assert b'Password must be at least 8 characters long.' in result.data
 
-    result = client.post('/changepassword', data = {'password': 'CTFOJadmin', 'newPassword': 'CTFOJadmin123', 'confirmation': 'CTFOJadmin123'}, follow_redirects = True)
+    result = client.post('/settings/changepassword', data = {'password': 'CTFOJadmin', 'newPassword': 'CTFOJadmin123', 'confirmation': 'CTFOJadmin123'}, follow_redirects = True)
     assert result.status_code == 200
-    assert b'Announcements' in result.data
+    assert b'change successful' in result.data
+
+    result = client.get('/settings')
+    assert result.status_code == 200
+    assert b'Settings' in result.data
 
     result = client.get('/logout')
     assert result.status_code == 302

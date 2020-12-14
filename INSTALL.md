@@ -51,12 +51,13 @@ If you do not want to export the FLASK_APP every time you reset your terminal, y
 Do not expose the app to the web using debug mode. You should run the app through nginx, Apache, or a similar service.
 
 # Logging in for the first time
-An admin account has been created in step 2. You can log in to it using the credentials `admin:CTFOJadmin`. Make sure you change your password immediately after logging in. You should also change the admin email to your email so that you can reset your password in the future through the web app. Next, it is recommended to enable 2FA for the account (this requires a valid email configuration).
+An admin account has been created in step 2. You can log in to it using the credentials `admin:CTFOJadmin`. Make sure you change your password immediately after logging in. Enabling 2FA is also recommended for the admin account. You can change your password and enable 2FA through the settings page.
+
+You should also change the admin email manually so that you can reset your password in the future through the web app.
 ```sql
 $ sqlite3 database.db
 sqlite3>
 UPDATE 'users' SET email='YOUR EMAIL HERE' WHERE id=1;
-UPDATE 'users' SET twofa=1 WHERE id=1;
 ```
 Furthermore, when regular users log in for the first time, they will be directed to a helloworld problem. You should create a helloworld problem as a welcome/landing page. This problem must have an id of 'helloworld', without the single quotes. You can do this on the 'Create Problem' page in the admin toolbar, once logged in. Markdown is supported. See below for an example helloworld problem:
 ```
