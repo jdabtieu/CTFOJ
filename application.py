@@ -171,8 +171,9 @@ def login():
         ).decode('utf-8')
         text = render_template('email/confirm_login_text.txt',
                                username=request.form.get('username'), token=token)
-
-        send_email('Confirm Your CTF Login',
+                               
+        if not app.config['TESTING']:
+            send_email('Confirm Your CTF Login',
                    app.config['MAIL_DEFAULT_SENDER'], [email], text, mail)
 
         return render_template("login.html",
