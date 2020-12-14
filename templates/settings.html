@@ -4,6 +4,7 @@
 
 {% block main %}
 <h1>Settings</h1>
+{% if get_flashed_messages() %}{% set message = get_flashed_messages()[0] %}{% endif %}
 {% if message %}
     <div class="alert alert-danger alert-dismissible fade show" role="alert">
         {{ message }}
