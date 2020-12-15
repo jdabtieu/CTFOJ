@@ -36,6 +36,11 @@ def admin_required(f):
 
 
 def generate_password():
+    """
+    Generates a random 16-character password.
+
+    used on Users page to manually reset passwords.
+    """
     password = secrets.token_urlsafe(16)
     return password
 
@@ -46,10 +51,14 @@ def send_email(subject, sender, recipients, text, mail):
 
 
 def read_file(filename):
-    file = open(filename, 'r')
-    contents = file.read()
-    file.close()
-    return contents
+    with open(filename, 'r') as file:
+        return file.read()
+
+
+def write_file(filename, text):
+    with open(filename, 'w') as file:
+        file.write(text)
+    return
 
 
 def verify_text(text):

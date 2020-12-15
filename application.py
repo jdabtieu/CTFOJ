@@ -15,8 +15,7 @@ from flask_wtf.csrf import CSRFProtect
 from werkzeug.exceptions import HTTPException, InternalServerError, default_exceptions
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from helpers import (admin_required, generate_password, login_required, send_email,
-                     read_file, verify_text, check_captcha)
+from helpers import *
 
 app = Flask(__name__)
 maintenance_mode = False
@@ -662,12 +661,8 @@ def edit_contest_problem(contest_id, problem_id):
     db.execute("UPDATE contest_problems SET name=:name WHERE contest_id=:cid AND problem_id=:pid",
                name=new_name, cid=contest_id, pid=problem_id)
 
-    file = open('metadata/contests/' + contest_id + '/' + problem_id + '/description.md', 'w')
-    file.write(new_description)
-    file.close()
-    file = open('metadata/contests/' + contest_id + '/' + problem_id + '/hints.md', 'w')
-    file.write(new_hint)
-    file.close()
+    write_file('metadata/contests/' + contest_id + '/' + problem_id + '/description.md', new_description)
+    write_file('metadata/contests/' + contest_id + '/' + problem_id + '/hints.md', new_hint)
 
     flash('Problem successfully edited', 'success')
     return redirect(request.path[:-5])
@@ -752,12 +747,8 @@ def contest_add_problem(contest_id):
                cid=contest_id, pid=problem_id, name=name, point_value=point_value, category=category, flag=flag, draft=draft)
 
     os.makedirs('metadata/contests/' + contest_id + '/' + problem_id)
-    file = open('metadata/contests/' + contest_id + '/' + problem_id + '/description.md', 'w')
-    file.write(description)
-    file.close()
-    file = open('metadata/contests/' + contest_id + '/' + problem_id + '/hints.md', 'w')
-    file.write(hints)
-    file.close()
+    write_file('metadata/contests/' + contest_id + '/' + problem_id + '/description.md', description)
+    write_file('metadata/contests/' + contest_id + '/' + problem_id + '/hints.md', hints)
 
     # Go to contest page on success
     flash('Problem successfully created', 'success')
@@ -812,15 +803,11 @@ def export_contest_problem(contest_id, problem_id):
     db.execute("COMMIT")
 
     os.makedirs('metadata/problems/' + new_id)
-    file = open('metadata/problems/' + new_id + '/description.md', 'w')
-    file.write(read_file('metadata/contests/' + contest_id + '/' + problem_id + '/description.md'))
-    file.close()
-    file = open('metadata/problems/' + new_id + '/hints.md', 'w')
-    file.write(read_file('metadata/contests/' + contest_id + '/' + problem_id + '/hints.md'))
-    file.close()
-    file = open('metadata/problems/' + new_id + '/editorial.md', 'w')
-    file.write("")
-    file.close()
+    shutil.copy('metadata/contests/' + contest_id + '/' + problem_id + '/description.md',
+                'metadata/problems/' + new_id + '/description.md')
+    shutil.copy('metadata/contests/' + contest_id + '/' + problem_id + '/hints.md',
+                'metadata/problems/' + new_id + '/hints.md')
+    open('metadata/problems/' + new_id + '/editorial.md', 'w').close()
 
     flash('Problem successfully exported', 'success')
     return redirect("/problem/" + new_id)
@@ -967,12 +954,8 @@ def editproblem(problem_id):
 
     db.execute("UPDATE problems SET name=:name WHERE id=:problem_id",
                name=new_name, problem_id=problem_id)
-    file = open('metadata/problems/' + problem_id + '/description.md', 'w')
-    file.write(new_description)
-    file.close()
-    file = open('metadata/problems/' + problem_id + '/hints.md', 'w')
-    file.write(new_hint)
-    file.close()
+    write_file('metadata/problems/' + problem_id + '/description.md', new_description)
+    write_file('metadata/problems/' + problem_id + '/hints.md', new_hint)
 
     flash('Problem successfully edited', 'success')
     return redirect("/problem/" + problem_id)
@@ -1000,9 +983,7 @@ def problem_editeditorial(problem_id):
         new_editorial = ""
     new_editorial = new_editorial.replace('\r', '')
 
-    file = open('metadata/problems/' + problem_id + '/editorial.md', 'w')
-    file.write(new_editorial)
-    file.close()
+    write_file('metadata/problems/' + problem_id + '/editorial.md', new_editorial)
 
     flash('Editorial successfully edited', 'success')
     return redirect("/problem/" + problem_id)
@@ -1114,9 +1095,7 @@ def admin_createcontest():
                scoreboard_visible=scoreboard_visible)
 
     os.makedirs('metadata/contests/' + contest_id)
-    file = open('metadata/contests/' + contest_id + '/description.md', 'w')
-    file.write(description)
-    file.close()
+    write_file('metadata/contests/' + contest_id + '/description.md', description)
 
     flash('Contest successfully created', 'success')
     return redirect("/contest/" + contest_id)
@@ -1172,15 +1151,9 @@ def createproblem():
                flag=flag, draft=draft)
 
     os.makedirs('metadata/problems/' + problem_id)
-    f = open('metadata/problems/' + problem_id + '/description.md', 'w')
-    f.write(description)
-    f.close()
-    f = open('metadata/problems/' + problem_id + '/hints.md', 'w')
-    f.write(hints)
-    f.close()
-    f = open('metadata/problems/' + problem_id + '/editorial.md', 'w')
-    f.write("")
-    f.close()
+    write_file('metadata/problems/' + problem_id + '/description.md', description)
+    write_file('metadata/problems/' + problem_id + '/hints.md', hints)
+    open('metadata/problems/' + problem_id + '/editorial.md', 'w').close()
 
     flash('Problem successfully created', 'success')
     return redirect("/problem/" + problem_id)
@@ -1252,9 +1225,7 @@ def createannouncement():
                name=name)
     aid = db.execute("SELECT * FROM announcements ORDER BY date DESC")[0]["id"]
 
-    f = open('metadata/announcements/' + str(aid) + '.md', 'w')
-    f.write(description)
-    f.close()
+    write_file('metadata/announcements/' + str(aid) + '.md', description)
 
     flash('Announcement successfully created', 'success')
     return redirect("/")
@@ -1359,9 +1330,7 @@ def editannouncement(a_id):
     db.execute("UPDATE announcements SET name=:name WHERE id=:a_id",
                name=new_name, a_id=a_id)
 
-    file = open('metadata/announcements/' + a_id + '.md', 'w')
-    file.write(new_description)
-    file.close()
+    write_file('metadata/announcements/' + a_id + '.md', new_description)
 
     flash('Announcement successfully edited', 'success')
     return redirect("/")
@@ -1406,9 +1375,7 @@ def editcontest(contest_id):
     db.execute("UPDATE contests SET name=:name, start=datetime(:start), end=datetime(:end) WHERE id=:cid",
                name=new_name, start=start, end=end, cid=contest_id)
 
-    file = open('metadata/contests/' + contest_id + '/description.md', 'w')
-    file.write(new_description)
-    file.close()
+    write_file('metadata/contests/' + contest_id + '/description.md', new_description)
 
     flash('Contest successfully edited', 'success')
     return redirect("/contests")
