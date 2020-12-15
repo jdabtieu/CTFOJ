@@ -4,14 +4,6 @@
 
 {% block main %}
 <h1 class="text-center">Log In</h1>
-{% if message %}
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-      {{ message }}
-      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
-      </button>
-    </div>
-{% endif %}
 <form method="post">
     <script src="https://hcaptcha.com/1/api.js" async defer></script>
     <input autocomplete="off" autofocus class="form-control form-group" name="username" placeholder="Username" type="text" required>

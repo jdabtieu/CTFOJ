@@ -57,6 +57,18 @@
         </nav>
 
         <main class="container p-5">
+            {% with msg = get_flashed_messages(with_categories=True) %}
+                {% if msg %}
+                    {% for category, message in msg %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
             {% block main %}{% endblock %}
         </main>
         <footer>
