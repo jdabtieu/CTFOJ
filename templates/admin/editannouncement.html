@@ -4,14 +4,6 @@
 
 {% block main %}
 <h1>Edit Announcement</h1>
-{% if message %}
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        {{ message }}
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-        </button>
-    </div>
-{% endif %}
 <form autocomplete="off" method="post" id="edit" name="edit">
     <input class="form-control form-group" type="text" id="name" name="name" placeholder="Name" value="{{ data["name"] }}" required>
     <div style="position: relative;">

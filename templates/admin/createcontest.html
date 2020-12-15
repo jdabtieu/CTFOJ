@@ -4,14 +4,6 @@
 
 {% block main %}
 <h1>Create Contest</h1>
-{% if message %}
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        {{ message }}
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-        </button>
-    </div>
-{% endif %}
 <form autocomplete="off" method="post" id="create" name="create">
     <input class="form-control form-group" type="text" id="contest_id" name="contest_id" placeholder="Contest ID" required>
     <input class="form-control form-group" type="text" id="contest_name" name="contest_name" placeholder="Contest Name" required>
