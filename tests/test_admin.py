@@ -6,6 +6,22 @@ def test_admin(client, database):
     result = client.get('/admin/users')
     assert result.status_code == 200
     assert b'Users' in result.data
+
+    result = client.get('/admin/createannouncement')
+    assert result.status_code == 200
+    assert b'Create Announcement' in result.data
+
+    result = client.get('/admin/createcontest')
+    assert result.status_code == 200
+    assert b'Create Contest' in result.data
+
+    result = client.get('/admin/createproblem')
+    assert result.status_code == 200
+    assert b'Create Problem' in result.data
+
+    result = client.get('/problems/draft')
+    assert result.status_code == 200
+    assert b'Draft' in result.data
     client.get('/logout')
 
     # Normal users should be redirected to home
