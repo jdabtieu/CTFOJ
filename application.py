@@ -1007,6 +1007,10 @@ def delete_problem(problem_id):
     flash('Problem successfully deleted', 'success')
     return redirect("/problems")
 
+@app.route("/admin/console")
+@admin_required
+def admin_console():
+    return render_template("admin/console.html")
 
 @app.route("/admin/submissions")
 @admin_required
