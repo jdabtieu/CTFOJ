@@ -29,17 +29,7 @@
                         <li><a class="nav-link" href="/problems">Practice</a></li>
                         <li><a class="nav-link" href="/contests">Contests</a></li>
                         {% if session.admin %}
-                            <li class="dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" data-toggle="dropdown">Admin Tools</a>
-                                <div class="dropdown-menu">
-                                    <a class="dropdown-item" href="/admin/submissions">Submissions</a>
-                                    <a class="dropdown-item" href="/admin/users">Users</a>
-                                    <a class="dropdown-item" href="/admin/createcontest">Create Contest</a>
-                                    <a class="dropdown-item" href="/admin/createproblem">Create Problem</a>
-                                    <a class="dropdown-item" href="/admin/createannouncement">Create Announcement</a>
-                                    <a class="dropdown-item" href="/problems/draft">Draft Problems</a>
-                                </div>
-                            </li>
+                            <li><a class="nav-link" href="/admin/console">Admin Console</a></li>
                         {% endif %}
                     </ul>
                     <ul class="navbar-nav ml-auto">

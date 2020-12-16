@@ -1007,6 +1007,10 @@ def delete_problem(problem_id):
     flash('Problem successfully deleted', 'success')
     return redirect("/problems")
 
+@app.route("/admin/console")
+@admin_required
+def admin_console():
+    return render_template("admin/console.html", maintenance_mode=maintenance_mode)
 
 @app.route("/admin/submissions")
 @admin_required
@@ -1386,7 +1390,8 @@ def editcontest(contest_id):
 def maintenance():
     global maintenance_mode
     maintenance_mode = not maintenance_mode
-    return "Enabled maintenance mode" if maintenance_mode else "Disabled maintenance mode"
+    flash("Enabled maintenance mode" if maintenance_mode else "Disabled maintenance mode", "success")
+    return redirect('/admin/console')
 
 
 def errorhandler(e):
