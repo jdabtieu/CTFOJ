@@ -498,7 +498,7 @@ def contest(contest_id):
 
     data = []
 
-    info = db.execute("SELECT * FROM contest_problems WHERE contest_id=:cid AND draft=0 ORDER BY category ASC, problem_id ASC",
+    info = db.execute("SELECT * FROM contest_problems WHERE contest_id=:cid AND draft=0 ORDER BY problem_id ASC, category ASC",
                       cid=contest_id)
     for row in info:
         keys = {
