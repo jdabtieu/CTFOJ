@@ -17,7 +17,7 @@ Otherwise, email [jdabtieu](mailto:jonathan.wu3@outlook.com) for other support.
 
 ## Usage
 If you have logged in with an administrator account, you will be able to manage the site through
-the "Admin Tools" interface. This includes the ability to create practice problems, contests, and announcements.
+the "Admin Console" interface. This includes the ability to create practice problems, contests, and announcements.
 Additionally, you will be able to manage users and view submissions.
 
 ## Contributing
