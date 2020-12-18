@@ -4,15 +4,22 @@
 
 {% block main %}
 <div style="position: relative; margin-bottom: 0.5rem;">
+    {% if scoreboard or session.admin %}
+        <div class="dropdown" style="display: inline;">
+            <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="top: -8px; position: relative;">Actions</button>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                {% if scoreboard %}
+                    <a class="dropdown-item" href="{{ request.path }}/scoreboard">Scoreboard</a>
+                {% endif %}
+                {% if session.admin %}
+                    <a class="dropdown-item" href="/admin/submissions?contest_id={{ request.path[9:] }}">Submissions</a>
+                    <a class="dropdown-item" href="{{ request.path }}/addproblem">Add Problem</a>
+                    <a class="dropdown-item" href="{{ request.path }}/drafts">View Draft Problems</a>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
     <h1 style="display: inline;">{{ title }}</h1>
-    <div style="margin: 8px; display: inline; position: absolute;">
-        {% if scoreboard %}<h3 style="display: inline;"><a href="{{ request.path }}/scoreboard">Scoreboard</a></h3>{% endif %}
-        {% if session.admin %}
-            <h3 style="display: inline;"><a href="/admin/submissions?contest_id={{ request.path[9:] }}">Submissions</a></h3>
-            <h3 style="display: inline;"><a href="{{ request.path }}/addproblem">Add Problem</a></h3>
-            <h3 style="display: inline;"><a href="{{ request.path }}/drafts">Draft Problems</a></h3>
-        {% endif %}
-    </div>
 </div>
 <table class="table table-hover">
     <thead class="thead-dark">
