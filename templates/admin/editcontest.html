@@ -5,13 +5,13 @@
 {% block main %}
 <h1>Edit Contest</h1>
 <form autocomplete="off" method="post" id="edit" name="edit">
-    <input class="form-control form-group" type="text" id="name" name="name" placeholder="Name" value="{{ data["name"] }}" required>
+    <input class="form-control form-group" type="text" id="name" name="name" placeholder="Name" value="{{ data['name'] }}" required>
     <div style="position: relative;">
         <textarea class="form-control form-group md-preview" id="description" name="description" rows="20" placeholder="Description" required>{{ data["description"] }}</textarea>
         <div id="description-out" class="md-preview"></div>
     </div>
-    <input class="form-control form-group dtl" type="text" id="start" name="start" placeholder="Start Date & Time" value="{{ data["start"] }}" required>
-    <input class="form-control form-group dtl" type="text" id="end" name="end" placeholder="End Date & Time" value="{{ data["end"] }}" required>
+    <input class="form-control form-group dtl" type="datetime-local" id="start" name="start" placeholder="Start Date & Time" value="{{ data['start'] }}" required>
+    <input class="form-control form-group dtl" type="datetime-local" id="end" name="end" placeholder="End Date & Time" value="{{ data['end'] }}" required>
     <input class="btn btn-primary" type="submit" id="submit" name="submit" value="Edit">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 </form>
@@ -20,10 +20,19 @@
         var product = converter.makeHtml(document.getElementById('description').value);
         $('#description-out').html(product);
         $('#description').css('height', $('#description-out').css('height'));
-    });
 
-	$(".dtl").focus(function() {
-        $(this).attr("type", "datetime-local");
+        document.querySelectorAll(".dtl").forEach(function (e) {
+            var split = e.getAttribute("value").split(" ");
+            var date_split = split[0].split("-");
+            var final = date_split[1] + "/" + date_split[2] + "/" + date_split[0] + " " + split[1];
+            var parsed = new Date(final + " UTC").toString().split(" ");
+            e.value = parsed[3] + "-" + getMonthFromString(parsed[1]) + "-" + parsed[2] + "T" + parsed[4];
+
+            function getMonthFromString(mon){
+                var str = (new Date(Date.parse(mon +" 1, 2012")).getMonth() + 1).toString();
+                return str.length == 2 ? str : "0" + str;
+            }
+        });
     });
 
     $('#description').bind('input propertychange', function() {
