@@ -632,7 +632,7 @@ def edit_contest_problem(contest_id, problem_id):
         return render_template("contest/contest_noexist.html"), 404
 
     # Ensure problem exists
-    data = db.execute("SELECT name FROM contest_problems WHERE contest_id=:cid AND problem_id=:pid",
+    data = db.execute("SELECT * FROM contest_problems WHERE contest_id=:cid AND problem_id=:pid",
                       cid=contest_id, pid=problem_id)
     if len(data) != 1:
         return render_template("contest/contest_problem_noexist.html"), 404
@@ -647,19 +647,21 @@ def edit_contest_problem(contest_id, problem_id):
 
     # Reached via POST
 
-    if not request.form.get("name") or not request.form.get("description"):
+    if not request.form.get("name") or not request.form.get("description") or not request.form.get("category") or not request.form.get("point_value"):
+        flash('You have not entered all required fields', 'danger'), 400
         return render_template('problem/editproblem.html', data=data[0])
 
     new_name = request.form.get("name")
     new_description = request.form.get("description").replace('\r', '')
     new_hint = request.form.get("hints")
-    if not new_description:
-        new_description = ""
+    new_category = request.form.get("category")
+    new_points = request.form.get("point_value")
     if not new_hint:
         new_hint = ""
 
-    db.execute("UPDATE contest_problems SET name=:name WHERE contest_id=:cid AND problem_id=:pid",
-               name=new_name, cid=contest_id, pid=problem_id)
+    db.execute("UPDATE contest_problems SET name=:name, category=:category, point_value=:pv WHERE contest_id=:cid AND problem_id=:pid",
+               name=new_name, category=new_category, pv=new_points,
+               cid=contest_id, pid=problem_id)
 
     write_file('metadata/contests/' + contest_id + '/' + problem_id + '/description.md', new_description)
     write_file('metadata/contests/' + contest_id + '/' + problem_id + '/hints.md', new_hint)
@@ -708,7 +710,7 @@ def contest_add_problem(contest_id):
 
     # Reached via POST
     if not request.form.get("id") or not request.form.get("name") or not request.form.get("description") or not request.form.get("point_value") or not request.form.get("category") or not request.form.get("flag"):
-        flash('You have not entered all required fields', 'danger')
+        flash('You have not entered all required fields', 'danger'), 400
         return render_template("admin/createproblem.html"), 400
 
     # Check if problem ID is valid
@@ -943,17 +945,20 @@ def editproblem(problem_id):
 
     # Reached via POST
 
-    if not request.form.get("name") or not request.form.get("description"):
+    if not request.form.get("name") or not request.form.get("description") or not request.form.get("category") or not request.form.get("point_value"):
+        flash('You have not entered all required fields', 'danger'), 400
         return render_template('problem/editproblem.html', data=data[0])
 
     new_name = request.form.get("name")
     new_description = request.form.get("description").replace('\r', '')
     new_hint = request.form.get("hints")
+    new_category = request.form.get("category")
+    new_points = request.form.get("point_value")
     if not new_hint:
         new_hint = ""
 
-    db.execute("UPDATE problems SET name=:name WHERE id=:problem_id",
-               name=new_name, problem_id=problem_id)
+    db.execute("UPDATE problems SET name=:name, category=:category, point_value=:pv WHERE id=:problem_id",
+               name=new_name, category=new_category, pv=new_points, problem_id=problem_id)
     write_file('metadata/problems/' + problem_id + '/description.md', new_description)
     write_file('metadata/problems/' + problem_id + '/hints.md', new_hint)
 

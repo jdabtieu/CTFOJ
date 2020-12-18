@@ -5,7 +5,7 @@
 {% block main %}
 <h1>Edit {{ data["name"] }}</h1>
 <form autocomplete="off" method="post">
-    <input class="form-control form-group" id="name" name="name" value="{{ data["name"] }}" required>
+    <input class="form-control form-group" id="name" name="name" value="{{ data['name'] }}" placeholder="Name" required>
     <div style="position: relative;">
         <textarea class="form-control form-group md-preview" id="description" name="description" rows="20" placeholder="Description" required>{{ data["description"] }}</textarea>
         <div id="description-out" class="md-preview"></div>
@@ -14,6 +14,8 @@
         <textarea class="form-control form-group md-preview" id="hints" name="hints" rows="20" placeholder="Hints">{{ data["hints"] if data["hints"] }}</textarea>
         <div id="hints-out" class="md-preview"></div>
     </div>
+    <input class="form-control form-group" id="category" name="category" value="{{ data['category'] }}" placeholder="Category" required>
+    <input class="form-control form-group" type="number" id="point_value" name="point_value" value="{{ data['point_value'] }}" placeholder="Point Value" required>
     <input class="btn btn-primary" type="submit" id="submit" name="submit" value="Submit">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 </form>
