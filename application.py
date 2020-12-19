@@ -91,9 +91,9 @@ def index():
     return render_template("index.html", data=announcements)
 
 
-@app.route("/assets/<path:path>/<filename>")
-def get_asset(path, filename):
-    return send_from_directory("assets/" + path, filename)
+@app.route("/assets/<path:filename>")
+def get_asset(filename):
+    return send_from_directory("assets/", filename)
 
 
 @app.route("/privacy")
@@ -522,11 +522,11 @@ def contest_drafts(contest_id):
     if len(contest_info) != 1:
         return render_template("contest/contest_noexist.html"), 404
 
-    title = contest_info[0]["name"]
+    data = db.execute("SELECT * FROM contest_problems WHERE contest_id=:cid AND draft=1",
+                      cid=contest_id)
 
-    return render_template("contest/draft_problems.html", title=title,
-        data=db.execute("SELECT * FROM contest_problems WHERE contest_id=:cid AND draft=1",
-                        cid=contest_id))
+    return render_template("contest/draft_problems.html",
+                           title=contest_info[0]["name"], data=data)
 
 
 @app.route("/contest/<contest_id>/problem/<problem_id>", methods=["GET", "POST"])
@@ -748,9 +748,9 @@ def contest_add_problem(contest_id):
     db.execute("INSERT INTO contest_problems(contest_id, problem_id, name, point_value, category, flag, draft) VALUES(:cid, :pid, :name, :point_value, :category, :flag, :draft)",
                cid=contest_id, pid=problem_id, name=name, point_value=point_value, category=category, flag=flag, draft=draft)
 
-    os.makedirs('metadata/contests/' + contest_id + '/' + problem_id)
-    write_file('metadata/contests/' + contest_id + '/' + problem_id + '/description.md', description)
-    write_file('metadata/contests/' + contest_id + '/' + problem_id + '/hints.md', hints)
+    os.makedirs(f'metadata/contests/{contest_id}/{problem_id}')
+    write_file(f'metadata/contests/{contest_id}/{problem_id}/description.md', description)
+    write_file(f'metadata/contests/{contest_id}/{problem_id}/hints.md', hints)
 
     # Go to contest page on success
     flash('Problem successfully created', 'success')
@@ -1043,11 +1043,11 @@ def admin_submissions():
 
     if len(args) == 0:
         submissions = db.execute(
-            "SELECT sub_id, date, username, problem_id, contest_id, correct FROM submissions JOIN users ON user_id=users.id")
+            "SELECT submissions.*, users.username FROM submissions JOIN users ON user_id=users.id")
     else:
         modifier = modifier[:-4]
         submissions = db.execute(
-            "SELECT sub_id, date, username, problem_id, contest_id, correct FROM submissions JOIN users ON user_id=users.id" + modifier, *args)
+            "SELECT submissions.*, users.username FROM submissions JOIN users ON user_id=users.id" + modifier, *args)
 
     return render_template("admin/submissions.html", data=submissions)
 
@@ -1055,8 +1055,7 @@ def admin_submissions():
 @app.route("/admin/users")
 @admin_required
 def admin_users():
-    data = db.execute("SELECT * FROM users")
-    return render_template("admin/users.html", data=data)
+    return render_template("admin/users.html", data=db.execute("SELECT * FROM users"))
 
 
 @app.route("/admin/createcontest", methods=["GET", "POST"])
@@ -1118,25 +1117,25 @@ def createproblem():
 
     # Reached via POST
 
-    if not request.form.get("id") or not request.form.get("name") or not request.form.get("description") or not request.form.get("point_value") or not request.form.get("category") or not request.form.get("flag"):
-        flash('You have not entered all required fields', 'danger')
-        return render_template("admin/createproblem.html"), 400
-
-    # Check if problem ID is valid
-    if not verify_text(request.form.get("id")):
-        flash('Invalid problem ID', 'danger')
-        return render_template("admin/createproblem.html"), 400
-
     problem_id = request.form.get("id")
     name = request.form.get("name")
-    description = request.form.get("description").replace('\r', '')
+    description = request.form.get("description")
     hints = request.form.get("hints")
     point_value = request.form.get("point_value")
     category = request.form.get("category")
     flag = request.form.get("flag")
     draft = 1 if request.form.get("draft") else 0
-    if not description:
-        description = ""
+
+    if not problem_id or not name or not description or not point_value or not category or not flag:
+        flash('You have not entered all required fields', 'danger')
+        return render_template("admin/createproblem.html"), 400
+
+    # Check if problem ID is valid
+    if not verify_text(problem_id):
+        flash('Invalid problem ID', 'danger')
+        return render_template("admin/createproblem.html"), 400
+
+    description = description.replace('\r', '')
     if not hints:
         hints = ""
 
@@ -1152,7 +1151,7 @@ def createproblem():
     if file.filename:
         filename = problem_id + ".zip"
         file.save("dl/" + filename)
-        description += '<br><a href="/dl/' + filename + '">' + filename + '</a>'
+        description += f'\n\n[{filename}](/dl/{filename})'
 
     # Modify problems table
     db.execute("INSERT INTO problems (id, name, point_value, category, flag, draft) VALUES (:id, :name, :point_value, :category, :flag, :draft)",
@@ -1177,7 +1176,7 @@ def ban():
 
     user = db.execute("SELECT * FROM users WHERE id=:id", id=user_id)
 
-    if len(user) != 1:
+    if len(user) == 0:
         return "That user doesn't exist!"
 
     user_id = int(user_id)
@@ -1188,9 +1187,6 @@ def ban():
 
     if user["admin"] and session["user_id"] != 1:
         return "Only the super-admin can ban admins"
-
-    if user_id == 1:
-        return "Cannot ban super-admin"
 
     db.execute("UPDATE users SET banned=:status WHERE id=:id",
                status=not user["banned"], id=user_id)
@@ -1309,17 +1305,17 @@ def makeadmin():
     return "Admin privileges for user with ID " + str(user_id) + " granted"
 
 
-@app.route('/admin/editannouncement/<a_id>', methods=["GET", "POST"])
+@app.route('/admin/editannouncement/<aid>', methods=["GET", "POST"])
 @admin_required
-def editannouncement(a_id):
-    data = db.execute("SELECT * FROM announcements WHERE id=:a_id", a_id=a_id)
+def editannouncement(aid):
+    data = db.execute("SELECT * FROM announcements WHERE id=:aid", aid=aid)
 
     # Ensure announcement exists
     if len(data) == 0:
         flash('That announcement does not exist', 'danger')
         return redirect("/")
 
-    data[0]["description"] = read_file('metadata/announcements/' + a_id + '.md')
+    data[0]["description"] = read_file('metadata/announcements/' + aid + '.md')
 
     if request.method == "GET":
         return render_template('admin/editannouncement.html', data=data[0])
@@ -1336,10 +1332,10 @@ def editannouncement(a_id):
         return render_template('admin/editannouncement.html', data=data[0]), 400
 
     # Update database
-    db.execute("UPDATE announcements SET name=:name WHERE id=:a_id",
-               name=new_name, a_id=a_id)
+    db.execute("UPDATE announcements SET name=:name WHERE id=:aid",
+               name=new_name, aid=aid)
 
-    write_file('metadata/announcements/' + a_id + '.md', new_description)
+    write_file('metadata/announcements/' + aid + '.md', new_description)
 
     flash('Announcement successfully edited', 'success')
     return redirect("/")
@@ -1395,10 +1391,16 @@ def editcontest(contest_id):
 def maintenance():
     global maintenance_mode
     maintenance_mode = not maintenance_mode
-    flash("Enabled maintenance mode" if maintenance_mode else "Disabled maintenance mode", "success")
+
+    if maintenance_mode:
+        flash("Enabled maintenance mode", "success")
+    else:
+        flash("Disabled maintenance mode", "success")
+
     return redirect('/admin/console')
 
 
+# Error handling
 def errorhandler(e):
     if not isinstance(e, HTTPException):
         e = InternalServerError()
@@ -1409,7 +1411,6 @@ def errorhandler(e):
     return render_template("error/generic.html", e=e), e.code
 
 
-# Listen for errors
 for code in default_exceptions:
     app.errorhandler(code)(errorhandler)
 
@@ -1418,7 +1419,7 @@ for code in default_exceptions:
 def teapot():
     return render_template("error/418.html"), 418
 
-
+# Security headers
 @app.after_request
 def security_policies(response):
     response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'

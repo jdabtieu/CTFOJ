@@ -9,7 +9,7 @@
 {% endif %}
 {% for contest in future %}
     <div class="card" style="margin: 16px 0 16px 0;">
-        <h3><a href="/contest/{{ contest["id"] }}">{{ contest["name"] }}</a></h3>
+        <h3>{{ contest["name"] }}</h3>
         <p style="margin-bottom: 0;">Start: <span class="dt">{{ contest["start"] }}</span></p>
         <p style="margin-bottom: 0;">End: <span class="dt">{{ contest["end"] }}</span></p>
         <div class="showdown">
