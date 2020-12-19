@@ -4,7 +4,7 @@
 
 {% block main %}
 <h1>{{ data["name"] }}</h1>
-<div class="flex-container">
+<div class="flex">
     <div style="flex: 3; padding: 4px; word-break: break-word;">
         <div id=description class="showdown">
             <textarea style="display: none;">{{ data["description"] | safe }}</textarea>

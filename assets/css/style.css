@@ -13,16 +13,17 @@
     margin-top: 8px;
 }
 
-/****************** ADMIN MD LIVE PREVIEW ********************/
-textarea.md-preview {
-    min-height: 400px;
-    width: 49%;
+/****************** SUBMISSIONS PAGE LAYOUT ******************/
+@media screen and (min-width: 990.01px) {
+    #submission-search-bottom {
+        display: none;
+    }
 }
-div.md-preview {
-    position: absolute;
-    right: 0;
-    top: 0;
-    width: 50%;
+
+@media screen and (max-width: 990px) {
+    #submission-search-right {
+        display: none;
+    }
 }
 
 /****************** CONTEST PAGE LAYOUT **********************/
@@ -50,12 +51,24 @@ div.md-preview {
     right: 4px;
 }
 
+/****************** MD LIVE PREVIEW **************************/
+textarea.md-preview {
+    min-height: 400px;
+    width: 49%;
+}
+div.md-preview {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 50%;
+}
+
 /****************** MISC DISPLAY FIXES ***********************/
 .card {
     padding: 16px;
 }
 
-.flex-container {
+.flex {
     display: flex;
 }
 
@@ -70,6 +83,10 @@ table {
 main {
     padding-top: 3rem!important;
     padding-bottom: 3rem!important;
+}
+
+td {
+    word-break: break-word;
 }
 
 /****************** COLOURS **********************************/

@@ -4,22 +4,24 @@
 
 {% block main %}
 <h1>Draft Problems</h1>
-<table class="table table-hover">
-    <thead class="thead-dark">
-        <tr>
-            <th scope="col">Name</th>
-            <th scope="col">Category</th>
-            <th scope="col">Value</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for row in data %}
-        <tr>
-            <td><a href="/problem/{{ row["id"] }}">{{ row["name"] }}</a></td>
-            <td>{{ row["category"] }}</td>
-            <td>{{ row["point_value"] }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div style="overflow: auto;">
+    <table class="table table-hover" style="min-width: 400px;">
+        <thead class="thead-dark">
+            <tr>
+                <th scope="col" style="width: 65%;">Name</th>
+                <th scope="col" style="width: 20%;">Category</th>
+                <th scope="col" style="width: 15%;">Value</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in data %}
+            <tr>
+                <td><a href="/problem/{{ row["id"] }}">{{ row["name"] }}</a></td>
+                <td>{{ row["category"] }}</td>
+                <td>{{ row["point_value"] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% endblock %}

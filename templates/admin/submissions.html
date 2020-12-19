@@ -4,17 +4,17 @@
 
 {% block main %}
 <h1>Submissions</h1>
-<div class="flex-container">
-    <div style="flex: 3;">
-        <table class="table table-hover">
+<div class="flex">
+    <div style="flex: 3; overflow: auto;">
+        <table class="table table-hover" style="min-width: 400px;">
             <thead class="thead-dark">
                 <tr>
-                    <th scope="col">ID</th>
-                    <th scope="col">Time</th>
-                    <th scope="col">Username</th>
-                    <th scope="col">Problem ID</th>
-                    <th scope="col">Contest ID</th>
-                    <th scope="col">Status</th>
+                    <th scope="col" style="width: 15%;">ID</th>
+                    <th scope="col" style="width: 18%;">Time</th>
+                    <th scope="col" style="width: 18%;">Username</th>
+                    <th scope="col" style="width: 18%;">Problem ID</th>
+                    <th scope="col" style="width: 18%;">Contest ID</th>
+                    <th scope="col" style="width: 13%;">Status</th>
                 </tr>
             </thead>
             <tbody>
@@ -36,7 +36,7 @@
             </tbody>
         </table>
     </div>
-    <div style="flex: 1; margin-left: 8px;">
+    <div style="flex: 1; margin-left: 8px;" id="submission-search-right">
         <div class="card">
             <h3>Filter Submissions</h3>
             <form>
@@ -53,6 +53,24 @@
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             </form>
         </div>
+    </div>
+</div>
+<div id="submission-search-bottom">
+    <div class="card">
+        <h3>Filter Submissions</h3>
+        <form>
+            <input class="form-control form-group" type="text" id="username" name="username" placeholder="Filter by username">
+            <input class="form-control form-group" type="text" id="problem_id" name="problem_id" placeholder="Filter by problem ID">
+            <input class="form-control form-group" type="text" id="contest_id" name="contest_id" placeholder="Filter by contest ID">
+            <select class="form-control form-group" id="correct" name="correct">
+                <option value="" selected hidden>Filter by status</option>
+                <option value="">All</option>
+                <option value="AC">AC</option>
+                <option value="WA">WA</option>
+            </select>
+            <input class="btn btn-primary" type="submit" value="Filter!">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        </form>
     </div>
 </div>
 <script>
