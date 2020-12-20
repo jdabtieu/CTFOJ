@@ -5,16 +5,16 @@
 {% block main %}
 <h1>Submissions</h1>
 <div class="flex">
-    <div style="flex: 3; overflow: auto;">
-        <table class="table table-hover" style="min-width: 400px;">
+    <div style="flex: 3; overflow-x: auto;">
+        <table class="table table-hover table-full-width">
             <thead class="thead-dark">
                 <tr>
-                    <th scope="col" style="width: 15%;">ID</th>
-                    <th scope="col" style="width: 18%;">Time</th>
+                    <th scope="col" style="width: 10%;">ID</th>
+                    <th scope="col" style="width: 20%;">Time</th>
                     <th scope="col" style="width: 18%;">Username</th>
-                    <th scope="col" style="width: 18%;">Problem ID</th>
-                    <th scope="col" style="width: 18%;">Contest ID</th>
-                    <th scope="col" style="width: 13%;">Status</th>
+                    <th scope="col" style="width: 20%;">Problem ID</th>
+                    <th scope="col" style="width: 20%;">Contest ID</th>
+                    <th scope="col" style="width: 12%;">Status</th>
                 </tr>
             </thead>
             <tbody>
@@ -50,7 +50,6 @@
                     <option value="WA">WA</option>
                 </select>
                 <input class="btn btn-primary" type="submit" value="Filter!">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             </form>
         </div>
     </div>
@@ -69,7 +68,6 @@
                 <option value="WA">WA</option>
             </select>
             <input class="btn btn-primary" type="submit" value="Filter!">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         </form>
     </div>
 </div>

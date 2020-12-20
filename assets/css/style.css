@@ -63,6 +63,11 @@ div.md-preview {
     width: 50%;
 }
 
+/****************** GENERAL DISPLAY **************************/
+.table-full-width {
+    min-width: 450px;
+}
+
 /****************** MISC DISPLAY FIXES ***********************/
 .card {
     padding: 16px;
