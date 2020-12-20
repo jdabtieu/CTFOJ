@@ -19,7 +19,11 @@
             <td>{{ i + 1 }}</td>
             <td>{{ data[i]["username"] }}</td>
             <td>{{ data[i]["points"] }}</td>
-            <td class="dt">{{ data[i]["lastAC"] }}</td>
+            {% if data[i]["lastAC"] %}
+                <td class="dt">{{ data[i]["lastAC"] }}</td>
+            {% else %}
+                <td>None</td>
+            {% endif %}
         </tr>
         {% endfor %}
     </tbody>
