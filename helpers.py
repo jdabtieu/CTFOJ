@@ -45,8 +45,8 @@ def generate_password():
     return password
 
 
-def send_email(subject, sender, recipients, text, mail):
-    message = Message(subject, sender=sender, recipients=recipients, body=text)
+def send_email(subject, sender, recipients, text, mail, bcc=None):
+    message = Message(subject, sender=sender, recipients=recipients, body=text, bcc=bcc)
     mail.send(message)
 
 
