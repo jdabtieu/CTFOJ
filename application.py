@@ -521,17 +521,19 @@ def contest_notify(contest_id):
 
     subject = request.form.get("subject")
     if not subject:
-        return "Must provide subject", 400
+        flash('Must provide subject', 'danger')
+        return render_template('admin/contestnotify.html'), 400
     message = request.form.get("message")
     if not message:
-        return "Must provide message", 400
+        flash('Must provide message', 'danger')
+        return render_template('admin/contestnotify.html'), 400
 
-    data = db.execute("SELECT email FROM contest_users JOIN users on user_id=users.id WHERE contest_users.contest_id=:cid ORDER BY points DESC, lastAC ASC",
+    data = db.execute("SELECT email FROM contest_users JOIN users on user_id=users.id WHERE contest_users.contest_id=:cid",
                       cid=contest_id)
     emails = [participant["email"] for participant in data]
     send_email(subject,
-               app.config['MAIL_DEFAULT_SENDER'], emails, message, mail)
-               
+               app.config['MAIL_DEFAULT_SENDER'], [], message, mail, emails)
+
     flash('Participants sucessfully notified', 'success')
     return redirect("/contest/" + contest_id)
 
