@@ -46,10 +46,10 @@ except Exception as e:  # when testing
     )
     logging.getLogger().addHandler(logging.StreamHandler())
 
-# Configure session to use filesystem (instead of signed cookies)
+# Configure flask-session
 Session(app)
 
-# Configure CS50 Library to use SQLite database
+# Configure cs50
 try:
     db = SQL("sqlite:///database.db")
 except Exception as e:  # when testing
@@ -59,7 +59,6 @@ except Exception as e:  # when testing
 
 # Configure flask-mail
 mail = Mail(app)
-
 
 # Configure flask-WTF
 csrf = CSRFProtect(app)
@@ -1017,6 +1016,7 @@ def delete_problem(problem_id):
 def admin_console():
     return render_template("admin/console.html", maintenance_mode=maintenance_mode)
 
+@csrf.exempt
 @app.route("/admin/submissions")
 @admin_required
 def admin_submissions():

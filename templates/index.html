@@ -6,7 +6,10 @@
 <div id="confirm" style="cursor: pointer;"></div>
 <h1>Announcements</h1>
 {% for announcement in data %}
-    <div class="card" style="margin: 16px 0 16px 0;">
+    <div class="card post-card" style="max-height: 600px;">
+        <div class="see-more-wrapper">
+            <a href="#" class="see-more" style="margin-left: 8px;">See More</a>
+        </div>
         <h3>{{ announcement["name"] }}</h3>
         <p>Posted <span class="dt">{{ announcement["date"] }}</span></p>
         <div class="showdown">
@@ -38,5 +41,19 @@
                      .attr("aid", id)
                      .attr("onclick", "deleteAnnouncement(this)");
     }
+
+    $(() => {
+        $(".see-more").each(function() {
+            if ($(this).parent().parent().find(".showdown").height() < 490) {
+                $(this).parent().remove();
+            }
+        });
+    })
+
+    $(".see-more").click(function(event) {
+        event.preventDefault();
+        $(event.target).parent().parent().css("max-height", "");
+        $(event.target).parent().remove()
+    });
 </script>
 {% endblock %}

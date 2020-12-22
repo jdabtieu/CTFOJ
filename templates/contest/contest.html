@@ -7,7 +7,7 @@
     <h1 style="display: inline;">{{ title }}</h1>
     {% if scoreboard or session.admin %}
         <div class="dropdown" style="display: inline;">
-            <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="top: -8px; position: relative;">Actions</button>
+            <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="margin-top: -18px;">Actions</button>
             <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                 {% if scoreboard %}
                     <a class="dropdown-item" href="{{ request.path }}/scoreboard">Scoreboard</a>

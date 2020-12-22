@@ -1,3 +1,19 @@
+/****************** HOME PAGE LAYOUT *************************/
+.post-card {
+    margin: 16px 0 16px 0;
+    position: relative;
+    overflow-y: hidden;
+}
+
+.see-more-wrapper {
+    background-color: #ffffff;
+    position: absolute;
+    bottom: 0;
+    padding: 4px 0;
+    margin-left: -16px;
+    width: 100%;
+}
+
 /****************** PROBLEM PAGE LAYOUT **********************/
 .flag-submit {
     width: 90%;
