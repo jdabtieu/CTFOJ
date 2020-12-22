@@ -512,6 +512,29 @@ def contest(contest_id):
     return render_template("contest/contest.html", title=title, scoreboard=scoreboard,
                            data=data)
 
+@app.route("/contest/<contest_id>/notify", methods=['GET', 'POST'])
+@admin_required
+def contest_notify(contest_id):
+    if request.method == "GET":
+        return render_template('admin/contestnotify.html')
+
+    subject = request.form.get("subject")
+    if not subject:
+        flash('Must provide subject', 'danger')
+        return render_template('admin/contestnotify.html'), 400
+    message = request.form.get("message")
+    if not message:
+        flash('Must provide message', 'danger')
+        return render_template('admin/contestnotify.html'), 400
+
+    data = db.execute("SELECT email FROM contest_users JOIN users on user_id=users.id WHERE contest_users.contest_id=:cid",
+                      cid=contest_id)
+    emails = [participant["email"] for participant in data]
+    send_email(subject,
+               app.config['MAIL_DEFAULT_SENDER'], [], message, mail, emails)
+
+    flash('Participants sucessfully notified', 'success')
+    return redirect("/contest/" + contest_id)
 
 @app.route("/contest/<contest_id>/drafts")
 @admin_required

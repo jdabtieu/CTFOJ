@@ -6,7 +6,7 @@
 <div style="position: relative; margin-bottom: 0.5rem;">
     <h1 style="display: inline;">{{ title }}</h1>
     {% if scoreboard or session.admin %}
-        <div class="dropdown" style="display: inline;">
+        <div class="dropdown" style="display: inline; margin-left: 4px;">
             <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="margin-top: -18px;">Actions</button>
             <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                 {% if scoreboard %}
@@ -16,6 +16,7 @@
                     <a class="dropdown-item" href="/admin/submissions?contest_id={{ request.path[9:] }}">Submissions</a>
                     <a class="dropdown-item" href="{{ request.path }}/addproblem">Add Problem</a>
                     <a class="dropdown-item" href="{{ request.path }}/drafts">View Draft Problems</a>
+                    <a class="dropdown-item" href="{{ request.path }}/notify">Notify Participants</a>
                 {% endif %}
             </div>
         </div>

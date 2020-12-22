@@ -4,28 +4,30 @@
 
 {% block main %}
 <h1><a href="{{ request.path[:-11] }}">{{ title }}</a> Scoreboard</h1>
-<table class="table table-hover">
-    <thead class="thead-dark">
-        <tr>
-            <th scope="col">Rank</th>
-            <th scope="col">Username</th>
-            <th scope="col">Points</th>
-            <th scope="col">Most recent AC submission</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for i in range(data | length) %}
-        <tr>
-            <td>{{ i + 1 }}</td>
-            <td>{{ data[i]["username"] }}</td>
-            <td>{{ data[i]["points"] }}</td>
-            {% if data[i]["lastAC"] %}
-                <td class="dt">{{ data[i]["lastAC"] }}</td>
-            {% else %}
-                <td>None</td>
-            {% endif %}
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div style="overflow-x: auto;">
+    <table class="table table-hover table-full-width">
+        <thead class="thead-dark">
+            <tr>
+                <th scope="col" style="width: 12%;">Rank</th>
+                <th scope="col" style="width: 40%;">Username</th>
+                <th scope="col" style="width: 18%;">Points</th>
+                <th scope="col" style="width: 30%;">Most recent AC submission</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for i in range(data | length) %}
+            <tr>
+                <td>{{ i + 1 }}</td>
+                <td>{{ data[i]["username"] }}</td>
+                <td>{{ data[i]["points"] }}</td>
+                {% if data[i]["lastAC"] %}
+                    <td class="dt">{{ data[i]["lastAC"] }}</td>
+                {% else %}
+                    <td>None</td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% endblock %}
