@@ -14,6 +14,10 @@ def test_contest(client, database):
     assert result.status_code == 200
     assert b'Testing Contest' in result.data
 
+    result = client.post('/admin/editcontest/testingcontest', data = {'name': 'Testing Contest', 'start': datetime.strftime(datetime.now(), "%Y-%m-%dT%H:%M:%S.%fZ"), 'end': datetime.strftime(datetime.now() + timedelta(600), "%Y-%m-%dT%H:%M:%S.%fZ"), 'description': 'testing contest description', 'scoreboard_visible': True}, follow_redirects = True)
+    assert result.status_code == 200
+    assert b'Testing Contest' in result.data
+
     result = client.get('/contest/testingcontest/scoreboard')
     assert result.status_code == 200
     assert b'Rank' in result.data
@@ -79,6 +83,6 @@ def test_contest(client, database):
 
     client.post('/admin/deletecontest/testingcontest', follow_redirects = True)
     assert result.status_code == 200
-        
+
     shutil.rmtree('dl')
     shutil.rmtree('metadata/problems/testingcontest-helloworldtesting')
