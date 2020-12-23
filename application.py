@@ -530,7 +530,8 @@ def contest_notify(contest_id):
     data = db.execute("SELECT email FROM contest_users JOIN users on user_id=users.id WHERE contest_users.contest_id=:cid",
                       cid=contest_id)
     emails = [participant["email"] for participant in data]
-    send_email(subject,
+    if not app.config['TESTING']:
+        send_email(subject,
                app.config['MAIL_DEFAULT_SENDER'], [], message, mail, emails)
 
     flash('Participants sucessfully notified', 'success')

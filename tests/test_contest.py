@@ -45,9 +45,20 @@ def test_contest(client, database):
                             'description': 'a short fun problem 2',
                             'hint': 'try looking at the title 2',
                             'point_value': 2,
-                            'category': 'web'
+                            'category': 'web',
+                            'draft': True
                         })
     assert result.status_code == 302
+
+    result = client.get('/contest/testingcontest/drafts')
+    assert result.status_code == 200
+    assert b'Draft' in result.data
+
+    client.get('/contest/testingcontest/problem/helloworldtesting/publish')
+
+    result = client.post('/contest/testingcontest/notify', data = {'subject': 'test subject', 'message': 'test message'}, follow_redirects = True)
+    assert result.status_code == 200
+    assert b'sucessfully notified' in result.data
     client.get('/logout')
 
     database.execute("INSERT INTO 'users' VALUES(2, 'normal_user', 'pbkdf2:sha256:150000$XoLKRd3I$2dbdacb6a37de2168298e419c6c54e768d242aee475aadf1fa9e6c30aa02997f', 'e', datetime('now'), 0, 0, 1, 0);")
@@ -56,5 +67,18 @@ def test_contest(client, database):
     assert result.status_code == 200
     assert b'a short fun problem' in result.data
 
+    result = client.post('/contest/testingcontest/problem/helloworldtesting', data = {'flag': 'ctf{hello}'}, follow_redirects = True)
+    assert result.status_code == 200
+    assert b'Congratulations' in result.data
+    client.get('/logout')
+
+    client.post('/login', data = {'username': 'admin', 'password': 'CTFOJadmin'})
+    result = client.post('/contest/testingcontest/problem/helloworldtesting/export', follow_redirects = True)
+    assert result.status_code == 200
+    assert b'exported' in result.data
+
+    client.post('/admin/deletecontest/testingcontest', follow_redirects = True)
+    assert result.status_code == 200
+        
     shutil.rmtree('dl')
-    shutil.rmtree('metadata/contests/testingcontest')
+    shutil.rmtree('metadata/problems/testingcontest-helloworldtesting')
