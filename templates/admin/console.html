@@ -22,9 +22,12 @@
 <a class="btn btn-primary" href="/problems/draft" role="button">Draft Problems</a>
 <hr>
 <p>The only thing maintenance mode should be used for is to make significant changes to the database that requires nobody writes to it during that time, as well as 5 minutes before a reboot to let users know that the site will be down momentarily. If the application is rebooted, maintenance mode will turn itself off.</p>
-{% if maintenance_mode %}
-    <a class="btn btn-primary" href="/admin/maintenance" role="button">Disable Maintenance Mode</a>
-{% else %}
-    <a class="btn btn-primary" href="/admin/maintenance" role="button">Enable Maintenance Mode</a>
-{% endif %}
+<form action="/admin/maintenance" method="POST">
+    {% if maintenance_mode %}
+        <input type="submit" class="btn btn-primary" value="Disable Maintenance Mode">
+    {% else %}
+        <input type="submit" class="btn btn-primary" value="Enable Maintenance Mode">
+    {% endif %}
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+</form>
 {% endblock %}

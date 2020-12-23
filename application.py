@@ -1016,7 +1016,7 @@ def problem_editeditorial(problem_id):
     return redirect("/problem/" + problem_id)
 
 
-@app.route('/problem/<problem_id>/delete')
+@app.route('/problem/<problem_id>/delete', methods=["POST"])
 @admin_required
 def delete_problem(problem_id):
     data = db.execute("SELECT * FROM problems WHERE id=:pid", pid=problem_id)
@@ -1190,48 +1190,93 @@ def createproblem():
     return redirect("/problem/" + problem_id)
 
 
-@app.route("/admin/ban")
+@app.route("/admin/ban", methods=["POST"])
 @admin_required
 def ban():
-    user_id = request.args.get("user_id")
+    user_id = request.form.get("user_id")
     if not user_id:
-        return "Must provide user ID"
+        flash("Must provide user ID", "danger")
+        return redirect("/admin/users")
 
     user = db.execute("SELECT * FROM users WHERE id=:id", id=user_id)
 
     if len(user) == 0:
-        return "That user doesn't exist!"
+        flash("That user doesn't exist", "danger")
+        return redirect("/admin/users")
 
     user_id = int(user_id)
     user = user[0]
 
     if user_id == session["user_id"]:
-        return "Cannot ban yourself!"
+        flash("Cannot ban yourself", "danger")
+        return redirect("/admin/users")
 
     if user["admin"] and session["user_id"] != 1:
-        return "Only the super-admin can ban admins"
+        flash("Only the super-admin can ban admins", "danger")
+        return redirect("/admin/users")
 
     db.execute("UPDATE users SET banned=:status WHERE id=:id",
                status=not user["banned"], id=user_id)
 
     if user["banned"]:
-        return "Successfully unbanned " + user["username"]
+        flash("Successfully unbanned " + user["username"], "success")
     else:
-        return "Successfully banned " + user["username"]
+        flash("Successfully banned " + user["username"], "success")
+
+    return redirect("/admin/users")
 
 
-@app.route("/admin/resetpass")
+@app.route("/admin/resetpass", methods=["POST"])
 @admin_required
 def reset_password():
-    user_id = request.args.get("user_id")
+    user_id = request.form.get("user_id")
     if not user_id:
-        return "Must provide user ID", 400
+        flash("Must provide user ID", "danger")
+        return redirect("/admin/users")
+
+    user = db.execute("SELECT * FROM users WHERE id=:id", id=user_id)
+
+    if len(user) == 0:
+        flash("That user doesn't exist", "danger")
+        return redirect("/admin/users")
 
     password = generate_password()
     db.execute("UPDATE users SET password=:p WHERE id=:id",
                p=generate_password_hash(password), id=user_id)
 
-    return "New password is " + password
+    flash("Password for " + user[0]["username"] + " resetted! Their new password is " + password, "success")
+    return redirect("/admin/users")
+
+
+@app.route("/admin/makeadmin", methods=["POST"])
+@admin_required
+def makeadmin():
+    user_id = request.form.get("user_id")
+    if not user_id:
+        flash("Must provide user ID", "danger")
+        return redirect("/admin/users")
+
+    user = db.execute("SELECT * FROM users WHERE id=:id", id=user_id)
+
+    if len(user) == 0:
+        flash("That user doesn't exist", "danger")
+        return redirect("/admin/users")
+
+    user_id = int(user_id)
+    admin_status = user[0]["admin"]
+
+    if admin_status and session["user_id"] != 1:
+        flash("Only the super-admin can revoke admin status", "danger")
+        return redirect("/admin/users")
+
+    if admin_status and session["user_id"] == 1:
+        db.execute("UPDATE users SET admin=0 WHERE id=:id", id=user_id)
+        flash("Admin privileges for " + user[0]["username"] + " revoked", "success")
+        return redirect("/admin/users")
+    else:
+        db.execute("UPDATE users SET admin=1 WHERE id=:id", id=user_id)
+        flash("Admin privileges for " + user[0]["username"] + " granted", "success")
+        return redirect("/admin/users")
 
 
 @app.route("/admin/createannouncement", methods=["GET", "POST"])
@@ -1297,35 +1342,6 @@ def delete_contest(contest_id):
 
     flash('Contest successfully deleted', 'success')
     return redirect("/contests")
-
-
-@app.route("/admin/makeadmin")
-@admin_required
-def makeadmin():
-    user_id = request.args.get("user_id")
-    if not user_id:
-        return "Must provide user ID", 400
-
-    admin_status = db.execute("SELECT admin FROM users WHERE id=:id", id=user_id)
-
-    if len(admin_status) != 1:
-        return "That user doesn't exist!"
-
-    user_id = int(user_id)
-    admin_status = admin_status[0]["admin"]
-
-    if admin_status and session["user_id"] != 1:
-        return "Only the super-admin can revoke admin status"
-
-    if admin_status and user_id == 1:
-        return "Cannot revoke super-admin's admin status"
-
-    if admin_status and session["user_id"] == 1:
-        db.execute("UPDATE users SET admin=0 WHERE id=:id", id=user_id)
-        return "Admin privileges for user with ID " + str(user_id) + " revoked"
-
-    db.execute("UPDATE users SET admin=1 WHERE id=:id", id=user_id)
-    return "Admin privileges for user with ID " + str(user_id) + " granted"
 
 
 @app.route('/admin/editannouncement/<aid>', methods=["GET", "POST"])
@@ -1409,7 +1425,7 @@ def editcontest(contest_id):
     return redirect("/contests")
 
 
-@app.route("/admin/maintenance")
+@app.route("/admin/maintenance", methods=["POST"])
 @admin_required
 def maintenance():
     global maintenance_mode

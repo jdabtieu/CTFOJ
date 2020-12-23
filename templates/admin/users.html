@@ -4,7 +4,13 @@
 
 {% block main %}
 <h1>Users</h1>
-<div id="confirm" style="cursor: pointer;"></div>
+<div id="confirm" style="display: none; ">
+    <form method="post" style="margin-bottom: 1rem;">
+        <input class="btn btn-danger" type="submit">
+        <input type="hidden" name="user_id">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+    </form>
+</div>
 <div style="overflow-x: auto;">
     <table class="table table-hover table-full-width">
         <thead class="thead-dark">
@@ -24,13 +30,13 @@
                 <td>{{ row["email"] }}</td>
                 <td class="dt">{{ row["join_date"] }}</td>
                 <td>
-                    <a href="#" onclick="banmsg(this)">
+                    <a href="#" onclick="ban(this)">
                         <img src="/assets/images/restrict.svg" onerror="this.src='/assets/images/restrict.png'" class="svg-red icon" title="Ban/Unban user"></img>
                     </a>
-                    <a href="#" onclick="resetpassmsg(this)">
+                    <a href="#" onclick="resetpass(this)">
                         <img src="/assets/images/key.svg" onerror="this.src='/assets/images/key.png'" class="icon" title="Reset password"></img>
                     </a>
-                    <a href="#" onclick="adminmsg(this)">
+                    <a href="#" onclick="admin(this)">
                         <img src="/assets/images/arrow-up.svg" onerror="this.src='/assets/images/arrow-up.png'" class="svg-green icon" title="Grant/Revoke admin"></img>
                     </a>
                 </td>
@@ -40,73 +46,32 @@
     </table>
 </div>
 <script>
+    function createForm(msg, path, user_id) {
+        $("#confirm").css("display", "");
+        $("#confirm .btn").attr("value", msg)
+        $("#confirm form").attr("action", path);
+        $("#confirm input[name=user_id]").attr("value", user_id);
+    }
+
     function ban(e) {
-        var user_id = e.getAttribute("userid");
-        $.get("/admin/ban?user_id=" + user_id, data => {
-            $(".userid").filter(function() {
-                return $(this).text() === user_id;
-            }).parent().find(".username")
-                       .css("color", data.includes("Successfully banned") ? "red" : "");
-            alert(data)
-        })
-        e.innerHTML = "";
+        var username = $(e).parent().parent().find(".username").html();
+        var user_id = $(e).parent().parent().find(".userid").html();
+        var msg = `Are you sure you want to ban/unban ${username}? Click here to confirm.`;
+        createForm(msg, "/admin/ban", user_id);
     }
 
     function resetpass(e) {
-        var user_id = e.getAttribute("userid");
-        $.get("/admin/resetpass?user_id=" + user_id, data => {
-            navigator.clipboard.writeText(data);
-            alert(data + " (copied to clipboard)")
-        })
-        e.innerHTML = "";
+        var username = $(e).parent().parent().find(".username").html();
+        var user_id = $(e).parent().parent().find(".userid").html();
+        var msg = `Are you sure you want to reset ${username}'s password? Click here to confirm.`;
+        createForm(msg, "/admin/resetpass", user_id);
     }
 
     function admin(e) {
-        var user_id = e.getAttribute("userid");
-        $.get("/admin/makeadmin?user_id=" + user_id, data => {
-            $(".userid").filter(function() {
-                return $(this).text() === user_id;
-            }).parent().find(".username")
-                       .css("font-weight", data.includes("revoked") ? "" : "bold");
-            alert(data)
-        })
-        e.innerHTML = "";
-    }
-
-    function banmsg(e) {
         var username = $(e).parent().parent().find(".username").html();
-        var userid = $(e).parent().parent().find(".userid").html();
-        var msg = `
-            <div class="alert alert-danger show" role="alert">
-                Are you sure you want to ban/unban ${username}? Click this message to confirm.
-            </div>`;
-        $("#confirm").html(msg)
-                     .attr("userid", userid)
-                     .attr("onclick", "ban(this)");
-    }
-
-    function resetpassmsg(e) {
-        var username = $(e).parent().parent().find(".username").html();
-        var userid = $(e).parent().parent().find(".userid").html();
-        var msg = `
-            <div class="alert alert-danger show" role="alert">
-                Are you sure you want to reset ${username}'s password? Click this message to confirm.
-            </div>`;
-        $("#confirm").html(msg)
-                     .attr("userid", userid)
-                     .attr("onclick", "resetpass(this)");
-    }
-
-    function adminmsg(e) {
-        var username = $(e).parent().parent().find(".username").html();
-        var userid = $(e).parent().parent().find(".userid").html();
-        var msg = `
-            <div class="alert alert-danger show" role="alert">
-                Are you sure you want to grant/revoke admin to ${username}? Click this message to confirm.
-            </div>`;
-        $("#confirm").html(msg)
-                     .attr("userid", userid)
-                     .attr("onclick", "admin(this)");
+        var user_id = $(e).parent().parent().find(".userid").html();
+        var msg = `Are you sure you want to grant/revoke admin to ${username}? Click here to confirm.`;
+        createForm(msg, "/admin/makeadmin", user_id);
     }
 </script>
 {% endblock %}
