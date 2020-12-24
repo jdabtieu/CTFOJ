@@ -1,4 +1,5 @@
 import os
+import sys
 
 def test_admin(client, database):
     '''Test that non-admins are barred from admin pages, and admins can access them.'''
@@ -64,6 +65,10 @@ def test_admin(client, database):
     assert b'revoked' in result.data
 
     # Test announcements creation and editing
+    try:
+        os.mkdir('metadata/announcements')
+    except Exception as e:
+        sys.stderr.write(str(e))
     result = client.post('/admin/createannouncement', data = {'name': 'testing', 'description': 'testing announcement'}, follow_redirects = True)
     assert result.status_code == 200
     assert b'successfully created' in result.data
