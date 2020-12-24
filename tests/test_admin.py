@@ -66,7 +66,7 @@ def test_admin(client, database):
 
     # Test announcements creation and editing
     try:
-        os.mkdir('metadata/announcements')
+        os.makedirs('metadata/announcements/')
     except Exception as e:
         sys.stderr.write(str(e))
     result = client.post('/admin/createannouncement', data = {'name': 'testing', 'description': 'testing announcement'}, follow_redirects = True)
