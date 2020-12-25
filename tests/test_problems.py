@@ -21,13 +21,18 @@ def test_problem(client, database):
                             'description': 'a short fun problem',
                             'hint': 'try looking at the title',
                             'point_value': 1,
-                            'category': 'general', 
+                            'category': 'general',
                             'flag': 'ctf{hello}',
-                            'file': ('test_upload.txt', 'test_upload.txt')
+                            'file': ('test_upload.txt', 'test_upload.txt'),
+                            'draft': True
                         })
     os.remove('test_upload.txt')
     assert result.status_code == 302
 
+    result = client.get('/problem/helloworldtesting/publish', follow_redirects = True)
+    assert result.status_code == 200
+    assert b'published' in result.data
+    
     result = client.post('/problem/helloworldtesting/edit',
                          data = {
                             'name': 'hello world 2',
@@ -45,6 +50,11 @@ def test_problem(client, database):
     result = client.get('/problem/helloworldtesting')
     assert result.status_code == 200
     assert b'a short fun problem' in result.data
+
+    # test if normal users can submit to the problem
+    result = client.post('/problem/helloworldtesting', data = {'flag': 'ctf{hello}'}, follow_redirects = True)
+    assert result.status_code == 200
+    assert b'Congratulations' in result.data
 
     # test if nonexistent problems don't exist
     result = client.get('/problem/idontexist', follow_redirects = True)
