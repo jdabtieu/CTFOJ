@@ -20,4 +20,4 @@ def test_register(client, database):
     ).decode('utf-8')
 
     result = client.get(f'/confirmregister/{token}')
-    assert 302 == 302
+    assert result.status_code == 302
