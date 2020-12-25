@@ -10,6 +10,7 @@ def client():
     app.config['TESTING'] = True
     app.config['USE_CAPTCHA'] = False
     app.config['WTF_CSRF_ENABLED'] = False
+    app.config['SECRET_KEY'] = 'testing_secret_key'
     return app.test_client()
 
 @pytest.fixture
