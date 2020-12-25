@@ -250,8 +250,8 @@ def register():
                username=request.form.get("username"),
                password=generate_password_hash(request.form.get("password")),
                email=request.form.get("email"))
-
-    send_email('Confirm Your CTF Account',
+    if not app.config['TESTING']:
+        send_email('Confirm Your CTF Account',
                app.config['MAIL_DEFAULT_SENDER'], [email], text, mail)
 
     flash('An account creation confirmation email has been sent to the email address you provided. Be sure to check your spam folder!', 'success')
