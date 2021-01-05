@@ -625,7 +625,7 @@ def contest_problem(contest_id, problem_id):
     return render_template("contest/contest_problem.html", data=check[0])
 
 
-@app.route("/contest/<contest_id>/problem/<problem_id>/publish")
+@app.route("/contest/<contest_id>/problem/<problem_id>/publish", methods=["POST"])
 @admin_required
 def publish_contest_problem(contest_id, problem_id):
     # Ensure contest and problem exist
@@ -908,7 +908,7 @@ def problem(problem_id):
     return render_template('problem/problem.html', data=data[0])
 
 
-@app.route('/problem/<problem_id>/publish')
+@app.route('/problem/<problem_id>/publish', methods=["POST"])
 @admin_required
 def publish_problem(problem_id):
     data = db.execute("SELECT * FROM problems WHERE id=:problem_id",
@@ -1268,6 +1268,10 @@ def makeadmin():
 
     if admin_status and session["user_id"] != 1:
         flash("Only the super-admin can revoke admin status", "danger")
+        return redirect("/admin/users")
+
+    if admin_status and user_id == 1:
+        flash("Cannot revoke super-admin privileges", "danger")
         return redirect("/admin/users")
 
     if admin_status and session["user_id"] == 1:

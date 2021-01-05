@@ -4,6 +4,14 @@
 
 {% block main %}
 <h1>{{ data["name"] }}</h1>
+{% if session["admin"] %}
+    <div id="confirm" style="display: none;">
+        <form method="post" style="margin-bottom: 1rem;" action="{{ request.path }}/publish">
+            <input class="btn btn-danger" type="submit" value="Are you sure you want to publish this problem? Click here to confirm.">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        </form>
+    </div>
+{% endif %}
 <div class="flex">
     <div style="flex: 3; padding: 4px; word-break: break-word;">
         <div id=description class="showdown">
@@ -33,7 +41,7 @@
                 <br><a href="/admin/submissions?contest_id={{ request.path.split("/")[2] }}&problem_id={{ request.path.split("/")[4] }}">View submissions</a>
                 <br><a href="{{ request.path }}/edit">Edit problem</a>
                 {% if data["draft"] %}
-                    <br><a href="{{ request.path }}/publish">Publish problem</a>
+                    <br><a href="#" onclick="$('.confirm').css('display', '')">Publish problem</a>
                 {% endif %}
                 <br><a href="{{ request.path }}/export">Export problem</a>
             {% endif %}

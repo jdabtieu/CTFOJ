@@ -20,7 +20,7 @@
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 </form>
 <script>
-	$(() => {
+    $(() => {
         var product = converter.makeHtml(document.getElementById('description').value);
         $('#description-out').html(product);
         $('#description').css('height', $('#description-out').css('height'));
