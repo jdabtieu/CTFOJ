@@ -29,7 +29,7 @@ def test_problem(client, database):
     os.remove('test_upload.txt')
     assert result.status_code == 302
 
-    result = client.get('/problem/helloworldtesting/publish', follow_redirects = True)
+    result = client.post('/problem/helloworldtesting/publish', follow_redirects = True)
     assert result.status_code == 200
     assert b'published' in result.data
     
