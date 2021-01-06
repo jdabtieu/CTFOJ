@@ -168,7 +168,7 @@ def login():
 
         if not app.config['TESTING']:
             send_email('Confirm Your CTF Login',
-                   app.config['MAIL_DEFAULT_SENDER'], [email], text, mail)
+                    app.config['MAIL_DEFAULT_SENDER'], [email], text, mail)
 
         flash('A login confirmation email has been sent to the email address you provided. Be sure to check your spam folder!', 'success')
         return render_template("login.html", site_key=app.config['HCAPTCHA_SITE'])
@@ -252,7 +252,7 @@ def register():
                email=request.form.get("email"))
     if not app.config['TESTING']:
         send_email('Confirm Your CTF Account',
-               app.config['MAIL_DEFAULT_SENDER'], [email], text, mail)
+                app.config['MAIL_DEFAULT_SENDER'], [email], text, mail)
 
     flash('An account creation confirmation email has been sent to the email address you provided. Be sure to check your spam folder!', 'success')
     return render_template("register.html", site_key=app.config['HCAPTCHA_SITE'])
@@ -284,6 +284,7 @@ def confirm_register(token):
     session["admin"] = False  # ensure no one can get admin right after registering
 
     return redirect("/problem/helloworld")
+
 
 @app.route('/confirmlogin/<token>')
 def confirm_login(token):
@@ -405,7 +406,7 @@ def forgotpassword():
                                username=rows[0]["username"], token=token)
         if not app.config['TESTING']:
             send_email('Reset Your CTF Password',
-                   app.config['MAIL_DEFAULT_SENDER'], [email], text, mail)
+                    app.config['MAIL_DEFAULT_SENDER'], [email], text, mail)
 
     flash('If there is an account associated with that email, a password reset email has been sent', 'success')
     return render_template("forgotpassword.html")
@@ -512,6 +513,7 @@ def contest(contest_id):
     return render_template("contest/contest.html", title=title, scoreboard=scoreboard,
                            data=data)
 
+
 @app.route("/contest/<contest_id>/notify", methods=['GET', 'POST'])
 @admin_required
 def contest_notify(contest_id):
@@ -531,11 +533,11 @@ def contest_notify(contest_id):
                       cid=contest_id)
     emails = [participant["email"] for participant in data]
     if not app.config['TESTING']:
-        send_email(subject,
-               app.config['MAIL_DEFAULT_SENDER'], [], message, mail, emails)
+        send_email(subject, app.config['MAIL_DEFAULT_SENDER'], [], message, mail, emails)
 
     flash('Participants sucessfully notified', 'success')
     return redirect("/contest/" + contest_id)
+
 
 @app.route("/contest/<contest_id>/drafts")
 @admin_required
@@ -1035,10 +1037,12 @@ def delete_problem(problem_id):
     flash('Problem successfully deleted', 'success')
     return redirect("/problems")
 
+
 @app.route("/admin/console")
 @admin_required
 def admin_console():
     return render_template("admin/console.html", maintenance_mode=maintenance_mode)
+
 
 @csrf.exempt
 @app.route("/admin/submissions")

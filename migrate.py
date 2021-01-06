@@ -3,6 +3,7 @@ import shutil
 import sys
 
 msg = """Before migrating, please confirm the following:
+ - You are on v1.1.0 or v1.2.0 (older version please update to one of these first, new version no migrate necessary)
  - You have shut down the app. (Maintenance mode does not count)
  - You have made a backup of the database
  - You have write permissions in the current directory

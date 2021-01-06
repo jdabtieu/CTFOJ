@@ -67,8 +67,12 @@ def verify_text(text):
     """
     return bool(re.match(r'^[\w\-]+$', text))
 
+
 def check_captcha(secret, response, sitekey):
-    captcha = requests.post('https://hcaptcha.com/siteverify', data = {
+    """
+    Verify the site captcha
+    """
+    captcha = requests.post('https://hcaptcha.com/siteverify', data={
         'secret': secret,
         'response': response,
         'sitekey': sitekey
