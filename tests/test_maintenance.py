@@ -32,6 +32,6 @@ def test_maintenance(client, database):
         'username': 'admin',
         'password': 'CTFOJadmin'
     }, follow_redirects=True)
-    result = client.get('/admin/maintenance', follow_redirects=True)
+    result = client.post('/admin/maintenance', follow_redirects=True)
     assert result.status_code == 200
     assert b'Disabled' in result.data  # disable mode for other tests
