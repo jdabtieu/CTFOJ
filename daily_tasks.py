@@ -22,4 +22,4 @@ if os.path.exists('logs/application.log'):
     except Exception as e:
         sys.stderr.write(str(e))
         sys.stderr.write(('Could not remove old application log. '
-        				  'Log will be appended at next program start.'))
+                          'Log will be appended at next program start.'))

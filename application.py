@@ -168,7 +168,7 @@ def login():
 
         if not app.config['TESTING']:
             send_email('Confirm Your CTF Login',
-                    app.config['MAIL_DEFAULT_SENDER'], [email], text, mail)
+                       app.config['MAIL_DEFAULT_SENDER'], [email], text, mail)
 
         flash('A login confirmation email has been sent to the email address you provided. Be sure to check your spam folder!', 'success')
         return render_template("login.html", site_key=app.config['HCAPTCHA_SITE'])
@@ -252,7 +252,7 @@ def register():
                email=request.form.get("email"))
     if not app.config['TESTING']:
         send_email('Confirm Your CTF Account',
-                app.config['MAIL_DEFAULT_SENDER'], [email], text, mail)
+                   app.config['MAIL_DEFAULT_SENDER'], [email], text, mail)
 
     flash('An account creation confirmation email has been sent to the email address you provided. Be sure to check your spam folder!', 'success')
     return render_template("register.html", site_key=app.config['HCAPTCHA_SITE'])
@@ -406,7 +406,7 @@ def forgotpassword():
                                username=rows[0]["username"], token=token)
         if not app.config['TESTING']:
             send_email('Reset Your CTF Password',
-                    app.config['MAIL_DEFAULT_SENDER'], [email], text, mail)
+                       app.config['MAIL_DEFAULT_SENDER'], [email], text, mail)
 
     flash('If there is an account associated with that email, a password reset email has been sent', 'success')
     return render_template("forgotpassword.html")
@@ -672,15 +672,17 @@ def edit_contest_problem(contest_id, problem_id):
 
     # Reached via POST
 
-    if not request.form.get("name") or not request.form.get("description") or not request.form.get("category") or not request.form.get("point_value"):
-        flash('You have not entered all required fields', 'danger'), 400
-        return render_template('problem/editproblem.html', data=data[0])
-
     new_name = request.form.get("name")
-    new_description = request.form.get("description").replace('\r', '')
+    new_description = request.form.get("description")
     new_hint = request.form.get("hints")
     new_category = request.form.get("category")
     new_points = request.form.get("point_value")
+
+    if not new_name or not new_description or not new_category or not new_points:
+        flash('You have not entered all required fields', 'danger'), 400
+        return render_template('problem/editproblem.html', data=data[0])
+
+    new_description = new_description.replace('\r', '')
     if not new_hint:
         new_hint = ""
 
@@ -688,8 +690,8 @@ def edit_contest_problem(contest_id, problem_id):
                name=new_name, category=new_category, pv=new_points,
                cid=contest_id, pid=problem_id)
 
-    write_file('metadata/contests/' + contest_id + '/' + problem_id + '/description.md', new_description)
-    write_file('metadata/contests/' + contest_id + '/' + problem_id + '/hints.md', new_hint)
+    write_file(f'metadata/contests/{contest_id}/{problem_id}/description.md', new_description)  # noqa
+    write_file(f'metadata/contests/{contest_id}/{problem_id}/hints.md', new_hint)
 
     flash('Problem successfully edited', 'success')
     return redirect(request.path[:-5])
@@ -734,7 +736,17 @@ def contest_add_problem(contest_id):
         return render_template("admin/createproblem.html")
 
     # Reached via POST
-    if not request.form.get("id") or not request.form.get("name") or not request.form.get("description") or not request.form.get("point_value") or not request.form.get("category") or not request.form.get("flag"):
+
+    problem_id = request.form.get("id")
+    name = request.form.get("name")
+    description = request.form.get("description")
+    hints = request.form.get("hints")
+    point_value = request.form.get("point_value")
+    category = request.form.get("category")
+    flag = request.form.get("flag")
+    draft = 1 if request.form.get("draft") else 0
+
+    if not problem_id or not name or not description or not point_value or not category or not flag:
         flash('You have not entered all required fields', 'danger'), 400
         return render_template("admin/createproblem.html"), 400
 
@@ -743,14 +755,7 @@ def contest_add_problem(contest_id):
         flash('Invalid problem ID', 'danger')
         return render_template("admin/createproblem.html"), 400
 
-    problem_id = request.form.get("id")
-    name = request.form.get("name")
-    description = request.form.get("description").replace('\r', '')
-    hints = request.form.get("hints")
-    point_value = request.form.get("point_value")
-    category = request.form.get("category")
-    flag = request.form.get("flag")
-    draft = 1 if request.form.get("draft") else 0
+    description = description.replace('\r', '')
 
     # Ensure problem does not already exist
     problem_info = db.execute("SELECT * FROM contest_problems WHERE contest_id=:cid AND (problem_id=:pid OR name=:name)",
@@ -771,7 +776,8 @@ def contest_add_problem(contest_id):
 
     # Modify problems table
     db.execute("INSERT INTO contest_problems(contest_id, problem_id, name, point_value, category, flag, draft) VALUES(:cid, :pid, :name, :point_value, :category, :flag, :draft)",
-               cid=contest_id, pid=problem_id, name=name, point_value=point_value, category=category, flag=flag, draft=draft)
+               cid=contest_id, pid=problem_id, name=name, point_value=point_value,
+               category=category, flag=flag, draft=draft)
 
     os.makedirs(f'metadata/contests/{contest_id}/{problem_id}')
     write_file(f'metadata/contests/{contest_id}/{problem_id}/description.md', description)
@@ -970,15 +976,17 @@ def editproblem(problem_id):
 
     # Reached via POST
 
-    if not request.form.get("name") or not request.form.get("description") or not request.form.get("category") or not request.form.get("point_value"):
-        flash('You have not entered all required fields', 'danger'), 400
-        return render_template('problem/editproblem.html', data=data[0])
-
     new_name = request.form.get("name")
-    new_description = request.form.get("description").replace('\r', '')
+    new_description = request.form.get("description")
     new_hint = request.form.get("hints")
     new_category = request.form.get("category")
     new_points = request.form.get("point_value")
+
+    if not new_name or not new_description or not new_category or not new_points:
+        flash('You have not entered all required fields', 'danger'), 400
+        return render_template('problem/editproblem.html', data=data[0])
+
+    new_description = new_description.replace('\r', '')
     if not new_hint:
         new_hint = ""
 
@@ -1104,7 +1112,7 @@ def admin_createcontest():
     contest_name = request.form.get("contest_name")
 
     # Ensure contest doesn't already exist
-    check = db.execute("SELECT * FROM contests WHERE id=:contest_id OR name=:contest_name",
+    check = db.execute("SELECT * FROM contests WHERE id=:contest_id OR name=:contest_name",  ## noqa E501
                        contest_id=contest_id, contest_name=contest_name)
     if len(check) != 0:
         flash('A contest with that name or ID already exists', 'danger')
@@ -1466,6 +1474,7 @@ for code in default_exceptions:
 @app.route("/teapot")
 def teapot():
     return render_template("error/418.html"), 418
+
 
 # Security headers
 @app.after_request

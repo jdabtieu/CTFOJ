@@ -5,6 +5,7 @@ from cs50 import SQL
 
 from application import app
 
+
 @pytest.fixture
 def client():
     app.config['TESTING'] = True
@@ -12,6 +13,7 @@ def client():
     app.config['WTF_CSRF_ENABLED'] = False
     app.config['SECRET_KEY'] = 'testing_secret_key'
     return app.test_client()
+
 
 @pytest.fixture
 def database():

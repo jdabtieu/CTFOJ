@@ -1,11 +1,12 @@
 import os
 import sys
 
+
 def test_admin(client, database):
     '''Test that non-admins are barred from admin pages, and admins can access them.'''
     # Admins should be able to view the page
     database.execute("INSERT INTO 'users' VALUES(1, 'admin', 'pbkdf2:sha256:150000$XoLKRd3I$2dbdacb6a37de2168298e419c6c54e768d242aee475aadf1fa9e6c30aa02997f', 'e', datetime('now'), 1, 0, 1, 0);")
-    client.post('/login', data = {'username': 'admin', 'password': 'CTFOJadmin'})
+    client.post('/login', data={'username': 'admin', 'password': 'CTFOJadmin'})
     result = client.get('/admin/users')
     assert result.status_code == 200
     assert b'Users' in result.data
@@ -29,7 +30,10 @@ def test_admin(client, database):
 
     # Normal users should be redirected to home
     database.execute("INSERT INTO 'users' VALUES(2, 'normal_user', 'pbkdf2:sha256:150000$XoLKRd3I$2dbdacb6a37de2168298e419c6c54e768d242aee475aadf1fa9e6c30aa02997f', 'e', datetime('now'), 0, 0, 1, 0);")
-    result_user = client.post('/login', data = {'username': 'normal_user', 'password': 'CTFOJadmin'}, follow_redirects = True)
+    result_user = client.post('/login', data={
+        'username': 'normal_user',
+        'password': 'CTFOJadmin'
+    }, follow_redirects=True)
     print(result_user.data)
     assert b'Welcome' in result_user.data
     result_user = client.get('/admin/users')
@@ -43,24 +47,24 @@ def test_admin(client, database):
     assert b'Log In' in result_nouser.data
 
     # Admins should be able to ban and unban people
-    client.post('/login', data = {'username': 'admin', 'password': 'CTFOJadmin'})
-    result = client.post('/admin/ban', data = {'user_id': 2}, follow_redirects = True)
+    client.post('/login', data={'username': 'admin', 'password': 'CTFOJadmin'})
+    result = client.post('/admin/ban', data={'user_id': 2}, follow_redirects=True)
     assert result.status_code == 200
     assert b'Successfully banned' in result.data
-    result = client.post('/admin/ban', data = {'user_id': 2}, follow_redirects = True)
+    result = client.post('/admin/ban', data={'user_id': 2}, follow_redirects=True)
     assert result.status_code == 200
     assert b'Successfully unbanned' in result.data
 
     # Test password reset feature
-    result = client.post('/admin/resetpass', data = {'user_id': 2}, follow_redirects = True)
+    result = client.post('/admin/resetpass', data={'user_id': 2}, follow_redirects=True)
     assert result.status_code == 200
     assert b'resetted' in result.data
 
     # Test make admin feature
-    result = client.post('/admin/makeadmin', data = {'user_id': 2}, follow_redirects = True)
+    result = client.post('/admin/makeadmin', data={'user_id': 2}, follow_redirects=True)
     assert result.status_code == 200
     assert b'granted' in result.data
-    result = client.post('/admin/makeadmin', data = {'user_id': 2}, follow_redirects = True)
+    result = client.post('/admin/makeadmin', data={'user_id': 2}, follow_redirects=True)
     assert result.status_code == 200
     assert b'revoked' in result.data
 
@@ -69,10 +73,16 @@ def test_admin(client, database):
         os.makedirs('metadata/announcements/')
     except Exception as e:
         sys.stderr.write(str(e))
-    result = client.post('/admin/createannouncement', data = {'name': 'testing', 'description': 'testing announcement'}, follow_redirects = True)
+    result = client.post('/admin/createannouncement', data={
+        'name': 'testing',
+        'description': 'testing announcement'
+    }, follow_redirects=True)
     assert result.status_code == 200
     assert b'successfully created' in result.data
-    result = client.post('/admin/editannouncement/1', data = {'name': 'testing', 'description': 'new testing announcement'}, follow_redirects = True)
+    result = client.post('/admin/editannouncement/1', data={
+        'name': 'testing',
+        'description': 'new testing announcement'
+    }, follow_redirects=True)
     assert result.status_code == 200
     assert b'successfully edited' in result.data
     os.remove('metadata/announcements/1.md')

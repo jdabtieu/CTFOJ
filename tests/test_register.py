@@ -2,15 +2,15 @@ import jwt
 
 from datetime import datetime, timedelta
 
+
 def test_register(client, database):
     '''Test the registration process for users.'''
-    result = client.post('/register',
-                         data={
-                            'username': 'testing',
-                            'password': 'testingpass',
-                            'confirmation': 'testingpass',
-                            'email': 'testingemail@email.com'
-                        }, follow_redirects=True)
+    result = client.post('/register', data={
+        'username': 'testing',
+        'password': 'testingpass',
+        'confirmation': 'testingpass',
+        'email': 'testingemail@email.com'
+    }, follow_redirects=True)
 
     assert result.status_code == 200
     assert b'account creation' in result.data

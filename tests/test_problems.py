@@ -18,33 +18,31 @@ def test_problem(client, database):
     file = open("test_upload.txt", "w")
     file.write('ree')
     file.close()
-    result = client.post('/admin/createproblem',
-                         data={
-                            'id': 'helloworldtesting',
-                            'name': 'hello world',
-                            'description': 'a short fun problem',
-                            'hint': 'try looking at the title',
-                            'point_value': 1,
-                            'category': 'general',
-                            'flag': 'ctf{hello}',
-                            'file': ('test_upload.txt', 'test_upload.txt'),
-                            'draft': True
-                        })
+    result = client.post('/admin/createproblem', data={
+        'id': 'helloworldtesting',
+        'name': 'hello world',
+        'description': 'a short fun problem',
+        'hint': 'try looking at the title',
+        'point_value': 1,
+        'category': 'general',
+        'flag': 'ctf{hello}',
+        'file': ('test_upload.txt', 'test_upload.txt'),
+        'draft': True
+    })
     os.remove('test_upload.txt')
     assert result.status_code == 302
 
-    result = client.post('/problem/helloworldtesting/publish', follow_redirects = True)
+    result = client.post('/problem/helloworldtesting/publish', follow_redirects=True)
     assert result.status_code == 200
     assert b'published' in result.data
 
-    result = client.post('/problem/helloworldtesting/edit',
-                         data={
-                            'name': 'hello world 2',
-                            'description': 'a short fun problem 2',
-                            'hint': 'try looking at the title 2',
-                            'point_value': 2,
-                            'category': 'web'
-                        })
+    result = client.post('/problem/helloworldtesting/edit', data={
+        'name': 'hello world 2',
+        'description': 'a short fun problem 2',
+        'hint': 'try looking at the title 2',
+        'point_value': 2,
+        'category': 'web'
+    })
     assert result.status_code == 302
     client.get('/logout')
 

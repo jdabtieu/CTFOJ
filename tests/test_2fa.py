@@ -5,11 +5,11 @@ def test_2fa(client, database):
     result = client.get('/confirmlogin/badtoken')
     assert b'Invalid' in result.data
 
-    client.post('/login', data = {'username': 'admin', 'password': 'CTFOJadmin'})
-    result = client.get('/settings/toggle2fa', follow_redirects = True)
+    client.post('/login', data={'username': 'admin', 'password': 'CTFOJadmin'})
+    result = client.get('/settings/toggle2fa', follow_redirects=True)
     assert result.status_code == 200
     assert b'successfully enabled' in result.data
     client.get('/logout', follow_redirects=True)
 
-    result = client.post('/login', data = {'username': 'admin', 'password': 'CTFOJadmin'})
+    result = client.post('/login', data={'username': 'admin', 'password': 'CTFOJadmin'})
     assert b'confirmation email' in result.data
