@@ -28,3 +28,53 @@ def test_register(client, database):
 
     result = client.get(f'/confirmregister/{token}')
     assert result.status_code == 302
+
+    # Test invalid requests
+    result = client.post('/register', data={
+        'password': 'testingpass',
+        'confirmation': 'testingpass',
+        'email': 'testingemail@email.com'
+    }, follow_redirects=True)
+
+    assert result.status_code == 400
+    assert b'cannot be blank' in result.data
+
+    result = client.post('/register', data={
+        'username': 'testing-()*',
+        'password': 'testingpass',
+        'confirmation': 'testingpass',
+        'email': 'testingemail@email.com'
+    }, follow_redirects=True)
+
+    assert result.status_code == 400
+    assert b'Invalid' in result.data
+
+    result = client.post('/register', data={
+        'username': 'testing',
+        'password': 'e',
+        'confirmation': 'testingpass',
+        'email': 'testingemail@email.com'
+    }, follow_redirects=True)
+
+    assert result.status_code == 400
+    assert b'8 characters' in result.data
+
+    result = client.post('/register', data={
+        'username': 'testing',
+        'password': 'testingpassword',
+        'confirmation': 'testingpass',
+        'email': 'testingemail@email.com'
+    }, follow_redirects=True)
+
+    assert result.status_code == 400
+    assert b'do not match' in result.data
+
+    result = client.post('/register', data={
+        'username': 'testing',
+        'password': 'testingpass',
+        'confirmation': 'testingpass',
+        'email': 'testingemail@email.com'
+    }, follow_redirects=True)
+
+    assert result.status_code == 409
+    assert b'already exists' in result.data
