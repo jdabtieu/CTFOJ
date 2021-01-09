@@ -65,3 +65,6 @@ Furthermore, when regular users log in for the first time, they will be directed
 
 The flag for this problem is: `CTF{your_first_ctf_flag}`
 ```
+
+# Optional Steps
+You may optionally replace the default favicon.png file in the static folder with another icon of your choice (must be named favicon.png
