@@ -110,6 +110,10 @@ td {
     word-break: break-word;
 }
 
+.pagination {
+    overflow-x: auto;
+}
+
 /****************** COLOURS **********************************/
 .white {
     color: #ffffff!important;

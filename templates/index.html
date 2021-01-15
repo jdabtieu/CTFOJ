@@ -25,6 +25,7 @@
         {% endif %}
     </div>
 {% endfor %}
+<div id="pagination"></div>
 <script>
     function deleteAnnouncement(e) {
         var aid = e.getAttribute("aid");
@@ -41,5 +42,7 @@
                      .attr("aid", id)
                      .attr("onclick", "deleteAnnouncement(this)");
     }
+
+    var total_length = {{ length }};
 </script>
 {% endblock %}

@@ -80,14 +80,22 @@ def check_for_maintenance():
 @app.route("/")
 @login_required
 def index():
-    announcements = db.execute("SELECT * FROM announcements ORDER BY id DESC")
-    for i in range(len(announcements)):
-        aid = announcements[i]["id"]
+    page = request.args.get("page")
+    if not page:
+        page = "1"
+    page = (int(page) - 1) * 10
 
-        announcements[i]["description"] = read_file(
+    data = db.execute(
+        "SELECT * FROM announcements ORDER BY id DESC LIMIT 10 OFFSET ?", page)
+    length = len(db.execute("SELECT * FROM announcements"))
+
+    for i in range(len(data)):
+        aid = data[i]["id"]
+
+        data[i]["description"] = read_file(
             'metadata/announcements/' + str(aid) + '.md')
 
-    return render_template("index.html", data=announcements)
+    return render_template("index.html", data=data, length=-(-length // 10))
 
 
 @app.route("/assets/<path:filename>")
@@ -1077,15 +1085,28 @@ def admin_submissions():
         modifier += " correct=? AND"
         args.insert(len(args), request.args.get("correct") == "AC")
 
+    page = request.args.get("page")
+    if not page:
+        page = "1"
+    page = (int(page) - 1) * 50
+
     if len(args) == 0:
-        submissions = db.execute(
-            "SELECT submissions.*, users.username FROM submissions JOIN users ON user_id=users.id")
+        submissions = db.execute(("SELECT submissions.*, users.username FROM submissions "
+                                  "LEFT JOIN users ON user_id=users.id LIMIT 50 "
+                                  "OFFSET ?"), page)
+        length = len(db.execute("SELECT * FROM submissions"))
     else:
         modifier = modifier[:-4]
-        submissions = db.execute(
-            "SELECT submissions.*, users.username FROM submissions JOIN users ON user_id=users.id" + modifier, *args)
+        length = len(db.execute(("SELECT submissions.*, users.username FROM submissions "
+                                 "LEFT JOIN users ON user_id=users.id") + modifier,
+                                *args))
+        args.append(page)
+        submissions = db.execute(("SELECT submissions.*, users.username FROM submissions "
+                                 f"LEFT JOIN users ON user_id=users.id {modifier}"
+                                  " LIMIT 50 OFFSET ?"), *args)
 
-    return render_template("admin/submissions.html", data=submissions)
+    return render_template("admin/submissions.html",
+                           data=submissions, length=-(-length // 50))
 
 
 @app.route("/admin/users")
