@@ -1342,10 +1342,10 @@ def createannouncement():
     return redirect("/")
 
 
-@app.route("/admin/deleteannouncement")
+@app.route("/admin/deleteannouncement", methods=["POST"])
 @admin_required
 def delete_announcement():
-    aid = request.args.get("aid")
+    aid = request.form.get("aid")
     if not aid:
         return "Must provide announcement ID", 400
 
