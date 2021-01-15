@@ -4,6 +4,7 @@
 
 {% block main %}
 <h1>Problems</h1>
+<div id="pagination"></div>
 <div style="overflow-x: auto;">
     <table class="table table-hover table-full-width">
         <thead class="thead-dark">
@@ -32,4 +33,5 @@
         </tbody>
     </table>
 </div>
+<script>var total_length = {{ length }};</script>
 {% endblock %}

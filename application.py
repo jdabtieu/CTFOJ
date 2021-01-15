@@ -857,22 +857,38 @@ def export_contest_problem(contest_id, problem_id):
 @app.route('/problems')
 @login_required
 def problems():
+    page = request.args.get("page")
+    if not page:
+        page = "1"
+    page = (int(page) - 1) * 50
+
     solved_data = db.execute("SELECT problem_id FROM problem_solved WHERE user_id=:uid",
                              uid=session["user_id"])
     solved = set()
     for row in solved_data:
         solved.add(row["problem_id"])
 
-    data = db.execute("SELECT * FROM problems WHERE draft=0 ORDER BY id ASC")
+    data = db.execute(
+        "SELECT * FROM problems WHERE draft=0 ORDER BY id ASC LIMIT 50 OFFSET ?", page)
+    length = len(db.execute("SELECT * FROM problems WHERE draft=0"))
 
-    return render_template('problem/problems.html', data=data, solved=solved)
+    return render_template('problem/problems.html',
+                           data=data, solved=solved, length=-(-length // 50))
 
 
 @app.route('/problems/draft')
 @admin_required
 def draft_problems():
+    page = request.args.get("page")
+    if not page:
+        page = "1"
+    page = (int(page) - 1) * 50
+
+    data = db.execute("SELECT * FROM problems WHERE draft=1 LIMIT 50 OFFSET ?", page)
+    length = len(db.execute("SELECT * FROM problems WHERE draft=1"))
+
     return render_template('problem/draft_problems.html',
-                           data=db.execute("SELECT * FROM problems WHERE draft=1"))
+                           data=data, length=-(-length // 50))
 
 
 @app.route('/problem/<problem_id>', methods=["GET", "POST"])
@@ -1112,7 +1128,14 @@ def admin_submissions():
 @app.route("/admin/users")
 @admin_required
 def admin_users():
-    return render_template("admin/users.html", data=db.execute("SELECT * FROM users"))
+    page = request.args.get("page")
+    if not page:
+        page = "1"
+    page = (int(page) - 1) * 50
+
+    data = db.execute("SELECT * FROM users LIMIT 50 OFFSET ?", page)
+    length = len(db.execute("SELECT * FROM users"))
+    return render_template("admin/users.html", data=data, length=-(-length // 50))
 
 
 @app.route("/admin/createcontest", methods=["GET", "POST"])
