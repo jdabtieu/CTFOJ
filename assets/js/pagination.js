@@ -1,4 +1,4 @@
-if (typeof total_length !== 'undefined') {
+if (typeof total_length !== 'undefined' && total_length > 0) {
     var page = new URL(window.location.href).searchParams.get("page");
     $(() => $('#pagination').twbsPagination({
         totalPages: total_length,
