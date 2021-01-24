@@ -15,7 +15,7 @@ from flask_wtf.csrf import CSRFProtect
 from werkzeug.exceptions import HTTPException, InternalServerError, default_exceptions
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from helpers import *
+from helpers import *  # noqa
 
 app = Flask(__name__)
 maintenance_mode = False
