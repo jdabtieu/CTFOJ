@@ -694,6 +694,15 @@ def edit_contest_problem(contest_id, problem_id):
     if not new_hint:
         new_hint = ""
 
+    old_points = data[0]["point_value"]
+    if old_points != new_points:
+        point_change = int(new_points) - old_points
+        need_update = db.execute("SELECT user_id FROM contest_solved WHERE contest_id=:cid AND problem_id=:pid",
+                    cid=contest_id, pid=problem_id)
+        need_update = [user["user_id"] for user in need_update]
+        db.execute(f"UPDATE contest_users SET points = points + :point_change WHERE contest_id=:cid AND user_id IN ({','.join([str(user) for user in need_update])})",
+                    point_change=point_change, cid=contest_id)
+
     db.execute("UPDATE contest_problems SET name=:name, category=:category, point_value=:pv WHERE contest_id=:cid AND problem_id=:pid",
                name=new_name, category=new_category, pv=new_points,
                cid=contest_id, pid=problem_id)
