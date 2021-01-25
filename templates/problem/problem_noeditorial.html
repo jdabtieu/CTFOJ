@@ -6,9 +6,6 @@
 <h1>Editorial</h1>
 <div>
     The problem with id {{ request.path.split("/")[2] }} does not have an editorial.
+    <a href="{{ request.path[:-10] }}">Back to problem</a>
 </div>
-<script>
-    var path = window.location.pathname;
-    $("main").append(`<a href="${path.substring(0, path.lastIndexOf("/editorial"))}">Back to problem</a>`);
-</script>
 {% endblock %}

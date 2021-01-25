@@ -36,11 +36,7 @@
 <div id="pagination"></div>
 <script>
     function deletemsg(e) {
-        var id = $(e).attr("aid")
-        var msg = `
-            <div class="alert alert-danger show" role="alert">
-                Are you sure you want to delete this announcement? Click this message to confirm.
-            </div>`;
+        var id = $(e).attr("aid");
         $("#confirm").css("display", "")
                      .find("input[name='aid']")
                      .attr("value", id);
