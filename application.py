@@ -685,8 +685,9 @@ def edit_contest_problem(contest_id, problem_id):
     new_hint = request.form.get("hints")
     new_category = request.form.get("category")
     new_points = request.form.get("point_value")
+    new_flag = request.form.get("flag")
 
-    if not new_name or not new_description or not new_category or not new_points:
+    if not new_name or not new_description or not new_category or not new_points or not new_flag:
         flash('You have not entered all required fields', 'danger'), 400
         return render_template('problem/editproblem.html', data=data[0])
 
@@ -703,9 +704,9 @@ def edit_contest_problem(contest_id, problem_id):
         db.execute(f"UPDATE contest_users SET points = points + :point_change WHERE contest_id=:cid AND user_id IN ({','.join([str(user) for user in need_update])})",
                     point_change=point_change, cid=contest_id)
 
-    db.execute("UPDATE contest_problems SET name=:name, category=:category, point_value=:pv WHERE contest_id=:cid AND problem_id=:pid",
+    db.execute("UPDATE contest_problems SET name=:name, category=:category, point_value=:pv, flag=:flag WHERE contest_id=:cid AND problem_id=:pid",
                name=new_name, category=new_category, pv=new_points,
-               cid=contest_id, pid=problem_id)
+               flag=new_flag, cid=contest_id, pid=problem_id)
 
     write_file(f'metadata/contests/{contest_id}/{problem_id}/description.md', new_description)  # noqa
     write_file(f'metadata/contests/{contest_id}/{problem_id}/hints.md', new_hint)
@@ -1014,8 +1015,9 @@ def editproblem(problem_id):
     new_hint = request.form.get("hints")
     new_category = request.form.get("category")
     new_points = request.form.get("point_value")
+    new_flag = request.form.get("flag")
 
-    if not new_name or not new_description or not new_category or not new_points:
+    if not new_name or not new_description or not new_category or not new_points or not new_flag:
         flash('You have not entered all required fields', 'danger'), 400
         return render_template('problem/editproblem.html', data=data[0])
 
@@ -1023,8 +1025,8 @@ def editproblem(problem_id):
     if not new_hint:
         new_hint = ""
 
-    db.execute("UPDATE problems SET name=:name, category=:category, point_value=:pv WHERE id=:problem_id",
-               name=new_name, category=new_category, pv=new_points, problem_id=problem_id)
+    db.execute("UPDATE problems SET name=:name, category=:category, point_value=:pv, flag=:flag WHERE id=:problem_id",
+               name=new_name, category=new_category, pv=new_points, problem_id=problem_id, flag=new_flag)
     write_file('metadata/problems/' + problem_id + '/description.md', new_description)
     write_file('metadata/problems/' + problem_id + '/hints.md', new_hint)
 
