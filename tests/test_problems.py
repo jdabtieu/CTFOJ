@@ -41,7 +41,8 @@ def test_problem(client, database):
         'description': 'a short fun problem 2',
         'hint': 'try looking at the title 2',
         'point_value': 2,
-        'category': 'web'
+        'category': 'web',
+        'flag': 'ctf{hello}'
     })
     assert result.status_code == 302
     client.get('/logout')
