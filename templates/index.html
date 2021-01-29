@@ -25,15 +25,17 @@
         </div>
         {% if session["admin"] %}
         <a href="/admin/editannouncement/{{ announcement["id"] }}" style="position: absolute; top: 12px; right: 36px;">
-            <img src="/assets/images/pencil.svg" onerror="this.src='/assets/images/pencil.png'" style="width: 16px;">
+            <img src="/assets/images/pencil.svg" onerror="this.src='/assets/images/pencil.png'" class="icon">
         </a>
         <a aid="{{ announcement["id"] }}" href="#" onclick="deletemsg(this)" style="position: absolute; top: 12px; right: 16px;">
-            <img src="/assets/images/trash.svg" onerror="this.src='/assets/images/trash.png'" style="width: 16px;">
+            <img src="/assets/images/trash.svg" onerror="this.src='/assets/images/trash.png'" class="icon">
         </a>
         {% endif %}
     </div>
 {% endfor %}
 <div id="pagination"></div>
+{% endblock %}
+{% block script %}
 <script>
     function deletemsg(e) {
         var id = $(e).attr("aid");

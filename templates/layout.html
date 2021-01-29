@@ -5,11 +5,8 @@
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" crossorigin="anonymous">
-        <link href="/assets/css/github-markdown.css" rel="stylesheet">
+        <link href="/assets/css/github-markdown.min.css" rel="stylesheet" media="async" onload="this.media='all'">
         <link href="/assets/css/style.css" rel="stylesheet">
-
-        <script src="/assets/js/jquery.min.js"></script>
-        <script src="/assets/js/bootstrap.bundle.min.js"></script>
 
         <link href="/static/favicon.png" rel="icon">
 
@@ -66,12 +63,16 @@
             <p class="text-center">© 2020, {{ CLUB_NAME }}. Source code available <a href="https://github.com/jdabtieu/CTFOJ">here</a>.</p>
         </footer>
 
+        <!-- TODO: Remove jQuery -->
+        <script src="/assets/js/jquery.min.js"></script>
         <script src="/assets/js/showdown.min.js"></script>
         <script src="/assets/js/purify.min.js"></script>
+        <script src="/assets/js/bootstrap.bundle.min.js"></script>
+        <script src="/assets/js/jquery.twbsPagination.min.js"></script>
         <script src="/assets/js/convertmd.js"></script>
+        {% block script %}{% endblock %}
         <script src="/assets/js/dateconvert.js"></script>
         <script src="/assets/js/seemore.js"></script>
-        <script src="/assets/js/jquery.twbsPagination.min.js"></script>
         <script src="/assets/js/pagination.js"></script>
     </body>
 </html>

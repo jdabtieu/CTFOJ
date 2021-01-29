@@ -25,7 +25,6 @@
 }
 
 #hint {
-    display: none;
     margin-top: 8px;
 }
 
@@ -112,6 +111,10 @@ td {
 
 .pagination {
     overflow-x: auto;
+}
+
+.hidden {
+    display: none;
 }
 
 /****************** COLOURS **********************************/

@@ -19,8 +19,8 @@
         </div>
         {% if data["hints"] %}
             <div style="margin-top: 16px;">
-                <a class="btn btn-secondary" id="togglehint" onclick="$('#hint').toggle()">Show/Hide Hints</a>
-                <div id="hint" class="card showdown">
+                <a class="btn btn-secondary" id="togglehint" onclick="document.getElementById('hint').classList.toggle('hidden')">Show/Hide Hints</a>
+                <div id="hint" class="card showdown hidden">
                     <textarea style="display: none;">{{ data["hints"] | safe }}</textarea>
                 </div>
             </div>
@@ -41,7 +41,7 @@
                 <br><a href="/admin/submissions?contest_id={{ request.path.split("/")[2] }}&problem_id={{ request.path.split("/")[4] }}">View submissions</a>
                 <br><a href="{{ request.path }}/edit">Edit problem</a>
                 {% if data["draft"] %}
-                    <br><a href="#" onclick="$('.confirm').css('display', '')">Publish problem</a>
+                    <br><a href="#" onclick="document.getElementById('confirm').style.display = ''">Publish problem</a>
                 {% endif %}
                 <br><a href="{{ request.path }}/export">Export problem</a>
             {% endif %}
