@@ -687,9 +687,12 @@ def edit_contest_problem(contest_id, problem_id):
     new_points = request.form.get("point_value")
     new_flag = request.form.get("flag")
 
-    if not new_name or not new_description or not new_category or not new_points or not new_flag:
+    if not new_name or not new_description or not new_category or not new_points:
         flash('You have not entered all required fields', 'danger'), 400
         return render_template('problem/editproblem.html', data=data[0])
+
+    if not new_flag:
+        new_flag = data[0]["flag"]
 
     new_description = new_description.replace('\r', '')
     if not new_hint:
@@ -1017,9 +1020,12 @@ def editproblem(problem_id):
     new_points = request.form.get("point_value")
     new_flag = request.form.get("flag")
 
-    if not new_name or not new_description or not new_category or not new_points or not new_flag:
+    if not new_name or not new_description or not new_category or not new_points:
         flash('You have not entered all required fields', 'danger'), 400
         return render_template('problem/editproblem.html', data=data[0])
+
+    if not new_flag:
+        new_flag = data[0]["flag"]
 
     new_description = new_description.replace('\r', '')
     if not new_hint:
