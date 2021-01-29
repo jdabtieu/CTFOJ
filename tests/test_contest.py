@@ -65,7 +65,6 @@ def test_contest(client, database):
         'hint': 'try looking at the title 2',
         'point_value': 2,
         'category': 'web',
-        'flag': 'ctf{hello}',
         'draft': True
     })
     assert result.status_code == 302
