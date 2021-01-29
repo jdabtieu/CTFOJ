@@ -15,6 +15,7 @@
         <div id="hints-out" class="md-preview"></div>
     </div>
     <input class="form-control form-group" id="category" name="category" value="{{ data['category'] }}" placeholder="Category" required>
+    <input class="form-control form-group" id="flag" name="flag" value="{{ data['flag'] }}" placeholder="Flag" required>
     <input class="form-control form-group" type="number" id="point_value" name="point_value" value="{{ data['point_value'] }}" placeholder="Point Value" required>
     <input class="btn btn-primary" type="submit" id="submit" name="submit" value="Submit">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
