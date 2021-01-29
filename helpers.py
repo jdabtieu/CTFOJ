@@ -80,3 +80,13 @@ def check_captcha(secret, response, sitekey):
     if not captcha.json()['success']:
         return False
     return True
+
+
+def latest_version():
+    """
+    Checks if CTFOJ is up to date with the latest version on GitHub
+    """
+    curr_version = "v1.4.1"
+    latest_version = requests.get(
+        "https://api.github.com/repos/jdabtieu/CTFOJ/releases/latest").json()["tag_name"]
+    return [curr_version, latest_version]
