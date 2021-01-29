@@ -20,6 +20,8 @@
     <input class="btn btn-primary" type="submit" value="Create Contest">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 </form>
+{% endblock %}
+{% block script %}
 <script>
     $(".dtl").focus(function() {
         $(this).attr("type", "datetime-local");
@@ -27,7 +29,7 @@
 
     $('#description').bind('input propertychange', function() {
         var product = converter.makeHtml(this.value);
-        $('#description-out').html(product);
+        document.getElementById('description-out').innerHTML = product;
         $('#description').css('height', $('#description-out').css('height'));
     });
 

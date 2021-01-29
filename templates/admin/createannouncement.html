@@ -13,10 +13,12 @@
     <input class="btn btn-primary" type="submit" id="submit" name="submit" value="Create">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 </form>
+{% endblock %}
+{% block script %}
 <script>
     $('#description').bind('input propertychange', function() {
         var product = converter.makeHtml(this.value);
-        $('#description-out').html(product);
+        document.getElementById("description-out").innerHTML = product;
         $('#description').css('height', $('#description-out').css('height'));
     });
 </script>

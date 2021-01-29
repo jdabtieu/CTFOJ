@@ -72,6 +72,8 @@
         </form>
     </div>
 </div>
+{% endblock %}
+{% block script %}
 <script>
     var queryStrings = new URL(window.location.href).searchParams;
     if (queryStrings.get("username") != false) $("form #username").attr("value", queryStrings.get("username"));

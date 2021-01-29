@@ -19,8 +19,8 @@
         </div>
         {% if data["hints"] %}
             <div style="margin-top: 16px;">
-                <a class="btn btn-secondary" id="togglehint" onclick="$('#hint').toggle()">Show/Hide Hints</a>
-                <div id="hint" class="card showdown">
+                <a class="btn btn-secondary" id="togglehint" onclick="document.getElementById('hint').classList.toggle('hidden')">Show/Hide Hints</a>
+                <div id="hint" class="card showdown hidden">
                     <textarea style="display: none;">{{ data["hints"] | safe }}</textarea>
                 </div>
             </div>
@@ -51,6 +51,8 @@
         </p>
     </div>
 </div>
+{% endblock %}
+{% block script %}
 <script>
     function deletemsg() {
         $("#confirm").css("display", "")

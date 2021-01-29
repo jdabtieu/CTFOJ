@@ -19,25 +19,25 @@
     <input class="btn btn-primary" type="submit" id="submit" name="submit" value="Submit">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 </form>
+{% endblock %}
+{% block script %}
 <script>
-    $(() => {
-        var product = converter.makeHtml(document.getElementById('description').value);
-        $('#description-out').html(product);
-        $('#description').css('height', $('#description-out').css('height'));
+    var product = converter.makeHtml(document.getElementById('description').value);
+    document.getElementById('description-out').innerHTML = product;
+    $('#description').css('height', $('#description-out').css('height'));
 
-        product = converter.makeHtml(document.getElementById('hints').value);
-        $('#hints-out').html(product);
-        $('#hints').css('height', $('#hints-out').css('height'));
-    });
+    product = converter.makeHtml(document.getElementById('hints').value);
+    document.getElementById('hints-out').innerHTML = product;
+    $('#hints').css('height', $('#hints-out').css('height'));
 
     $('#description').bind('input propertychange', function() {
         var product = converter.makeHtml(this.value);
-        $('#description-out').html(product);
+        document.getElementById('description-out').innerHTML = product;
         $('#description').css('height', $('#description-out').css('height'));
     });
     $('#hints').bind('input propertychange', function() {
         var product = converter.makeHtml(this.value);
-        $('#hints-out').html(product);
+        document.getElementById('hints-out').innerHTML = product;
         $('#hints').css('height', $('#hints-out').css('height'));
     });
 </script>
