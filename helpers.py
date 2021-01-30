@@ -3,7 +3,7 @@ import re
 import requests
 from functools import wraps
 
-from flask import redirect, request, session
+from flask import redirect, request, session, flash
 from flask_mail import Message
 
 
@@ -82,15 +82,19 @@ def check_captcha(secret, response, sitekey):
     return True
 
 
-def latest_version():
+def check_version():
     """
     Checks if CTFOJ is up to date with the latest version on GitHub
     """
-    curr_version = "v1.4.1"
+    curr_version = "v1.5.0"
     try:
         latest_version = requests.get(
             "https://api.github.com/repos/jdabtieu/CTFOJ/releases/latest").json()["name"]
+        if curr_version != latest_version:
+            flash(("You are not up-to-date! Please notify the site administrator. "
+                  f"Current version: {curr_version}, Latest version: {latest_version}"),
+                  "danger")
     except Exception:
-        latest_version = ("Couldn't be detected. "
-                          "Please make sure https://api.github.com isn't blocked.")
-    return [curr_version, latest_version]
+        flash(("Latest version could not be detected. Please make sure "
+               "https://api.github.com isn't blocked by a firewall."), "warning")
+    return

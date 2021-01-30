@@ -1090,11 +1090,7 @@ def delete_problem(problem_id):
 @app.route("/admin/console")
 @admin_required
 def admin_console():
-    version_info = latest_version()
-    if version_info[0] != version_info[1]:
-        flash(("You are not up-to-date! Please notify the site administrator. "
-              f"Current version: {version_info[0]}, Latest version: {version_info[1]}"),
-              "danger")
+    check_version()
     return render_template("admin/console.html", maintenance_mode=maintenance_mode)
 
 
