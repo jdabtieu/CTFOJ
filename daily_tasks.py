@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 import datetime
 import os
 import secrets
@@ -18,7 +20,7 @@ if os.path.exists('logs/application.log'):
     timestamp = datetime.date.strftime(datetime.datetime.now(), "%d-%m-%Y")
     shutil.copy2("logs/application.log", f"logs/{timestamp}-application.log")
     try:
-        os.remove("logs/application.log")
+        open("logs/application.log", "w").close()
     except Exception as e:
         sys.stderr.write(str(e))
         sys.stderr.write(('Could not remove old application log. '
