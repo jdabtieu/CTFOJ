@@ -41,6 +41,8 @@ $ nano settings.py
 ```
 In settings.py, you should add your email credentials as indicated by default_settings.py. Additionally, you may change the other email settings if you use a SMTP provider other than Gmail. Next, you should choose whether to use a CAPTCHA or not, and add your hCaptcha site and secret keys if you are using a CAPTCHA. Finally, you should add a custom name for your club and change any other settings that you wish to change.
 
+Next, you should set up cron to run daily_tasks.py every day. Make sure daily_tasks.py is executable by running `chmod +x daily_tasks.py`. Then, run `crontab -e` and paste the following into the file: `0 0 * * * cd PATH_TO_INSTALL && ./daily_tasks.py`, making sure you replace `PATH_TO_INSTALL` with the installation path.
+
 # Running in Debug Mode
 ```
 $ export FLASK_APP=application.py
