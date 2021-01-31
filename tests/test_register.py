@@ -24,7 +24,7 @@ def test_register(client, database):
         },
         'testing_secret_key',
         algorithm='HS256'
-    ).decode('utf-8')
+    )
 
     result = client.get(f'/confirmregister/{token}')
     assert result.status_code == 302
