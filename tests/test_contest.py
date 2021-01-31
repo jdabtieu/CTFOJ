@@ -39,10 +39,6 @@ def test_contest(client, database):
     assert result.status_code == 200
     assert b'Rank' in result.data
 
-    try:
-        os.mkdir('dl')
-    except Exception as e:
-        sys.stderr.write(str(e))
     file = open("test_upload.txt", "w")
     file.write('ree')
     file.close()

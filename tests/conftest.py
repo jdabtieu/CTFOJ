@@ -1,4 +1,3 @@
-import os
 import pytest
 
 from cs50 import SQL

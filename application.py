@@ -38,7 +38,6 @@ try:
     logging.getLogger().addHandler(logging.StreamHandler())
 except Exception as e:  # when testing
     sys.stderr.write(str(e))
-    os.mkdir('logs')
     logging.basicConfig(
         filename='logs/application.log',
         level=logging.DEBUG,
