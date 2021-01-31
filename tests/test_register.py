@@ -78,3 +78,7 @@ def test_register(client, database):
 
     assert result.status_code == 409
     assert b'already exists' in result.data
+
+    result = client.get('/confirmregister/fake', follow_redirects=True)
+
+    assert b'invalid' in result.data
