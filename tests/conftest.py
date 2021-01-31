@@ -17,7 +17,6 @@ def client():
 
 @pytest.fixture
 def database():
-    os.remove("database_test.db")
     open("database_test.db", "w").close()
     db = SQL("sqlite:///database_test.db")
     db.execute("CREATE TABLE 'users' ('id' integer PRIMARY KEY NOT NULL, 'username' varchar(20) NOT NULL, 'password' varchar(64) NOT NULL, 'email' varchar(128), 'join_date' datetime NOT NULL DEFAULT (0), 'admin' boolean NOT NULL DEFAULT (0), 'banned' boolean NOT NULL DEFAULT (0), 'verified' boolean NOT NULL DEFAULT (0), 'twofa' boolean NOT NULL DEFAULT (0));")
