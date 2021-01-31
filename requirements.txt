@@ -6,4 +6,4 @@ Werkzeug==1.0.1
 cs50==5.1.0
 pyjwt==1.7.1
 pytest==6.1.2
-requests==2.24.0
+requests==2.25.1
