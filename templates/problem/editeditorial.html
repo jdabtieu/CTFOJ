@@ -6,7 +6,7 @@
 <h1>Edit Editorial for {{ data["name"] }}</h1>
 <form autocomplete="off" method="post">
 	<div style="position: relative;">
-        <textarea class="form-control form-group md-preview" id="editorial" name="editorial" rows="20">{{ data["editorial"] if data["editorial"] else "" }}</textarea>
+        <textarea class="form-control mb-3 md-preview" id="editorial" name="editorial" rows="20">{{ data["editorial"] if data["editorial"] else "" }}</textarea>
         <div id="editorial-out" class="md-preview"></div>
     </div>
     <input class="btn btn-primary" type="submit" id="submit" name="submit" value="Submit">

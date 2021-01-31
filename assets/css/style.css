@@ -117,6 +117,10 @@ td {
     display: none;
 }
 
+a {
+    text-decoration: none;
+}
+
 /****************** COLOURS **********************************/
 .white {
     color: #ffffff!important;

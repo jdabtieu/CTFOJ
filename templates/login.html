@@ -5,8 +5,8 @@
 {% block main %}
 <h1 class="text-center">Log In</h1>
 <form method="post">
-    <input autocomplete="off" autofocus class="form-control form-group" name="username" placeholder="Username" type="text" required>
-    <input class="form-control form-group" name="password" placeholder="Password" type="password" required>
+    <input autocomplete="off" autofocus class="form-control mb-3" name="username" placeholder="Username" type="text" required>
+    <input class="form-control mb-3" name="password" placeholder="Password" type="password" required>
     <button class="btn btn-primary" type="submit">Log In</button>
     <a href="/forgotpassword" class="btn btn-secondary white">Forgot Password</a>
     {% if USE_CAPTCHA %}
