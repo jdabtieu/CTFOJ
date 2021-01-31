@@ -1,6 +1,5 @@
 import os
 import shutil
-import sys
 
 
 def test_problem(client, database):
@@ -75,4 +74,6 @@ def test_problem(client, database):
     result = client.post('/problem/helloworldtesting/delete', follow_redirects=True)
     assert result.status_code == 200
     assert b'helloworldtesting' not in result.data
+
     shutil.rmtree('dl')
+    os.mkdir('dl')

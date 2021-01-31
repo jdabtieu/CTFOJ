@@ -1,7 +1,3 @@
-import os
-import sys
-
-
 def test_admin(client, database):
     '''Test that non-admins are barred from admin pages, and admins can access them.'''
     # Admins should be able to view the page
