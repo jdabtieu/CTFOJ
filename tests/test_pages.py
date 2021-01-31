@@ -79,6 +79,10 @@ def test_pages(client, database):
     result = client.post('/forgotpassword', data={'email': 'ctf.mgci+debug@email.com'})
     assert result.status_code == 200
 
+    result = client.get('/resetpassword/invalidtoken', follow_redirects=True)
+    assert result.status_code == 200
+    assert b'Forgot' in result.data
+
     result = client.post('/login', data={
         'username': 'normal_user',
         'password': 'CTFOJadmin123'

@@ -85,4 +85,7 @@ def test_admin(client, database):
     }, follow_redirects=True)
     assert result.status_code == 200
     assert b'successfully edited' in result.data
-    os.remove('metadata/announcements/1.md')
+
+    result = client.post('/admin/deleteannouncement', data={'aid': 1}, follow_redirects=True)
+    assert result.status_code == 200
+    assert b'successfully deleted' in result.data

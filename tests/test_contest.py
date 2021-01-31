@@ -73,7 +73,9 @@ def test_contest(client, database):
     assert result.status_code == 200
     assert b'Draft' in result.data
 
-    client.get('/contest/testingcontest/problem/helloworldtesting/publish')
+    result = client.post('/contest/testingcontest/problem/helloworldtesting/publish', follow_redirects=True)
+    assert result.status_code == 200
+    assert b'published' in result.data
 
     result = client.post('/contest/testingcontest/notify', data={
         'subject': 'test subject',

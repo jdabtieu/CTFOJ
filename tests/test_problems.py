@@ -36,6 +36,10 @@ def test_problem(client, database):
     assert result.status_code == 200
     assert b'published' in result.data
 
+    result = client.post('/problem/helloworldtesting/editeditorial', data={'editorial': 'sample editorial'}, follow_redirects=True)
+    assert result.status_code == 200
+    assert b'edited' in result.data
+
     result = client.post('/problem/helloworldtesting/edit', data={
         'name': 'hello world 2',
         'description': 'a short fun problem 2',
@@ -54,6 +58,10 @@ def test_problem(client, database):
     result = client.get('/problem/helloworldtesting')
     assert result.status_code == 200
     assert b'a short fun problem' in result.data
+
+    result = client.get('/problem/helloworldtesting/editorial')
+    assert result.status_code == 200
+    assert b'sample editorial' in result.data
 
     # test if normal users can submit to the problem
     result = client.post('/problem/helloworldtesting',
