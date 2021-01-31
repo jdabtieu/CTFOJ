@@ -39,7 +39,6 @@ jobs:
     - name: Test and generate coverage report with pytest
       run: |
         git rm migrate.py
-        mkdir logs dl metadata metadata/contests metadata/problems metadata/announcements
         python -m pytest -v --cov=./ --cov-report=xml --count 2
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1
