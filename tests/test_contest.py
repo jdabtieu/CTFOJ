@@ -1,6 +1,5 @@
 import os
 import shutil
-import sys
 
 from datetime import datetime
 from datetime import timedelta
@@ -39,10 +38,6 @@ def test_contest(client, database):
     assert result.status_code == 200
     assert b'Rank' in result.data
 
-    try:
-        os.mkdir('dl')
-    except Exception as e:
-        sys.stderr.write(str(e))
     file = open("test_upload.txt", "w")
     file.write('ree')
     file.close()
@@ -111,4 +106,5 @@ def test_contest(client, database):
     assert result.status_code == 200
 
     shutil.rmtree('dl')
+    os.mkdir('dl')
     shutil.rmtree('metadata/problems/testingcontest-helloworldtesting')
