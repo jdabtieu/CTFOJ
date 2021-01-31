@@ -29,21 +29,12 @@ app.jinja_env.globals['CLUB_NAME'] = app.config['CLUB_NAME']
 app.jinja_env.globals['USE_CAPTCHA'] = app.config['USE_CAPTCHA']
 
 # Configure logging
-try:
-    logging.basicConfig(
-        filename=app.config['LOGGING_FILE_LOCATION'],
-        level=logging.DEBUG,
-        format='%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s',
-    )
-    logging.getLogger().addHandler(logging.StreamHandler())
-except Exception as e:  # when testing
-    sys.stderr.write(str(e))
-    logging.basicConfig(
-        filename='logs/application.log',
-        level=logging.DEBUG,
-        format='%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s'
-    )
-    logging.getLogger().addHandler(logging.StreamHandler())
+logging.basicConfig(
+    filename=app.config['LOGGING_FILE_LOCATION'],
+    level=logging.DEBUG,
+    format='%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s',
+)
+logging.getLogger().addHandler(logging.StreamHandler())
 
 # Configure flask-session
 Session(app)
