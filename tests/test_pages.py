@@ -30,6 +30,38 @@ def test_pages(client, database):
     assert b'Password must be at least 8 characters long.' in result.data
 
     result = client.post('/settings/changepassword', data={
+        'password': '',
+        'newPassword': 'CTFOJadmin123',
+        'confirmation': 'CTFOJadmin123'
+    }, follow_redirects=True)
+    assert result.status_code == 400
+    assert b'Password cannot be blank' in result.data
+
+    result = client.post('/settings/changepassword', data={
+        'password': 'CTFOJadmin',
+        'newPassword': 'CTFOJad',
+        'confirmation': 'CTFOJad'
+    }, follow_redirects=True)
+    assert result.status_code == 400
+    assert b'at least 8' in result.data
+
+    result = client.post('/settings/changepassword', data={
+        'password': 'CTFOJadmin',
+        'newPassword': 'CTFOJadmin',
+        'confirmation': 'CTFOJnotadmin'
+    }, follow_redirects=True)
+    assert result.status_code == 400
+    assert b'do not match' in result.data
+
+    result = client.post('/settings/changepassword', data={
+        'password': 'CTFOJadmin1',
+        'newPassword': 'CTFOJadmin',
+        'confirmation': 'CTFOJadmin'
+    }, follow_redirects=True)
+    assert result.status_code == 401
+    assert b'Incorrect' in result.data
+
+    result = client.post('/settings/changepassword', data={
         'password': 'CTFOJadmin',
         'newPassword': 'CTFOJadmin123',
         'confirmation': 'CTFOJadmin123'
@@ -45,7 +77,6 @@ def test_pages(client, database):
     assert result.status_code == 302
 
     result = client.post('/forgotpassword', data={'email': 'ctf.mgci+debug@email.com'})
-    print(result.data)
     assert result.status_code == 200
 
     result = client.post('/login', data={
