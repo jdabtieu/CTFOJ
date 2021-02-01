@@ -38,6 +38,7 @@ jobs:
         flake8 . --count --exit-zero --ignore=F405 --max-complexity=10 --max-line-length=90 --statistics
     - name: Test and generate coverage report with pytest
       run: |
+        git rm src/migrate.py
         cd src && python -m pytest -v --cov=./ --cov-report=xml --count 2
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1
