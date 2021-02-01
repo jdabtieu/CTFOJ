@@ -25,10 +25,9 @@ jobs:
         python-version: 3.8
     - name: Install dependencies
       run: |
-        cd src
         python -m pip install --upgrade pip
         pip install flake8 pytest pytest-cov pytest-repeat
-        pip install -r requirements.txt
+        cd src && pip install -r requirements.txt
     - name: Flake8 Annotator
       uses: rbialon/flake8-annotations@v1
     - name: Lint with flake8
@@ -39,11 +38,10 @@ jobs:
         flake8 . --count --exit-zero --ignore=F405 --max-complexity=10 --max-line-length=90 --statistics
     - name: Test and generate coverage report with pytest
       run: |
-        git rm migrate.py
-        python -m pytest -v --cov=./ --cov-report=xml --count 2
+        cd src && python -m pytest -v --cov=./ --cov-report=xml --count 2
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1
       with:
-        file: ./coverage.xml
+        file: src/coverage.xml
         flags: unittests
         env_vars: OS, PYTHON
