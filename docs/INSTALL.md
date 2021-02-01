@@ -1,6 +1,6 @@
 # Installation
-
-Prerequisites: Python 3, SQLite 3
+Prerequisites: Python 3, SQLite 3<br>
+Although CTFOJ can run on Linux, Windows, and MacOS, it is recommended to run it on a modern Linux distribution.
 
 It is recommended to create a venv (virtual environment) first.
 
