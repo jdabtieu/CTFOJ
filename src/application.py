@@ -127,7 +127,9 @@ def login():
 
     # Ensure captcha is valid
     if app.config['USE_CAPTCHA']:
-        if not check_captcha(app.config['HCAPTCHA_SECRET'], request.form.get('h-captcha-response'), app.config['HCAPTCHA_SITE']):
+        if not check_captcha(app.config['HCAPTCHA_SECRET'],
+                             request.form.get('h-captcha-response'),
+                             app.config['HCAPTCHA_SITE']):
             flash('CAPTCHA invalid', 'danger')
             return render_template("login.html",
                                    site_key=app.config['HCAPTCHA_SITE']), 400
@@ -135,7 +137,8 @@ def login():
     # Ensure username exists and password is correct
     rows = db.execute("SELECT * FROM users WHERE username = :username",
                       username=request.form.get("username"))
-    if len(rows) != 1 or not check_password_hash(rows[0]["password"], request.form.get("password")):
+    if len(rows) != 1 or not check_password_hash(rows[0]["password"],
+                                                 request.form.get("password")):
         flash('Incorrect username/password', 'danger')
         return render_template("login.html", site_key=app.config['HCAPTCHA_SITE']), 401
 
@@ -146,7 +149,7 @@ def login():
 
     # Ensure user has confirmed account
     if not rows[0]["verified"]:
-        flash('You have not confirmed your account yet. Please check your email', 'danger')
+        flash('You have not confirmed your account yet. Please check your email', 'danger')  # noqa
         return render_template("login.html", site_key=app.config['HCAPTCHA_SITE']), 403
 
     # implement 2fa verification via email
@@ -214,7 +217,9 @@ def register():
 
     # Ensure captcha is valid
     if app.config['USE_CAPTCHA']:
-        if not check_captcha(app.config['HCAPTCHA_SECRET'], request.form.get('h-captcha-response'), app.config['HCAPTCHA_SITE']):
+        if not check_captcha(app.config['HCAPTCHA_SECRET'],
+                             request.form.get('h-captcha-response'),
+                             app.config['HCAPTCHA_SITE']):
             flash('CAPTCHA invalid', 'danger')
             return render_template("register.html",
                                    site_key=app.config['HCAPTCHA_SITE']), 400
@@ -244,7 +249,8 @@ def register():
     text = render_template('email/confirm_account_text.txt',
                            username=request.form.get('username'), token=token)
 
-    db.execute("INSERT INTO users(username, password, email, join_date) VALUES(:username, :password, :email, datetime('now'))",
+    db.execute(("INSERT INTO users(username, password, email, join_date) "
+                "VALUES(:username, :password, :email, datetime('now'))"),
                username=request.form.get("username"),
                password=generate_password_hash(request.form.get("password")),
                email=request.form.get("email"))
@@ -382,7 +388,9 @@ def forgotpassword():
 
     # Ensure captcha is valid
     if app.config['USE_CAPTCHA']:
-        if not check_captcha(app.config['HCAPTCHA_SECRET'], request.form.get('h-captcha-response'), app.config['HCAPTCHA_SITE']):
+        if not check_captcha(app.config['HCAPTCHA_SECRET'],
+                             request.form.get('h-captcha-response'),
+                             app.config['HCAPTCHA_SITE']):
             flash('CAPTCHA invalid', 'danger')
             return render_template("forgotpassword.html",
                                    site_key=app.config['HCAPTCHA_SITE']), 400
@@ -496,7 +504,8 @@ def contest(contest_id):
 
     data = []
 
-    info = db.execute("SELECT * FROM contest_problems WHERE contest_id=:cid AND draft=0 ORDER BY problem_id ASC, category ASC",
+    info = db.execute(("SELECT * FROM contest_problems WHERE contest_id=:cid "
+                       "AND draft=0 ORDER BY problem_id ASC, category ASC"),
                       cid=contest_id)
     for row in info:
         keys = {
@@ -692,10 +701,10 @@ def edit_contest_problem(contest_id, problem_id):
     if old_points != new_points:
         point_change = int(new_points) - old_points
         need_update = db.execute("SELECT user_id FROM contest_solved WHERE contest_id=:cid AND problem_id=:pid",
-                    cid=contest_id, pid=problem_id)
+                                 cid=contest_id, pid=problem_id)
         need_update = [user["user_id"] for user in need_update]
         db.execute(f"UPDATE contest_users SET points = points + :point_change WHERE contest_id=:cid AND user_id IN ({','.join([str(user) for user in need_update])})",
-                    point_change=point_change, cid=contest_id)
+                   point_change=point_change, cid=contest_id)
 
     db.execute("UPDATE contest_problems SET name=:name, category=:category, point_value=:pv, flag=:flag WHERE contest_id=:cid AND problem_id=:pid",
                name=new_name, category=new_category, pv=new_points,
@@ -783,7 +792,7 @@ def contest_add_problem(contest_id):
         filename = problem_id + ".zip"
         filepath = "dl/" + contest_id + "/"
         file.save(filepath + filename)
-        description += '<br><a href="/' + filepath + filename + '">' + filename + '</a>'
+        description += f'\n\n[{filename}](/{filepath + filename})'
 
     # Modify problems table
     db.execute("INSERT INTO contest_problems(contest_id, problem_id, name, point_value, category, flag, draft) VALUES(:cid, :pid, :name, :point_value, :category, :flag, :draft)",
@@ -1164,7 +1173,7 @@ def admin_createcontest():
     contest_name = request.form.get("contest_name")
 
     # Ensure contest doesn't already exist
-    check = db.execute("SELECT * FROM contests WHERE id=:contest_id OR name=:contest_name",  ## noqa E501
+    check = db.execute("SELECT * FROM contests WHERE id=:contest_id OR name=:contest_name",  # noqa
                        contest_id=contest_id, contest_name=contest_name)
     if len(check) != 0:
         flash('A contest with that name or ID already exists', 'danger')
