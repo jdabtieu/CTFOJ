@@ -5,10 +5,10 @@
 {% block main %}
 <h1 class="text-center">Register</h1>
 <form method="post">
-    <input autocomplete="off" autofocus class="form-control form-group" name="username" placeholder="Username" type="text" required>
-    <input class="form-control form-group" name="email" placeholder="Email Address" type="email" required>
-    <input class="form-control form-group" name="password" placeholder="Password" type="password" required>
-    <input class="form-control form-group" name="confirmation" placeholder="Confirmation" type="password" required>
+    <input autocomplete="off" autofocus class="form-control mb-3" name="username" placeholder="Username" type="text" required>
+    <input class="form-control mb-3" name="email" placeholder="Email Address" type="email" required>
+    <input class="form-control mb-3" name="password" placeholder="Password" type="password" required>
+    <input class="form-control mb-3" name="confirmation" placeholder="Confirmation" type="password" required>
     <button class="btn btn-primary" type="submit">Register</button>
     {% if USE_CAPTCHA %}
         <script src="https://hcaptcha.com/1/api.js" async defer></script>

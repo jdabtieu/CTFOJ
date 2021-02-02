@@ -1,6 +1,8 @@
+import jwt
 import secrets
 import re
 import requests
+from datetime import datetime, timedelta
 from functools import wraps
 
 from flask import redirect, request, session, flash
@@ -98,3 +100,11 @@ def check_version():
         flash(("Latest version could not be detected. Please make sure "
                "https://api.github.com isn't blocked by a firewall."), "warning")
     return
+
+
+def create_jwt(data, secret_key):
+    """
+    Creates a JWT token containing data and encrypted using secret_key
+    """
+    data['expiration'] = (datetime.utcnow() + timedelta(seconds=1800)).isoformat()
+    return jwt.encode(data, secret_key, algorithm='HS256')

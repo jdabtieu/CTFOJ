@@ -2,7 +2,7 @@ import os
 import sys
 import logging
 import shutil
-from datetime import datetime, timedelta
+from datetime import datetime
 from tempfile import mkdtemp
 
 import jwt
@@ -154,16 +154,8 @@ def login():
 
     # implement 2fa verification via email
     if rows[0]["twofa"]:
-        exp = datetime.utcnow() + timedelta(seconds=1800)
         email = rows[0]["email"]
-        token = jwt.encode(
-            {
-                'email': email,
-                'expiration': exp.isoformat()
-            },
-            app.config['SECRET_KEY'],
-            algorithm='HS256'
-        )
+        token = create_jwt({'email': email}, app.config['SECRET_KEY'])
         text = render_template('email/confirm_login_text.txt',
                                username=request.form.get('username'), token=token)
 
@@ -236,16 +228,8 @@ def register():
         flash('Email already exists', 'danger')
         return render_template("register.html", site_key=app.config['HCAPTCHA_SITE']), 409
 
-    exp = datetime.utcnow() + timedelta(seconds=1800)
     email = request.form.get('email')
-    token = jwt.encode(
-        {
-            'email': email,
-            'expiration': exp.isoformat()
-        },
-        app.config['SECRET_KEY'],
-        algorithm='HS256'
-    )
+    token = create_jwt({'email': email}, app.config['SECRET_KEY'])
     text = render_template('email/confirm_account_text.txt',
                            username=request.form.get('username'), token=token)
 
@@ -399,15 +383,7 @@ def forgotpassword():
                       email=request.form.get("email"))
 
     if len(rows) == 1:
-        exp = datetime.utcnow() + timedelta(seconds=1800)
-        token = jwt.encode(
-            {
-                'user_id': rows[0]["id"],
-                'expiration': exp.isoformat()
-            },
-            app.config['SECRET_KEY'],
-            algorithm='HS256'
-        )
+        token = create_jwt({'user_id': rows[0]["id"]}, app.config['SECRET_KEY'])
         text = render_template('email/reset_password_text.txt',
                                username=rows[0]["username"], token=token)
         if not app.config['TESTING']:
