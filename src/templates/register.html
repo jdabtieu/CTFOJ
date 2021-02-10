@@ -7,8 +7,8 @@
 <form method="post">
     <input autocomplete="off" autofocus class="form-control mb-3" name="username" placeholder="Username" type="text" required>
     <input class="form-control mb-3" name="email" placeholder="Email Address" type="email" required>
-    <input class="form-control mb-3" name="password" placeholder="Password" type="password" required>
-    <input class="form-control mb-3" name="confirmation" placeholder="Confirmation" type="password" required>
+    <input class="form-control mb-3" name="password" placeholder="Password" type="password" autocomplete="new-password" required>
+    <input class="form-control mb-3" name="confirmation" placeholder="Confirmation" type="password" autocomplete="new-password" required>
     <button class="btn btn-primary" type="submit">Register</button>
     {% if USE_CAPTCHA %}
         <script src="https://hcaptcha.com/1/api.js" async defer></script>
@@ -21,6 +21,26 @@
     Your password must be at least 8 characters long. Although they are stored with industry-grade
     encryption and nobody can see them even if they gain access to the users database, we strongly
     recommend you not to use a password you use elsewhere.<br><br>
-    You must provide a valid email account to register on our site. By registering, you acknowledge that you have read our <a href="/privacy">privacy policy</a> and agree to abide by our <a href="/terms">terms of service</a>.
+    You must provide a valid email account to register on our site. By registering, you acknowledge
+    that you have read our <a href="/privacy">privacy policy</a> and agree to abide by our
+    <a href="/terms">terms of service</a>.
 </p>
+{% endblock %}
+{% block script %}
+<script>
+    document.querySelector("form").addEventListener("submit", event => {
+        if (document.querySelector("input[name=password]").value != document.querySelector("input[name=confirmation]").value) {
+            makeAlert("Passwords do not match");
+            event.preventDefault();
+        }
+        if (document.querySelector("input[name=password]").value.length < 8) {
+            makeAlert("Password must be at least 8 characters");
+            event.preventDefault();
+        }
+    });
+
+    function makeAlert(message) {
+        $("main").prepend('<div class="alert alert-danger alert-dismissible fade show" role="alert">' + message + '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>')
+    }
+</script>
 {% endblock %}
