@@ -339,8 +339,8 @@ def changepassword():
     return redirect("/settings")
 
 
-@login_required
 @app.route("/settings/toggle2fa")
+@login_required
 def toggle2fa():
     rows = db.execute("SELECT * FROM users WHERE id = :id",
                       id=session["user_id"])
