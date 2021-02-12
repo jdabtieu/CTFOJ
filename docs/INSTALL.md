@@ -13,6 +13,7 @@ The setup process involves 3 main steps:
 &nbsp;
 1.
 ```bash
+$ cd src
 $ pip3 install -r requirements.txt
 ```
 
