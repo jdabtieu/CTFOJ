@@ -43,6 +43,7 @@
                 <br><a href="/admin/submissions?problem_id={{ request.path.split("/")[2] }}">View submissions</a>
                 <br><a href="{{ request.path }}/editeditorial">Create/edit editorial</a>
                 <br><a href="{{ request.path }}/edit">Edit problem</a>
+                <br><a href="{{ request.path }}/download">Download problem</a>
                 <br><a href="#" onclick="deletemsg()">Delete problem</a>
                 {% if data["draft"] %}
                     <br><a href="#" onclick="publishmsg()">Publish draft</a>

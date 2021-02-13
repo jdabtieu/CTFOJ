@@ -2,13 +2,15 @@ import os
 import sys
 import logging
 import shutil
+import zipfile
 from datetime import datetime
 from tempfile import mkdtemp
+from io import BytesIO
 
 import jwt
 from cs50 import SQL
 from flask import (Flask, flash, redirect, render_template, request,
-                   send_from_directory, session)
+                   send_from_directory, send_file, session)
 from flask_mail import Mail
 from flask_session import Session
 from flask_wtf.csrf import CSRFProtect
@@ -1478,6 +1480,32 @@ def editcontest(contest_id):
     flash('Contest successfully edited', 'success')
     return redirect("/contests")
 
+
+@app.route('/problem/<problem_id>/download')
+@admin_required
+def download_problem(problem_id):
+    temp_zipfile = BytesIO()
+    zf = zipfile.ZipFile(temp_zipfile, 'w', zipfile.ZIP_DEFLATED)
+    for file in os.listdir(f'metadata/problems/{problem_id}'):
+        zf.write(f'metadata/problems/{problem_id}/' + file, file)
+    if os.path.exists(f'dl/{problem_id}.zip'):
+        zf.write(f'dl/{problem_id}.zip', f'{problem_id}.zip')
+    zf.close()
+    temp_zipfile.seek(0)
+    return send_file(temp_zipfile, mimetype='zip', attachment_filename=f'{problem_id}.zip', as_attachment=True)
+
+@app.route('/contest/<contest_id>/problem/<problem_id>/download')
+@admin_required
+def download_contest_problem(contest_id, problem_id):
+    temp_zipfile = BytesIO()
+    zf = zipfile.ZipFile(temp_zipfile, 'w', zipfile.ZIP_DEFLATED)
+    for file in os.listdir(f'metadata/contests/{contest_id}/{problem_id}'):
+        zf.write(f'metadata/contests/{contest_id}/{problem_id}/' + file, file)
+    if os.path.exists(f'dl/{contest_id}/{problem_id}.zip'):
+        zf.write(f'dl/{contest_id}/{problem_id}.zip', f'{problem_id}.zip')
+    zf.close()
+    temp_zipfile.seek(0)
+    return send_file(temp_zipfile, mimetype='zip', attachment_filename=f'{problem_id}.zip', as_attachment=True)
 
 @app.route("/admin/maintenance", methods=["POST"])
 @admin_required

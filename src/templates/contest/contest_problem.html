@@ -40,6 +40,7 @@
             {% if session["admin"] %}
                 <br><a href="/admin/submissions?contest_id={{ request.path.split("/")[2] }}&problem_id={{ request.path.split("/")[4] }}">View submissions</a>
                 <br><a href="{{ request.path }}/edit">Edit problem</a>
+                <br><a href="{{ request.path }}/download">Download problem</a>
                 {% if data["draft"] %}
                     <br><a href="#" onclick="document.getElementById('confirm').style.display = ''">Publish problem</a>
                 {% endif %}
