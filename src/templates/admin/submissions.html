@@ -76,9 +76,9 @@
 {% block script %}
 <script>
     var queryStrings = new URL(window.location.href).searchParams;
-    if (queryStrings.get("username") != false) $("form #username").attr("value", queryStrings.get("username"));
-    if (queryStrings.get("problem_id") != false) $("form #problem_id").attr("value", queryStrings.get("problem_id"));
-    if (queryStrings.get("contest_id") != false) $("form #contest_id").attr("value", queryStrings.get("contest_id"));
+    if (queryStrings.get("username") != null) document.querySelector("form #username").setAttribute("value", queryStrings.get("username"));
+    if (queryStrings.get("problem_id") != null) document.querySelector("form #problem_id").setAttribute("value", queryStrings.get("problem_id"));
+    if (queryStrings.get("contest_id") != null) document.querySelector("form #contest_id").setAttribute("value", queryStrings.get("contest_id"));
 
     var total_length = {{ length }};
 </script>

@@ -41,14 +41,16 @@
         document.getElementById("description").style.height = document.getElementById("description-out").offsetHeight + "px";
     }
 
-    $("form").submit(function(event) {
-        var formStart = $(this).find("#start");
-        var start = new Date(formStart.val()).toISOString();
-        formStart.attr("type", "text").val(start);
+    document.getElementsByTagName("form")[0].onsubmit = function(event) {
+        var formStart = this.querySelector("#start");
+        var start = new Date(formStart.value).toISOString();
+        formStart.setAttribute("type", "text");
+        formStart.value = start;
 
-        var formEnd = $(this).find("#end");
-        var end = new Date(formEnd.val()).toISOString();
-        formEnd.attr("type", "text").val(end);
-    })
+        var formEnd = this.querySelector("#end");
+        var end = new Date(formEnd.value).toISOString();
+        formEnd.setAttribute("type", "text");
+        formEnd.value = end;
+    }
 </script>
 {% endblock %}

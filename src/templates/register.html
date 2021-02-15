@@ -27,6 +27,7 @@
 </p>
 {% endblock %}
 {% block script %}
+<script src="/assets/js/jquery.min.js"></script>
 <script>
     document.querySelector("form").addEventListener("submit", event => {
         if (document.querySelector("input[name=password]").value != document.querySelector("input[name=confirmation]").value) {
