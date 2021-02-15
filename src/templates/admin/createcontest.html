@@ -23,15 +23,17 @@
 {% endblock %}
 {% block script %}
 <script>
-    $(".dtl").focus(function() {
-        $(this).attr("type", "datetime-local");
-    });
+    document.querySelectorAll(".dtl").forEach(function(e) {
+        e.addEventListener("focus", function() {
+           this.setAttribute("type", "datetime-local");
+        })
+    })
 
-    $('#description').bind('input propertychange', function() {
+    document.getElementById('description').oninput = function() {
         var product = converter.makeHtml(this.value);
-        document.getElementById('description-out').innerHTML = product;
-        $('#description').css('height', $('#description-out').css('height'));
-    });
+        document.getElementById("description-out").innerHTML = product;
+        document.getElementById("description").style.height = document.getElementById("description-out").offsetHeight + "px";
+    }
 
     $("form").submit(function(event) {
         var formStart = $(this).find("#start");

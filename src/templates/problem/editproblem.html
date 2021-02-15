@@ -25,21 +25,21 @@
 <script>
     var product = converter.makeHtml(document.getElementById('description').value);
     document.getElementById('description-out').innerHTML = product;
-    $('#description').css('height', $('#description-out').css('height'));
+    document.getElementById("description").style.height = document.getElementById("description-out").offsetHeight + "px";
 
     product = converter.makeHtml(document.getElementById('hints').value);
     document.getElementById('hints-out').innerHTML = product;
-    $('#hints').css('height', $('#hints-out').css('height'));
+    document.getElementById("hints").style.height = document.getElementById("hints-out").offsetHeight + "px";
 
-    $('#description').bind('input propertychange', function() {
+    document.getElementById('description').oninput = function() {
         var product = converter.makeHtml(this.value);
-        document.getElementById('description-out').innerHTML = product;
-        $('#description').css('height', $('#description-out').css('height'));
-    });
-    $('#hints').bind('input propertychange', function() {
+        document.getElementById("description-out").innerHTML = product;
+        document.getElementById("description").style.height = document.getElementById("description-out").offsetHeight + "px";
+    }
+    document.getElementById('hints').oninput = function() {
         var product = converter.makeHtml(this.value);
-        document.getElementById('hints-out').innerHTML = product;
-        $('#hints').css('height', $('#hints-out').css('height'));
-    });
+        document.getElementById("hints-out").innerHTML = product;
+        document.getElementById("hints").style.height = document.getElementById("hints-out").offsetHeight + "px";
+    }
 </script>
 {% endblock %}

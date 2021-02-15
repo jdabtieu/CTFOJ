@@ -38,10 +38,9 @@
 {% block script %}
 <script>
     function deletemsg(e) {
-        var id = $(e).attr("aid");
-        $("#confirm").css("display", "")
-                     .find("input[name='aid']")
-                     .attr("value", id);
+        var id = e.getAttribute("aid");
+        document.getElementById("confirm").style.display = "";
+        document.querySelector("#confirm input[name='aid']").setAttribute("value", id);
     }
 
     var total_length = {{ length }};

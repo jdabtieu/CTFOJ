@@ -16,10 +16,10 @@
 {% endblock %}
 {% block script %}
 <script>
-    $('#description').bind('input propertychange', function() {
+    document.getElementById('description').oninput = function() {
         var product = converter.makeHtml(this.value);
         document.getElementById("description-out").innerHTML = product;
-        $('#description').css('height', $('#description-out').css('height'));
-    });
+        document.getElementById("description").style.height = document.getElementById("description-out").offsetHeight + "px";
+    }
 </script>
 {% endblock %}

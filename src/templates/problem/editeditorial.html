@@ -17,12 +17,12 @@
 <script>
     var product = converter.makeHtml(document.getElementById('editorial').value);
     document.getElementById('editorial-out').innerHTML = product;
-    $('#editorial').css('height', $('#editorial-out').css('height'));
+    document.getElementById("editorial").style.height = document.getElementById("editorial-out").offsetHeight + "px";
     
-    $('#editorial').bind('input propertychange', function() {
+    document.getElementById('editorial').oninput = function() {
         var product = converter.makeHtml(this.value);
-        document.getElementById('editorial-out').innerHTML = product;
-        $('#editorial').css('height', $('#editorial-out').css('height'));
-    });
+        document.getElementById("editorial-out").innerHTML = product;
+        document.getElementById("editorial").style.height = document.getElementById("editorial-out").offsetHeight + "px";
+    }
 </script>
 {% endblock %}
