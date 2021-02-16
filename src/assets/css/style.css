@@ -6,7 +6,7 @@
 }
 
 .see-more-wrapper {
-    background-color: #ffffff;
+    background-color: inherit;
     position: absolute;
     bottom: 0;
     padding: 4px 0;
@@ -136,4 +136,20 @@ a {
 
 .svg-green {
     filter: invert(57%) sepia(58%) saturate(3606%) hue-rotate(83deg) brightness(118%) contrast(125%);
+}
+
+/****************** DARK MODE ********************************/
+.dark {
+    background: #2f2f2f;
+    background-color: #2f2f2f;
+    color: #fff;
+}
+
+.dark.card {
+    border: 1px solid rgba(255, 255, 255, .125);
+}
+
+.dark.form-control:focus {
+    background-color: #2f2f2f;
+    color: #fff;
 }
