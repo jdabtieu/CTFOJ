@@ -6,6 +6,6 @@ $(".see-more").each(function() {
 
 $(".see-more").click(function(event) {
     event.preventDefault();
-    $(event.target).parent().parent().css("max-height", "");
-    $(event.target).parent().remove()
+    event.target.parentElement.parentElement.style.maxHeight = "";
+    event.target.parentElement.remove();
 });
