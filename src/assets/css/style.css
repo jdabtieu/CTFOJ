@@ -145,11 +145,34 @@ a {
     color: #fff;
 }
 
-.dark.card {
+.dark .card {
     border: 1px solid rgba(255, 255, 255, .125);
+    background-color: #2f2f2f;
 }
 
-.dark.form-control:focus {
+.dark .form-control:focus {
     background-color: #2f2f2f;
     color: #fff;
+}
+
+.dark .form-control {
+    background-color: #2f2f2f;
+    color: #fff;
+}
+
+.dark tr {
+    background-color: #2f2f2f;
+    color: #fff;
+}
+
+.dark tr:hover {
+    color: #fff!important;
+}
+
+.dark .page-link {
+    background-color: #2f2f2f!important;
+}
+
+.dark .page-item.active .page-link {
+    background-color: #0d6efd!important;
 }
