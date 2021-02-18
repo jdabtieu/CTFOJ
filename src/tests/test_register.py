@@ -104,5 +104,5 @@ def test_register(client, database):
         algorithm='HS256'
     )
 
-    result = client.get(f'/confirmregister/{token}')
+    result = client.get(f'/confirmregister/{token}', follow_redirects=True)
     assert b'expired' in result.data
