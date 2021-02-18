@@ -176,3 +176,7 @@ a {
 .dark .page-item.active .page-link {
     background-color: #0d6efd!important;
 }
+
+.dark-toggle:checked {
+    background-color: #2f2f2f;
+}

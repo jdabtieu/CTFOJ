@@ -21,7 +21,10 @@ function getCookie(name) {
     return "";
 }
 
-if (getCookie("darkMode") == 1) enableDark();
+if (getCookie("darkMode") == 1) {
+    enableDark();
+    document.querySelector(".dark-toggle").setAttribute("checked", "");
+}
 
 function toggleDark() {
     if (getCookie("darkMode") == 1) {

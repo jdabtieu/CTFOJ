@@ -31,14 +31,18 @@
                             {% endif %}
                         </ul>
                         <ul class="navbar-nav">
-                            <li class="nav-link" onclick="toggleDark()">Toggle Dark</li>
+                            <div class="form-check form-switch nav-link">
+                                <input class="form-check-input dark-toggle" onclick="toggleDark()" type="checkbox">
+                            </div>
                             <li class="nav-link white">Welcome, {{ session.username }}</li>
                             <li><a class="nav-link" href="/settings">Settings</a></li>
                             <li><a class="nav-link" href="/logout">Log Out</a></li>
                         </ul>
                     {% else %}
                         <ul class="navbar-nav ms-auto">
-                            <li class="nav-link" onclick="toggleDark()">Toggle Dark</li>
+                            <div class="form-check form-switch nav-link">
+                                <input class="form-check-input dark-toggle" onclick="toggleDark()" type="checkbox">
+                            </div>
                             <li><a class="nav-link" href="/register">Register</a></li>
                             <li><a class="nav-link" href="/login">Log In</a></li>
                         </ul>
