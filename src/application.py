@@ -162,7 +162,9 @@ def login():
             send_email('Confirm Your CTF Login',
                        app.config['MAIL_DEFAULT_SENDER'], [email], text, mail)
 
-        flash('A login confirmation email has been sent to the email address you provided. Be sure to check your spam folder!', 'success')
+        flash(
+            'A login confirmation email has been sent to the email address you provided. Be sure to check your spam folder!',
+            'success')
         return render_template("login.html", site_key=app.config['HCAPTCHA_SITE'])
 
     # Remember which user has logged in
@@ -241,7 +243,9 @@ def register():
         send_email('Confirm Your CTF Account',
                    app.config['MAIL_DEFAULT_SENDER'], [email], text, mail)
 
-    flash('An account creation confirmation email has been sent to the email address you provided. Be sure to check your spam folder!', 'success')
+    flash(
+        'An account creation confirmation email has been sent to the email address you provided. Be sure to check your spam folder!',
+        'success')
     return render_template("register.html", site_key=app.config['HCAPTCHA_SITE'])
 
 
@@ -511,8 +515,9 @@ def contest_notify(contest_id):
         flash('Must provide message', 'danger')
         return render_template('admin/contestnotify.html'), 400
 
-    data = db.execute("SELECT email FROM contest_users JOIN users on user_id=users.id WHERE contest_users.contest_id=:cid",
-                      cid=contest_id)
+    data = db.execute(
+        "SELECT email FROM contest_users JOIN users on user_id=users.id WHERE contest_users.contest_id=:cid",
+        cid=contest_id)
     emails = [participant["email"] for participant in data]
     if not app.config['TESTING']:
         send_email(subject, app.config['MAIL_DEFAULT_SENDER'], [], message, mail, emails)
@@ -579,13 +584,15 @@ def contest_problem(contest_id, problem_id):
 
     # Check if flag is correct
     if flag != check[0]["flag"]:
-        db.execute("INSERT INTO submissions(date, user_id, problem_id, contest_id, correct) VALUES(datetime('now'), :uid, :pid, :cid, 0)",
-                   uid=session["user_id"], pid=problem_id, cid=contest_id)
+        db.execute(
+            "INSERT INTO submissions(date, user_id, problem_id, contest_id, correct) VALUES(datetime('now'), :uid, :pid, :cid, 0)",
+            uid=session["user_id"], pid=problem_id, cid=contest_id)
         flash('Your flag is incorrect', 'danger')
         return render_template("contest/contest_problem.html", data=check[0])
 
-    db.execute("INSERT INTO submissions(date, user_id, problem_id, contest_id, correct) VALUES(datetime('now'), :uid, :pid, :cid, 1)",
-               uid=session["user_id"], pid=problem_id, cid=contest_id)
+    db.execute(
+        "INSERT INTO submissions(date, user_id, problem_id, contest_id, correct) VALUES(datetime('now'), :uid, :pid, :cid, 1)",
+        uid=session["user_id"], pid=problem_id, cid=contest_id)
 
     # Check if user has already found this flag
     check1 = db.execute("SELECT * FROM contest_solved WHERE contest_id=:cid AND user_id=:uid AND problem_id=:pid",
@@ -602,8 +609,9 @@ def contest_problem(contest_id, problem_id):
         points = check[0]["point_value"]
         db.execute("INSERT INTO contest_solved(contest_id, user_id, problem_id) VALUES(:cid, :uid, :pid)",
                    cid=contest_id, pid=problem_id, uid=session["user_id"])
-        db.execute("UPDATE contest_users SET lastAC=datetime('now'), points=points+:points WHERE contest_id=:cid AND user_id=:uid",
-                   cid=contest_id, points=points, uid=session["user_id"])
+        db.execute(
+            "UPDATE contest_users SET lastAC=datetime('now'), points=points+:points WHERE contest_id=:cid AND user_id=:uid",
+            cid=contest_id, points=points, uid=session["user_id"])
 
     flash('Congratulations! You have solved this problem!', 'success')
     return render_template("contest/contest_problem.html", data=check[0])
@@ -678,12 +686,14 @@ def edit_contest_problem(contest_id, problem_id):
         need_update = db.execute("SELECT user_id FROM contest_solved WHERE contest_id=:cid AND problem_id=:pid",
                                  cid=contest_id, pid=problem_id)
         need_update = [user["user_id"] for user in need_update]
-        db.execute(f"UPDATE contest_users SET points = points + :point_change WHERE contest_id=:cid AND user_id IN ({','.join([str(user) for user in need_update])})",
-                   point_change=point_change, cid=contest_id)
+        db.execute(
+            f"UPDATE contest_users SET points = points + :point_change WHERE contest_id=:cid AND user_id IN ({','.join([str(user) for user in need_update])})",
+            point_change=point_change, cid=contest_id)
 
-    db.execute("UPDATE contest_problems SET name=:name, category=:category, point_value=:pv, flag=:flag WHERE contest_id=:cid AND problem_id=:pid",
-               name=new_name, category=new_category, pv=new_points,
-               flag=new_flag, cid=contest_id, pid=problem_id)
+    db.execute(
+        "UPDATE contest_problems SET name=:name, category=:category, point_value=:pv, flag=:flag WHERE contest_id=:cid AND problem_id=:pid",
+        name=new_name, category=new_category, pv=new_points,
+        flag=new_flag, cid=contest_id, pid=problem_id)
 
     write_file(f'metadata/contests/{contest_id}/{problem_id}/description.md', new_description)  # noqa
     write_file(f'metadata/contests/{contest_id}/{problem_id}/hints.md', new_hint)
@@ -706,8 +716,9 @@ def contest_scoreboard(contest_id):
         return redirect("/contest/" + contest_id)
 
     # Render page
-    data = db.execute("SELECT user_id, points, lastAC, username FROM contest_users JOIN users on user_id=users.id WHERE contest_users.contest_id=:cid ORDER BY points DESC, lastAC ASC",
-                      cid=contest_id)
+    data = db.execute(
+        "SELECT user_id, points, lastAC, username FROM contest_users JOIN users on user_id=users.id WHERE contest_users.contest_id=:cid ORDER BY points DESC, lastAC ASC",
+        cid=contest_id)
     return render_template("contest/contestscoreboard.html",
                            title=contest_info[0]["name"], data=data)
 
@@ -753,8 +764,9 @@ def contest_add_problem(contest_id):
     description = description.replace('\r', '')
 
     # Ensure problem does not already exist
-    problem_info = db.execute("SELECT * FROM contest_problems WHERE contest_id=:cid AND (problem_id=:pid OR name=:name)",
-                              cid=contest_id, pid=problem_id, name=name)
+    problem_info = db.execute(
+        "SELECT * FROM contest_problems WHERE contest_id=:cid AND (problem_id=:pid OR name=:name)",
+        cid=contest_id, pid=problem_id, name=name)
     if len(problem_info) != 0:
         flash('A problem with this name or ID already exists', 'danger')
         return render_template("admin/createproblem.html"), 409
@@ -770,9 +782,10 @@ def contest_add_problem(contest_id):
         description += f'\n\n[{filename}](/{filepath + filename})'
 
     # Modify problems table
-    db.execute("INSERT INTO contest_problems(contest_id, problem_id, name, point_value, category, flag, draft) VALUES(:cid, :pid, :name, :point_value, :category, :flag, :draft)",
-               cid=contest_id, pid=problem_id, name=name, point_value=point_value,
-               category=category, flag=flag, draft=draft)
+    db.execute(
+        "INSERT INTO contest_problems(contest_id, problem_id, name, point_value, category, flag, draft) VALUES(:cid, :pid, :name, :point_value, :category, :flag, :draft)",
+        cid=contest_id, pid=problem_id, name=name, point_value=point_value,
+        category=category, flag=flag, draft=draft)
 
     os.makedirs(f'metadata/contests/{contest_id}/{problem_id}')
     write_file(f'metadata/contests/{contest_id}/{problem_id}/description.md', description)
@@ -859,10 +872,12 @@ def problems():
     for row in solved_data:
         solved.add(row["problem_id"])
 
-    if category != None:
+    if category is not None:
         data = db.execute(
-            "SELECT * FROM problems WHERE (draft=0 AND category=?) ORDER BY id ASC LIMIT 50 OFFSET ?", category, page)
-        length = len(db.execute("SELECT * FROM problems WHERE (draft=0 AND category=?)", category))
+            "SELECT * FROM problems WHERE (draft=0 AND category=?) ORDER BY id ASC LIMIT 50 OFFSET ?",
+            category, page)
+        length = len(db.execute("SELECT * FROM problems WHERE (draft=0 AND category=?)",
+                                category))
     else:
         data = db.execute(
             "SELECT * FROM problems WHERE draft=0 ORDER BY id ASC LIMIT 50 OFFSET ?", page)
@@ -872,7 +887,8 @@ def problems():
     categories.sort(key=lambda x: x['category'])
 
     return render_template('problem/problems.html',
-                           data=data, solved=solved, length=-(-length // 50), categories=categories, selected=category)
+                           data=data, solved=solved, length=-(-length // 50),
+                           categories=categories, selected=category)
 
 
 @app.route('/problems/draft')
@@ -925,8 +941,9 @@ def problem(problem_id):
         return render_template('problem/problem.html', data=data[0]), 400
 
     check = request.form.get("flag") == flag
-    db.execute("INSERT INTO submissions (date, user_id, problem_id, correct) VALUES (datetime('now'), :user_id, :problem_id, :check)",
-               user_id=session["user_id"], problem_id=problem_id, check=check)
+    db.execute(
+        "INSERT INTO submissions (date, user_id, problem_id, correct) VALUES (datetime('now'), :user_id, :problem_id, :check)",
+        user_id=session["user_id"], problem_id=problem_id, check=check)
 
     if not check:
         flash('The flag you submitted was incorrect', 'danger')
@@ -1122,7 +1139,7 @@ def admin_submissions():
                                 *args))
         args.append(page)
         submissions = db.execute(("SELECT submissions.*, users.username FROM submissions "
-                                 f"LEFT JOIN users ON user_id=users.id {modifier}"
+                                  f"LEFT JOIN users ON user_id=users.id {modifier}"
                                   " LIMIT 50 OFFSET ?"), *args)
 
     return render_template("admin/submissions.html",
@@ -1182,9 +1199,10 @@ def admin_createcontest():
         flash('Description cannot be empty', 'danger')
         return render_template("admin/createcontest.html"), 400
 
-    db.execute("INSERT INTO contests (id, name, start, end, scoreboard_visible) VALUES (:id, :name, datetime(:start), datetime(:end), :scoreboard_visible)",
-               id=contest_id, name=contest_name, start=start, end=end,
-               scoreboard_visible=scoreboard_visible)
+    db.execute(
+        "INSERT INTO contests (id, name, start, end, scoreboard_visible) VALUES (:id, :name, datetime(:start), datetime(:end), :scoreboard_visible)",
+        id=contest_id, name=contest_name, start=start, end=end,
+        scoreboard_visible=scoreboard_visible)
 
     os.makedirs('metadata/contests/' + contest_id)
     write_file('metadata/contests/' + contest_id + '/description.md', description)
@@ -1238,9 +1256,10 @@ def createproblem():
         description += f'\n\n[{filename}](/dl/{filename})'
 
     # Modify problems table
-    db.execute("INSERT INTO problems (id, name, point_value, category, flag, draft) VALUES (:id, :name, :point_value, :category, :flag, :draft)",
-               id=problem_id, name=name, point_value=point_value, category=category,
-               flag=flag, draft=draft)
+    db.execute(
+        "INSERT INTO problems (id, name, point_value, category, flag, draft) VALUES (:id, :name, :point_value, :category, :flag, :draft)",
+        id=problem_id, name=name, point_value=point_value, category=category,
+        flag=flag, draft=draft)
 
     os.makedirs('metadata/problems/' + problem_id)
     write_file('metadata/problems/' + problem_id + '/description.md', description)
