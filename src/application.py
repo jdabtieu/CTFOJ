@@ -1,16 +1,13 @@
-import os
-import sys
 import logging
+import os
 import shutil
+import sys
 import zipfile
-from datetime import datetime
-from tempfile import mkdtemp
 from io import BytesIO
+from tempfile import mkdtemp
 
-import jwt
 from cs50 import SQL
-from flask import (Flask, flash, redirect, render_template, request,
-                   send_from_directory, send_file, session)
+from flask import (Flask, render_template, send_from_directory, send_file)
 from flask_mail import Mail
 from flask_session import Session
 from flask_wtf.csrf import CSRFProtect
@@ -852,18 +849,30 @@ def problems():
         page = "1"
     page = (int(page) - 1) * 50
 
+    category = request.args.get("category")
+    if not category or category == 'All':
+        category = None
+
     solved_data = db.execute("SELECT problem_id FROM problem_solved WHERE user_id=:uid",
                              uid=session["user_id"])
     solved = set()
     for row in solved_data:
         solved.add(row["problem_id"])
 
-    data = db.execute(
-        "SELECT * FROM problems WHERE draft=0 ORDER BY id ASC LIMIT 50 OFFSET ?", page)
-    length = len(db.execute("SELECT * FROM problems WHERE draft=0"))
+    if category != None:
+        data = db.execute(
+            "SELECT * FROM problems WHERE (draft=0 AND category=?) ORDER BY id ASC LIMIT 50 OFFSET ?", category, page)
+        length = len(db.execute("SELECT * FROM problems WHERE (draft=0 AND category=?)", category))
+    else:
+        data = db.execute(
+            "SELECT * FROM problems WHERE draft=0 ORDER BY id ASC LIMIT 50 OFFSET ?", page)
+        length = len(db.execute("SELECT * FROM problems WHERE draft=0"))
+
+    categories = db.execute("SELECT DISTINCT category FROM problems")
+    categories.sort(key=lambda x: x['category'])
 
     return render_template('problem/problems.html',
-                           data=data, solved=solved, length=-(-length // 50))
+                           data=data, solved=solved, length=-(-length // 50), categories=categories, selected=category)
 
 
 @app.route('/problems/draft')
