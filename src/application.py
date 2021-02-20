@@ -866,7 +866,7 @@ def problems():
     page = (int(page) - 1) * 50
 
     category = request.args.get("category")
-    if not category or category == 'All':
+    if not category:
         category = None
 
     solved_data = db.execute("SELECT problem_id FROM problem_solved WHERE user_id=:uid",

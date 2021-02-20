@@ -28,8 +28,25 @@
     margin-top: 8px;
 }
 
+#category-selector {
+    display: inline-block!important;
+    width: auto!important;
+}
+
+#category-selector-container {
+    margin-bottom: 0.5rem;
+}
+
+@media screen and (min-width: 1000px) {
+    #category-selector-container {
+        float: right;
+    }
+}
+
+
+
 /****************** SUBMISSIONS PAGE LAYOUT ******************/
-@media screen and (min-width: 990.01px) {
+@media screen and (min-width: 991px) {
     #submission-search-bottom {
         display: none;
     }

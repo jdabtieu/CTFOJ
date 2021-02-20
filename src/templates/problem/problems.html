@@ -4,11 +4,13 @@
 
 {% block main %}
 <h1>Problems</h1>
-<div id="pagination" style="display: inline-block"></div>
-<div style="float: right">
+<div id="pagination" style="display: inline-block; min-height: 42px"></div>
+<div id="category-selector-container">
     <label for="category-selector">Category</label>
-    <select class="custom-select" id="category-selector" onchange="selectCategory(this.value)">
-        <option>All</option>
+    <select class="form-control form-select"
+            id="category-selector"
+            onchange="selectCategory(this.value)">
+        <option value="">All</option>
         <option disabled>----------</option>
         {% for category in categories %}
             {% if selected == category['category'] %}
