@@ -4,7 +4,21 @@
 
 {% block main %}
 <h1>Problems</h1>
-<div id="pagination"></div>
+<div id="pagination" style="display: inline-block"></div>
+<div style="float: right">
+    <label for="category-selector">Category</label>
+    <select class="custom-select" id="category-selector" onchange="selectCategory(this.value)">
+        <option>All</option>
+        <option disabled>----------</option>
+        {% for category in categories %}
+            {% if selected == category['category'] %}
+                <option selected>{{ category['category'] }}</option>
+            {% else %}
+                <option>{{ category['category'] }}</option>
+            {% endif %}
+        {% endfor %}
+    </select>
+</div>
 <div style="overflow-x: auto;">
     <table class="table table-hover table-full-width">
         <thead class="table-dark">
@@ -34,4 +48,31 @@
     </table>
 </div>
 <script>var total_length = {{ length }};</script>
+<script>
+    function selectCategory(value) {
+        var kvp = document.location.search.substr(1).split('&');
+        let i = 0;
+        for (; i < kvp.length; i++) {
+            if (kvp[i].startsWith('category=')) {
+                let pair = kvp[i].split('=');
+                pair[1] = value;
+                kvp[i] = pair.join('=');
+                break;
+            }
+        }
+
+        if (i >= kvp.length) {
+            kvp[kvp.length] = ["category", value].join('=');
+        }
+        for (let i = 0; i < kvp.length; i++) {
+            if (kvp[i].startsWith('page')) {
+                let pair = kvp[i].split('=');
+                pair[1] = "1";
+                kvp[i] = pair.join('=');
+                break;
+            }
+        }
+        document.location.search = kvp.join('&');
+    }
+</script>
 {% endblock %}
