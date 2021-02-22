@@ -265,7 +265,7 @@ def confirm_register(token):
     if datetime.strptime(token["expiration"], "%Y-%m-%dT%H:%M:%S.%f") < datetime.utcnow():
         db.execute(
             "DELETE FROM users WHERE verified=0 and email=:email", email=token['email'])
-        flash("Email verification link expired; Please re-register", "danger")
+        flash("Email verification link expired. Please register again using the same email", "danger")
         return redirect("/register")
 
     db.execute("UPDATE users SET verified=1 WHERE email=:email", email=token['email'])
