@@ -489,13 +489,17 @@ def contest(contest_id):
     info = db.execute(("SELECT * FROM contest_problems WHERE contest_id=:cid "
                        "AND draft=0 ORDER BY problem_id ASC, category ASC"),
                       cid=contest_id)
+
     for row in info:
+        sols = db.execute("SELECT COUNT(DISTINCT user_id) FROM contest_solved WHERE problem_id=:problem_id AND contest_id=:contest_id", problem_id=row["problem_id"], contest_id=contest_id)[0]["COUNT(DISTINCT user_id)"]
+
         keys = {
             "name": row["name"],
             "category": row["category"],
             "problem_id": row["problem_id"],
             "solved": 1 if row["problem_id"] in solved_data else 0,
-            "point_value": row["point_value"]
+            "point_value": row["point_value"],
+            "sols": sols,
         }
         data.insert(len(data), keys)
 
@@ -888,6 +892,9 @@ def problems():
 
     categories = db.execute("SELECT DISTINCT category FROM problems")
     categories.sort(key=lambda x: x['category'])
+
+    for row in data:
+        row["sols"] = db.execute("SELECT COUNT(DISTINCT user_id) FROM submissions WHERE problem_id=:problem_id", problem_id=row["id"])[0]["COUNT(DISTINCT user_id)"]
 
     return render_template('problem/problems.html',
                            data=data, solved=solved, length=-(-length // 50),

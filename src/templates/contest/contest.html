@@ -26,10 +26,11 @@
     <table class="table table-hover table-full-width">
         <thead class="table-dark">
             <tr>
-                <th scope="col" style="width: 12%;">Status</th>
-                <th scope="col" style="width: 54%;">Name</th>
-                <th scope="col" style="width: 22%;">Category</th>
-                <th scope="col" style="width: 12%;">Value</th>
+                <th scope="col" style="width: 10%;">Status</th>
+                <th scope="col" style="width: 60%;">Name</th>
+                <th scope="col" style="width: 10%;">Category</th>
+                <th scope="col" style="width: 10%;">Value</th>
+                <th scope="col" style="width: 10%;">Users</th>
             </tr>
         </thead>
         <tbody>
@@ -45,6 +46,11 @@
                 <td><a href="{{ request.path }}/problem/{{ row["problem_id"] }}">{{ row["name"] }}</a></td>
                 <td>{{ row["category"] }}</td>
                 <td>{{ row["point_value"] }}</td>
+                {% if session.admin %}
+                    <td><a href="/admin/submissions?problem_id={{ row["problem_id"] }}&contest_id={{ request.path[9:] }}&correct=AC">{{ row["sols"] }}</a></td>
+                {% else %}
+                    <td>{{ row["sols"] }}</td>
+                {% endif %}
             </tr>
             {% endfor %}
         </tbody>
