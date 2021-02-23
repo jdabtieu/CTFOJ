@@ -47,7 +47,7 @@
                 <td>{{ row["category"] }}</td>
                 <td>{{ row["point_value"] }}</td>
                 {% if session.admin %}
-                    <td><a href="/admin/submissions?problem_id={{ row["id"] }}&contest_id={{ request.path[9:] }}&correct=AC">{{ row["sols"] }}</a></td>
+                    <td><a href="/admin/submissions?problem_id={{ row["problem_id"] }}&contest_id={{ request.path[9:] }}&correct=AC">{{ row["sols"] }}</a></td>
                 {% else %}
                     <td>{{ row["sols"] }}</td>
                 {% endif %}
