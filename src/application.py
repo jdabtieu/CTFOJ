@@ -491,12 +491,11 @@ def contest(contest_id):
                       cid=contest_id)
 
     for row in info:
-        sols = db.execute("SELECT COUNT(DISTINCT user_id) FROM contest_solved WHERE problem_id=:problem_id", problem_id=row["problem_id"])[0]["COUNT(DISTINCT user_id)"]
+        sols = db.execute("SELECT COUNT(DISTINCT user_id) FROM contest_solved WHERE problem_id=:problem_id AND contest_id=:contest_id", problem_id=row["problem_id"], contest_id=contest_id)[0]["COUNT(DISTINCT user_id)"]
 
         keys = {
             "name": row["name"],
             "category": row["category"],
-            "contest_id": row["problem_id"],
             "problem_id": row["problem_id"],
             "solved": 1 if row["problem_id"] in solved_data else 0,
             "point_value": row["point_value"],
