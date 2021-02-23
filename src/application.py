@@ -496,6 +496,7 @@ def contest(contest_id):
         keys = {
             "name": row["name"],
             "category": row["category"],
+            "contest_id": row["problem_id"],
             "problem_id": row["problem_id"],
             "solved": 1 if row["problem_id"] in solved_data else 0,
             "point_value": row["point_value"],

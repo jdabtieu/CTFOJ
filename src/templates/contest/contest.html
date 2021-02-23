@@ -46,7 +46,11 @@
                 <td><a href="{{ request.path }}/problem/{{ row["problem_id"] }}">{{ row["name"] }}</a></td>
                 <td>{{ row["category"] }}</td>
                 <td>{{ row["point_value"] }}</td>
-                <td>{{ row["sols"] }}</td>
+                {% if session.admin %}
+                    <td><a href="/admin/submissions?problem_id={{ row["id"] }}&contest_id={{ row["contest_id"] }}&correct=AC">{{ row["sols"] }}</a></td>
+                {% else %}
+                    <td>{{ row["sols"] }}</td>
+                {% endif %}
             </tr>
             {% endfor %}
         </tbody>
