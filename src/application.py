@@ -584,6 +584,12 @@ def contest_problem(contest_id, problem_id):
         flash('This contest has ended', 'danger')
         return render_template("contest/contest_problem.html", data=check[0]), 400
 
+    # Check if user is disqualified
+    user = db.execute("SELECT * FROM contest_users WHERE user_id=?", session["user_id"])
+    if user[0]["points"] == -999999:
+        flash('You are disqualified from this contest', 'danger')
+        return render_template("contest/contest_problem.html", data=check[0])
+
     flag = request.form.get("flag")
     if not flag:
         flash('Cannot submit an empty flag', 'danger')
@@ -728,6 +734,24 @@ def contest_scoreboard(contest_id):
         cid=contest_id)
     return render_template("contest/contestscoreboard.html",
                            title=contest_info[0]["name"], data=data)
+
+
+@app.route("/contest/<contest_id>/scoreboard/ban", methods=["POST"])
+@admin_required
+def contest_dq(contest_id):
+    # Ensure contest exists
+    contest_info = db.execute("SELECT * FROM contests WHERE id=:cid", cid=contest_id)
+    if len(contest_info) != 1:
+        return render_template("contest/contest_noexist.html"), 404
+
+    user_id = request.form.get("user_id")
+    if not user_id:
+        flash("No user ID specified, please try again", "danger")
+        return redirect("/contest/" + contest_id + "/scoreboard")
+
+    db.execute("UPDATE contest_users SET points=-999999 WHERE user_id=?", user_id)
+
+    return redirect("/contest/" + contest_id + "/scoreboard")
 
 
 @app.route("/contest/<contest_id>/addproblem", methods=["GET", "POST"])

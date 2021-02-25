@@ -4,6 +4,15 @@
 
 {% block main %}
 <h1><a href="{{ request.path[:-11] }}">{{ title }}</a></h1>
+{% if session["admin"] %}
+    <div id="confirm" style="display: none;">
+        <form method="post" style="margin-bottom: 1rem;" action="{{ request.path }}/ban">
+            <input type="hidden" name="user_id">
+            <input class="btn btn-danger" type="submit">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        </form>
+    </div>
+{% endif %}
 <div style="overflow-x: auto;">
     <table class="table table-hover table-full-width">
         <thead class="table-dark">
@@ -12,22 +21,46 @@
                 <th scope="col" style="width: 40%;">Username</th>
                 <th scope="col" style="width: 18%;">Points</th>
                 <th scope="col" style="width: 30%;">Most recent AC submission</th>
+                {% if session["admin"] %}
+                    <th scope="col" style="width: 10%">Actions</th>
+                {% endif %}
             </tr>
         </thead>
         <tbody>
             {% for i in range(data | length) %}
             <tr>
                 <td>{{ i + 1 }}</td>
-                <td>{{ data[i]["username"] }}</td>
+                <td class="username">{{ data[i]["username"] }}</td>
                 <td>{{ data[i]["points"] }}</td>
                 {% if data[i]["lastAC"] %}
                     <td class="dt">{{ data[i]["lastAC"] }}</td>
                 {% else %}
                     <td>None</td>
                 {% endif %}
+                {% if session["admin"] %}
+                    <td><a href="#" onclick="dq(this, {{ data[i]['user_id'] }})">
+                        <img src="/assets/images/restrict.svg" onerror="this.src='/assets/images/restrict.png'" class="svg-red icon" title="Disqualify user"></img>
+                    </a></td>
+                {% endif %}
             </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
+{% endblock %}
+{% block script %}
+{% if session["admin"] %}
+    <script>
+        function createForm(user_id, username) {
+            document.getElementById("confirm").style.display = "";
+            document.querySelector("#confirm .btn").setAttribute("value", `Are you sure you want to disqualify ${username}? This action is irreversible. Click here to confirm`);
+            document.querySelector("#confirm input[name=user_id]").setAttribute("value", user_id);
+        }
+
+        function dq(e, user_id) {
+            var username = e.parentElement.parentElement.querySelector(".username").innerText;
+            createForm(user_id, username);
+        }
+    </script>
+{% endif %}
 {% endblock %}
