@@ -586,7 +586,7 @@ def contest_problem(contest_id, problem_id):
 
     # Check if user is disqualified
     user = db.execute("SELECT * FROM contest_users WHERE user_id=?", session["user_id"])
-    if user[0]["points"] == -999999:
+    if len(user) > 0 and user[0]["points"] == -999999:
         flash('You are disqualified from this contest', 'danger')
         return render_template("contest/contest_problem.html", data=check[0])
 
