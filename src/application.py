@@ -20,7 +20,6 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from helpers import *  # noqa
 
 app = Flask(__name__)
-maintenance_mode = False
 try:
     app.config.from_object('settings')
 except Exception as e:
@@ -60,14 +59,13 @@ csrf.init_app(app)
 @app.before_request
 def check_for_maintenance():
     # crappy if/elses used here for future expandability
-    global maintenance_mode
+    maintenance_mode = bool(os.path.exists('maintenance_mode'))
     # don't block the user if they only have the csrf token
     if maintenance_mode and request.path != '/login':
-        if not session:
+        if not session or 'admin' not in session:
             return render_template("error/maintenance.html"), 503
         elif not session['admin']:
             return render_template("error/maintenance.html"), 503
-
 
 @app.route("/")
 @login_required
@@ -1128,7 +1126,8 @@ def delete_problem(problem_id):
 @admin_required
 def admin_console():
     check_version()
-    return render_template("admin/console.html", maintenance_mode=maintenance_mode)
+    return render_template("admin/console.html",
+                           maintenance_mode=os.path.exists('maintenance_mode'))
 
 
 @csrf.exempt
@@ -1574,13 +1573,14 @@ def download_contest_problem(contest_id, problem_id):
 @app.route("/admin/maintenance", methods=["POST"])
 @admin_required
 def maintenance():
-    global maintenance_mode
-    maintenance_mode = not maintenance_mode
+    maintenance_mode = os.path.exists('maintenance_mode')
 
     if maintenance_mode:
-        flash("Enabled maintenance mode", "success")
-    else:
+        os.remove('maintenance_mode')
         flash("Disabled maintenance mode", "success")
+    else:
+        write_file('maintenance_mode', '')
+        flash("Enabled maintenance mode", "success")
 
     return redirect('/admin/console')
 
