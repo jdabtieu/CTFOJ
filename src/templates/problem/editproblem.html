@@ -16,7 +16,14 @@
     </div>
     <input class="form-control mb-3" id="category" name="category" value="{{ data['category'] }}" placeholder="Category" required>
     <input class="form-control mb-3" id="flag" name="flag" placeholder="New flag (optional)">
-    <input class="form-control mb-3" type="number" id="point_value" name="point_value" value="{{ data['point_value'] }}" placeholder="Point Value" required>
+    <input class="form-control mb-3"
+           type="number"
+           id="point_value"
+           name="point_value"
+           value="{{ data['point_value'] }}"
+           placeholder="Point Value"
+           {{ 'disabled' if data['score_users'] and data['score_users'] > 0 }}
+           required>
     <input class="btn btn-primary" type="submit" id="submit" name="submit" value="Submit">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 </form>

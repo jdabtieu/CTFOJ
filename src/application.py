@@ -625,6 +625,8 @@ def contest_problem(contest_id, problem_id):
                    cid=contest_id, pid=problem_id, uid=session["user_id"])
 
         if check[0]["score_users"] != -1:  # Dynamic scoring
+            # For details see: https://www.desmos.com/calculator/eifeir81wk
+            # For details see: https://github.com/jdabtieu/CTFOJ/issues/2
             solved_users = db.execute(
                 "SELECT user_id FROM contest_solved WHERE contest_id=:cid AND problem_id=:pid",
                 cid=contest_id, pid=problem_id)
@@ -640,11 +642,13 @@ def contest_problem(contest_id, problem_id):
                 "UPDATE contest_users SET lastAC=datetime('now'), points=points+:points WHERE contest_id=:cid AND user_id=:uid",
                 cid=contest_id, points=old_points, uid=session["user_id"])
 
-            for user in solved_users:
-                db.execute(
-                    "UPDATE contest_users SET points=points+:points WHERE contest_id=:cid AND user_id=:uid",
-                    cid=contest_id, points=point_diff, uid=user["user_id"])
+            # Update points of all users who previously solved the problem
+            need_update = [user["user_id"] for user in solved_users]
+            db.execute(
+                f"UPDATE contest_users SET points = points + :point_change WHERE contest_id=:cid AND user_id IN ({','.join([str(user) for user in need_update])})",
+                point_change=point_diff, cid=contest_id)
 
+            # Set new point value of problem
             db.execute("UPDATE contest_problems SET point_value=:pv WHERE contest_id=:cid AND problem_id=:pid",
                        pv=new_points, cid=contest_id, pid=problem_id)
 
@@ -721,15 +725,18 @@ def edit_contest_problem(contest_id, problem_id):
     if not new_hint:
         new_hint = ""
 
-    old_points = data[0]["point_value"]
-    if old_points != new_points:
-        point_change = int(new_points) - old_points
-        need_update = db.execute("SELECT user_id FROM contest_solved WHERE contest_id=:cid AND problem_id=:pid",
-                                 cid=contest_id, pid=problem_id)
-        need_update = [user["user_id"] for user in need_update]
-        db.execute(
-            f"UPDATE contest_users SET points = points + :point_change WHERE contest_id=:cid AND user_id IN ({','.join([str(user) for user in need_update])})",
-            point_change=point_change, cid=contest_id)
+    if data[0]["score_users"] == -1:  # Only allow editing score for statically scored
+        old_points = data[0]["point_value"]
+        if old_points != new_points:
+            point_change = int(new_points) - old_points
+            need_update = db.execute("SELECT user_id FROM contest_solved WHERE contest_id=:cid AND problem_id=:pid",
+                                     cid=contest_id, pid=problem_id)
+            need_update = [user["user_id"] for user in need_update]
+            db.execute(
+                f"UPDATE contest_users SET points = points + :point_change WHERE contest_id=:cid AND user_id IN ({','.join([str(user) for user in need_update])})",
+                point_change=point_change, cid=contest_id)
+    else:  # Forcefully prevent score to be edited for dynamic score problems
+        new_points = data[0]["point_value"]
 
     db.execute(
         "UPDATE contest_problems SET name=:name, category=:category, point_value=:pv, flag=:flag WHERE contest_id=:cid AND problem_id=:pid",
