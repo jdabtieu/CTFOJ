@@ -778,12 +778,11 @@ def contest_add_problem(contest_id):
     name = request.form.get("name")
     description = request.form.get("description")
     hints = request.form.get("hints")
-    point_value = request.form.get("point_value")
     category = request.form.get("category")
     flag = request.form.get("flag")
     draft = 1 if request.form.get("draft") else 0
 
-    if not problem_id or not name or not description or not point_value or not category or not flag:
+    if not problem_id or not name or not description or not category or not flag:
         flash('You have not entered all required fields', 'danger'), 400
         return render_template("contest/createproblem.html"), 400
 
@@ -812,11 +811,32 @@ def contest_add_problem(contest_id):
         file.save(filepath + filename)
         description += f'\n\n[{filename}](/{filepath + filename})'
 
-    # Modify problems table
-    db.execute(
-        "INSERT INTO contest_problems(contest_id, problem_id, name, point_value, category, flag, draft) VALUES(:cid, :pid, :name, :point_value, :category, :flag, :draft)",
-        cid=contest_id, pid=problem_id, name=name, point_value=point_value,
-        category=category, flag=flag, draft=draft)
+    # Check for static vs dynamic scoring
+    score_type = request.form.get("score_type")
+    if score_type == "dynamic":
+        min_points = request.form.get("min_point_value")
+        max_points = request.form.get("max_point_value")
+        users_decay = request.form.get("users_point_value")
+        if not min_points or not max_points or not users_decay:
+            flash('You have not entered all required fields', 'danger'), 400
+            return render_template("contest/createproblem.html"), 400
+
+        # Modify problems table
+        db.execute("INSERT INTO contest_problems VALUES(:cid, :pid, :name, :pv, :category, :flag, :draft, :min, :max, :users)",
+                   cid=contest_id, pid=problem_id, name=name, pv=max_points,
+                   category=category, flag=flag, draft=draft, min=min_points,
+                   max=max_points, users=users_decay)
+    else:  # assume static
+        point_value = request.form.get("point_value")
+        if not point_value:
+            flash('You have not entered all required fields', 'danger'), 400
+            return render_template("contest/createproblem.html"), 400
+
+        # Modify problems table
+        db.execute(
+            "INSERT INTO contest_problems(contest_id, problem_id, name, point_value, category, flag, draft) VALUES(:cid, :pid, :name, :pv, :category, :flag, :draft)",
+            cid=contest_id, pid=problem_id, name=name, pv=point_value,
+            category=category, flag=flag, draft=draft)
 
     os.makedirs(f'metadata/contests/{contest_id}/{problem_id}')
     write_file(f'metadata/contests/{contest_id}/{problem_id}/description.md', description)
