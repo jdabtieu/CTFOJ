@@ -1,4 +1,5 @@
 import logging
+import math
 import os
 import shutil
 import sys
@@ -500,6 +501,7 @@ def contest(contest_id):
             "solved": 1 if row["problem_id"] in solved_data else 0,
             "point_value": row["point_value"],
             "sols": sols,
+            "dynamic": 0 if row["score_users"] == -1 else 1,
         }
         data.insert(len(data), keys)
 
@@ -619,12 +621,38 @@ def contest_problem(contest_id, problem_id):
                    cid=contest_id, uid=session["user_id"])
 
     if len(check1) == 0:
-        points = check[0]["point_value"]
         db.execute("INSERT INTO contest_solved(contest_id, user_id, problem_id) VALUES(:cid, :uid, :pid)",
                    cid=contest_id, pid=problem_id, uid=session["user_id"])
-        db.execute(
-            "UPDATE contest_users SET lastAC=datetime('now'), points=points+:points WHERE contest_id=:cid AND user_id=:uid",
-            cid=contest_id, points=points, uid=session["user_id"])
+
+        if check[0]["score_users"] != -1:  # Dynamic scoring
+            solved_users = db.execute(
+                "SELECT user_id FROM contest_solved WHERE contest_id=:cid AND problem_id=:pid",
+                cid=contest_id, pid=problem_id)
+            N_min = check[0]["score_min"]
+            N_max = check[0]["score_max"]
+            N_users = check[0]["score_users"]
+            d = 11 * math.log(N_max - N_min) + N_users
+            solves = len(solved_users)
+            old_points = min(math.ceil(math.e**((d - solves + 1) / 11) + N_min), N_max)
+            new_points = min(math.ceil(math.e**((d - solves) / 11) + N_min), N_max)
+            point_diff = new_points - old_points
+            db.execute(
+                "UPDATE contest_users SET lastAC=datetime('now'), points=points+:points WHERE contest_id=:cid AND user_id=:uid",
+                cid=contest_id, points=old_points, uid=session["user_id"])
+
+            for user in solved_users:
+                db.execute(
+                    "UPDATE contest_users SET points=points+:points WHERE contest_id=:cid AND user_id=:uid",
+                    cid=contest_id, points=point_diff, uid=user["user_id"])
+
+            db.execute("UPDATE contest_problems SET point_value=:pv WHERE contest_id=:cid AND problem_id=:pid",
+                       pv=new_points, cid=contest_id, pid=problem_id)
+
+        else:  # Static scoring
+            points = check[0]["point_value"]
+            db.execute(
+                "UPDATE contest_users SET lastAC=datetime('now'), points=points+:points WHERE contest_id=:cid AND user_id=:uid",
+                cid=contest_id, points=points, uid=session["user_id"])
 
     flash('Congratulations! You have solved this problem!', 'success')
     return render_template("contest/contest_problem.html", data=check[0])
