@@ -15,6 +15,7 @@
 /settings.py
 /secret_key.txt
 /static/favicon.png
+/maintenance_mode
 
 # Logs
 /logs/
