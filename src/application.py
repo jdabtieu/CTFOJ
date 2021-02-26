@@ -770,7 +770,7 @@ def contest_add_problem(contest_id):
         return redirect('/contest/' + contest_id)
 
     if request.method == "GET":
-        return render_template("admin/createproblem.html")
+        return render_template("contest/createproblem.html")
 
     # Reached via POST
 
@@ -785,12 +785,12 @@ def contest_add_problem(contest_id):
 
     if not problem_id or not name or not description or not point_value or not category or not flag:
         flash('You have not entered all required fields', 'danger'), 400
-        return render_template("admin/createproblem.html"), 400
+        return render_template("contest/createproblem.html"), 400
 
     # Check if problem ID is valid
     if not verify_text(request.form.get("id")):
         flash('Invalid problem ID', 'danger')
-        return render_template("admin/createproblem.html"), 400
+        return render_template("contest/createproblem.html"), 400
 
     description = description.replace('\r', '')
 
@@ -800,7 +800,7 @@ def contest_add_problem(contest_id):
         cid=contest_id, pid=problem_id, name=name)
     if len(problem_info) != 0:
         flash('A problem with this name or ID already exists', 'danger')
-        return render_template("admin/createproblem.html"), 409
+        return render_template("contest/createproblem.html"), 409
 
     # Check if file exists & upload if it does
     file = request.files["file"]
