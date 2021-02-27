@@ -304,8 +304,8 @@ def confirm_login(token):
     return redirect("/")
 
 
-@login_required
 @app.route("/settings")
+@login_required
 def settings():
     return render_template("settings.html")
 
@@ -344,17 +344,27 @@ def changepassword():
     return redirect("/settings")
 
 
-@app.route("/settings/toggle2fa")
+@app.route("/settings/toggle2fa", methods=["GET", "POST"])
 @login_required
 def toggle2fa():
-    rows = db.execute("SELECT * FROM users WHERE id = :id",
-                      id=session["user_id"])
+    user = db.execute("SELECT * FROM users WHERE id=:id", id=session["user_id"])[0]
 
-    if rows[0]["twofa"]:
-        db.execute("UPDATE users SET twofa = 0 WHERE id = :id", id=session["user_id"])
+    if request.method == "GET":
+        return render_template("toggle2fa.html", status=user["twofa"])
+
+    # Reached via POST
+
+    password = request.form.get("password")
+
+    if not password or not check_password_hash(user['password'], password):
+        flash('Incorrect password', 'danger')
+        return render_template("toggle2fa.html", status=user["twofa"]), 401
+
+    if user["twofa"]:
+        db.execute("UPDATE users SET twofa=0 WHERE id=:id", id=session["user_id"])
         flash("2FA successfully disabled", "success")
     else:
-        db.execute("UPDATE users SET twofa = 1 WHERE id = :id", id=session["user_id"])
+        db.execute("UPDATE users SET twofa=1 WHERE id=:id", id=session["user_id"])
         flash("2FA successfully enabled", "success")
     return redirect("/settings")
 
