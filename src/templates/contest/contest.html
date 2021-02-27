@@ -45,7 +45,11 @@
                 </td>
                 <td><a href="{{ request.path }}/problem/{{ row["problem_id"] }}">{{ row["name"] }}</a></td>
                 <td>{{ row["category"] }}</td>
-                <td>{{ row["point_value"] }}</td>
+                {% if row["dynamic"] %}
+                    <td title="This problem is dynamically scored">{{ row["point_value"] }}D</td>
+                {% else %}
+                    <td>{{ row["point_value"] }}</td>
+                {% endif %}
                 {% if session.admin %}
                     <td><a href="/admin/submissions?problem_id={{ row["problem_id"] }}&contest_id={{ request.path[9:] }}&correct=AC">{{ row["sols"] }}</a></td>
                 {% else %}

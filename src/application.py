@@ -1,4 +1,5 @@
 import logging
+import math
 import os
 import shutil
 import sys
@@ -489,7 +490,8 @@ def contest(contest_id):
                       cid=contest_id)
 
     for row in info:
-        sols = db.execute("SELECT COUNT(DISTINCT user_id) FROM contest_solved WHERE problem_id=:problem_id AND contest_id=:contest_id", problem_id=row["problem_id"], contest_id=contest_id)[0]["COUNT(DISTINCT user_id)"]
+        sols = db.execute("SELECT COUNT(*) FROM contest_solved WHERE problem_id=:pid AND contest_id=:cid",
+                          pid=row["problem_id"], cid=contest_id)[0]["COUNT(*)"]
 
         keys = {
             "name": row["name"],
@@ -498,6 +500,7 @@ def contest(contest_id):
             "solved": 1 if row["problem_id"] in solved_data else 0,
             "point_value": row["point_value"],
             "sols": sols,
+            "dynamic": 0 if row["score_users"] == -1 else 1,
         }
         data.insert(len(data), keys)
 
@@ -617,12 +620,42 @@ def contest_problem(contest_id, problem_id):
                    cid=contest_id, uid=session["user_id"])
 
     if len(check1) == 0:
-        points = check[0]["point_value"]
         db.execute("INSERT INTO contest_solved(contest_id, user_id, problem_id) VALUES(:cid, :uid, :pid)",
                    cid=contest_id, pid=problem_id, uid=session["user_id"])
-        db.execute(
-            "UPDATE contest_users SET lastAC=datetime('now'), points=points+:points WHERE contest_id=:cid AND user_id=:uid",
-            cid=contest_id, points=points, uid=session["user_id"])
+
+        if check[0]["score_users"] != -1:  # Dynamic scoring
+            # For details see: https://www.desmos.com/calculator/eifeir81wk
+            # For details see: https://github.com/jdabtieu/CTFOJ/issues/2
+            solved_users = db.execute(
+                "SELECT user_id FROM contest_solved WHERE contest_id=:cid AND problem_id=:pid",
+                cid=contest_id, pid=problem_id)
+            N_min = check[0]["score_min"]
+            N_max = check[0]["score_max"]
+            N_users = check[0]["score_users"]
+            d = 11 * math.log(N_max - N_min) + N_users
+            solves = len(solved_users)
+            old_points = min(math.ceil(math.e**((d - solves + 1) / 11) + N_min), N_max)
+            new_points = min(math.ceil(math.e**((d - solves) / 11) + N_min), N_max)
+            point_diff = new_points - old_points
+            db.execute(
+                "UPDATE contest_users SET lastAC=datetime('now'), points=points+:points WHERE contest_id=:cid AND user_id=:uid",
+                cid=contest_id, points=old_points, uid=session["user_id"])
+
+            # Update points of all users who previously solved the problem
+            need_update = [user["user_id"] for user in solved_users]
+            db.execute(
+                f"UPDATE contest_users SET points = points + :point_change WHERE contest_id=:cid AND user_id IN ({','.join([str(user) for user in need_update])})",
+                point_change=point_diff, cid=contest_id)
+
+            # Set new point value of problem
+            db.execute("UPDATE contest_problems SET point_value=:pv WHERE contest_id=:cid AND problem_id=:pid",
+                       pv=new_points, cid=contest_id, pid=problem_id)
+
+        else:  # Static scoring
+            points = check[0]["point_value"]
+            db.execute(
+                "UPDATE contest_users SET lastAC=datetime('now'), points=points+:points WHERE contest_id=:cid AND user_id=:uid",
+                cid=contest_id, points=points, uid=session["user_id"])
 
     flash('Congratulations! You have solved this problem!', 'success')
     return render_template("contest/contest_problem.html", data=check[0])
@@ -691,15 +724,18 @@ def edit_contest_problem(contest_id, problem_id):
     if not new_hint:
         new_hint = ""
 
-    old_points = data[0]["point_value"]
-    if old_points != new_points:
-        point_change = int(new_points) - old_points
-        need_update = db.execute("SELECT user_id FROM contest_solved WHERE contest_id=:cid AND problem_id=:pid",
-                                 cid=contest_id, pid=problem_id)
-        need_update = [user["user_id"] for user in need_update]
-        db.execute(
-            f"UPDATE contest_users SET points = points + :point_change WHERE contest_id=:cid AND user_id IN ({','.join([str(user) for user in need_update])})",
-            point_change=point_change, cid=contest_id)
+    if data[0]["score_users"] == -1:  # Only allow editing score for statically scored
+        old_points = data[0]["point_value"]
+        if old_points != new_points:
+            point_change = int(new_points) - old_points
+            need_update = db.execute("SELECT user_id FROM contest_solved WHERE contest_id=:cid AND problem_id=:pid",
+                                     cid=contest_id, pid=problem_id)
+            need_update = [user["user_id"] for user in need_update]
+            db.execute(
+                f"UPDATE contest_users SET points = points + :point_change WHERE contest_id=:cid AND user_id IN ({','.join([str(user) for user in need_update])})",
+                point_change=point_change, cid=contest_id)
+    else:  # Forcefully prevent score to be edited for dynamic score problems
+        new_points = data[0]["point_value"]
 
     db.execute(
         "UPDATE contest_problems SET name=:name, category=:category, point_value=:pv, flag=:flag WHERE contest_id=:cid AND problem_id=:pid",
@@ -768,7 +804,7 @@ def contest_add_problem(contest_id):
         return redirect('/contest/' + contest_id)
 
     if request.method == "GET":
-        return render_template("admin/createproblem.html")
+        return render_template("contest/createproblem.html")
 
     # Reached via POST
 
@@ -776,19 +812,18 @@ def contest_add_problem(contest_id):
     name = request.form.get("name")
     description = request.form.get("description")
     hints = request.form.get("hints")
-    point_value = request.form.get("point_value")
     category = request.form.get("category")
     flag = request.form.get("flag")
     draft = 1 if request.form.get("draft") else 0
 
-    if not problem_id or not name or not description or not point_value or not category or not flag:
+    if not problem_id or not name or not description or not category or not flag:
         flash('You have not entered all required fields', 'danger'), 400
-        return render_template("admin/createproblem.html"), 400
+        return render_template("contest/createproblem.html"), 400
 
     # Check if problem ID is valid
     if not verify_text(request.form.get("id")):
         flash('Invalid problem ID', 'danger')
-        return render_template("admin/createproblem.html"), 400
+        return render_template("contest/createproblem.html"), 400
 
     description = description.replace('\r', '')
 
@@ -798,7 +833,7 @@ def contest_add_problem(contest_id):
         cid=contest_id, pid=problem_id, name=name)
     if len(problem_info) != 0:
         flash('A problem with this name or ID already exists', 'danger')
-        return render_template("admin/createproblem.html"), 409
+        return render_template("contest/createproblem.html"), 409
 
     # Check if file exists & upload if it does
     file = request.files["file"]
@@ -810,11 +845,32 @@ def contest_add_problem(contest_id):
         file.save(filepath + filename)
         description += f'\n\n[{filename}](/{filepath + filename})'
 
-    # Modify problems table
-    db.execute(
-        "INSERT INTO contest_problems(contest_id, problem_id, name, point_value, category, flag, draft) VALUES(:cid, :pid, :name, :point_value, :category, :flag, :draft)",
-        cid=contest_id, pid=problem_id, name=name, point_value=point_value,
-        category=category, flag=flag, draft=draft)
+    # Check for static vs dynamic scoring
+    score_type = request.form.get("score_type")
+    if score_type == "dynamic":
+        min_points = request.form.get("min_point_value")
+        max_points = request.form.get("max_point_value")
+        users_decay = request.form.get("users_point_value")
+        if not min_points or not max_points or not users_decay:
+            flash('You have not entered all required fields', 'danger'), 400
+            return render_template("contest/createproblem.html"), 400
+
+        # Modify problems table
+        db.execute("INSERT INTO contest_problems VALUES(:cid, :pid, :name, :pv, :category, :flag, :draft, :min, :max, :users)",
+                   cid=contest_id, pid=problem_id, name=name, pv=max_points,
+                   category=category, flag=flag, draft=draft, min=min_points,
+                   max=max_points, users=users_decay)
+    else:  # assume static
+        point_value = request.form.get("point_value")
+        if not point_value:
+            flash('You have not entered all required fields', 'danger'), 400
+            return render_template("contest/createproblem.html"), 400
+
+        # Modify problems table
+        db.execute(
+            "INSERT INTO contest_problems(contest_id, problem_id, name, point_value, category, flag, draft) VALUES(:cid, :pid, :name, :pv, :category, :flag, :draft)",
+            cid=contest_id, pid=problem_id, name=name, pv=point_value,
+            category=category, flag=flag, draft=draft)
 
     os.makedirs(f'metadata/contests/{contest_id}/{problem_id}')
     write_file(f'metadata/contests/{contest_id}/{problem_id}/description.md', description)
