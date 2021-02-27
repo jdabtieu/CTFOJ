@@ -5,7 +5,29 @@
 [![GitHub Release](https://img.shields.io/github/v/release/jdabtieu/CTFOJ)](https://github.com/jdabtieu/CTFOJ/releases)
 [![Github License](https://img.shields.io/github/license/jdabtieu/CTFOJ)](https://github.com/jdabtieu/CTFOJ/blob/master/LICENSE)
 
-CTFOJ is a open-source online judge to host capture-the-flag problems and contests. It is primarily designed for small-medium sized CTF clubs.
+CTFOJ is a open-source online judge to host capture-the-flag problems and contests. It is primarily designed for capture-the-flag clubs who would like to host unlimited contests and practice problems.
+
+## Features
+- Create practice problems
+    - Editorials can be created any time showing solutions
+    - Export problems for archival
+- Create contests
+    - Contest problems support dynamic scoring
+    - Contests have a live scoreboard that can be configured to be viewable by admins only or all competitors
+    - Hints can be added to any problem
+    - Mass notify users through email
+- Create announcements
+    - Announce anything you want, to all users of the site
+- Markdown support in problems, hints, editorials, contests, and announcements
+- User management
+    - Remotely reset passwords
+    - Ban users
+    - Disqualify users from contest
+- 2FA support
+- SMTP support
+- Automatic contest starting and ending
+- \+ many more
+
 
 ## Installation
 See [INSTALL.md](docs/INSTALL.md).
@@ -21,9 +43,8 @@ the "Admin Console" interface. This includes the ability to create practice prob
 Additionally, you will be able to manage users and view submissions.
 
 ## Contributing
-Contributors are welcome. If you want to help, feel free to submit a pull request or open an issue. Please do not
-commit or push directly to master, unless absolutely necessary. Additionally,
-please make sure to test your changes thoroughly with our [test suite](https://github.com/jdabtieu/CTFOJ/tree/master/tests).
+Contributors are welcome. If you want to help, feel free to submit a pull request or open an issue. Additionally,
+please make sure to test your changes manually and using our [test suite](https://github.com/jdabtieu/CTFOJ/tree/master/tests).
 
 Notice a security vulnerability? Refer to [SECURITY.md](docs/SECURITY.md) to determine what to do.
 
@@ -32,8 +53,8 @@ We encourage you to follow the [PEP 8](https://www.python.org/dev/peps/pep-0008/
 Python code, with a modification of 90 characters line length. However, longer lines may be used if
 breaking the line would reduce readability.
 
-For non-Python code, please use 4 space tabs, limit your lines to under 100 characters, and use
-descriptive variable names.
+For non-Python code, please use 4 space tabs, limit your lines to under 100 characters, use
+descriptive variable names, and follow general good practices (unless it would reduce readability or performance).
 
 ## License
 This project is licensed under the [GNU AGPLv3](LICENSE).
