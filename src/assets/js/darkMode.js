@@ -22,24 +22,11 @@ function getCookie(name) {
 }
 
 if (getCookie("darkMode") == 1) {
-    enableDark();
+    document.body.classList.add("dark");
     document.querySelector(".dark-toggle").setAttribute("checked", "");
 }
 
 function toggleDark() {
-    if (getCookie("darkMode") == 1) {
-        disableDark();
-        setCookie("darkMode", 0, 7);
-    } else {
-        enableDark();
-        setCookie("darkMode", 1, 7);
-    }
-}
-
-
-function enableDark() {
-    document.body.classList.add("dark");
-}
-function disableDark() {
-    document.body.classList.remove("dark");
+    document.body.classList.toggle("dark");
+    setCookie("darkMode", getCookie("darkMode") == 1 ? 0 : 1, 7);
 }

@@ -6,9 +6,9 @@
 <h1>Notify Participants</h1>
 <p>This will send an email to all participants in your contest. Use this feature with caution.</p>
 <form autocomplete="off" method="post" id="create" name="create">
-    <input class="form-control mb-3" type="text" id="subject" name="subject" placeholder="Subject" required>
-    <textarea class="form-control mb-3" id="message" name="message" rows="20" placeholder="Message" required></textarea>
-    <input class="btn btn-primary" type="submit" id="submit" name="submit" value="Notify">
+    <input class="form-control mb-3" type="text" name="subject" placeholder="Subject" required>
+    <textarea class="form-control mb-3" name="message" rows="20" placeholder="Message" required></textarea>
+    <input class="btn btn-primary" type="submit" name="submit" value="Notify">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 </form>
 {% endblock %}
