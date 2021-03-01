@@ -53,6 +53,41 @@
         </nav>
 
         <main class="container">
+            <h1 id="god">jdabtieu is a god</h1>
+            <style>
+            #god {
+              color: #FF0000;
+              animation: rainbow 5s infinite linear;
+              margin: 1em 0;
+              text-align: center;
+            }
+            @keyframes rainbow {
+              12.5% {
+                color: #FF7F00;
+              }
+              25% {
+                color: #FFFF00;
+              }
+              37.5% {
+                color: #00FF00;
+              }
+              50% {
+                color: #00FFFF;
+              }
+              62.5% {
+                color: #0000FF;
+              }
+              75% {
+                color: #2E2B5F;
+              }
+              87.5% {
+                color: #8B00FF;
+              }
+              100% {
+                color: #FF0000;
+              }
+            }
+            </style>
             {% with msg = get_flashed_messages(with_categories=True) %}
                 {% if msg %}
                     {% for category, message in msg %}
