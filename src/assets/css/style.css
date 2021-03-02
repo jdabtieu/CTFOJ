@@ -198,6 +198,10 @@ a {
     background-color: #2f2f2f;
 }
 
+.dark-toggle {
+    margin-left: 0!important;
+}
+
 .dark .form-select {
     background-image: url("data:image/svg+xml,<svg style='filter: invert(100%)' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/></svg>")
 }
