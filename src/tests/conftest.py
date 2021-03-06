@@ -3,8 +3,6 @@ import pytest
 
 from cs50 import SQL
 
-from application import app
-
 
 os.mkdir("logs")
 os.mkdir("dl")
@@ -13,6 +11,7 @@ os.mkdir("metadata/contests")
 os.mkdir("metadata/problems")
 os.mkdir("metadata/announcements")
 
+from application import app  # noqa
 
 @pytest.fixture
 def client():
