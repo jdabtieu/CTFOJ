@@ -606,17 +606,21 @@ def contest_problem(contest_id, problem_id):
         flash('Cannot submit an empty flag', 'danger')
         return render_template("contest/contest_problem.html", data=check[0]), 400
 
+    if not verify_flag(flag):
+        flash('Invalid flag', 'danger')
+        return render_template("contest/contest_problem.html", data=check[0]), 400
+
     # Check if flag is correct
     if flag != check[0]["flag"]:
         db.execute(
-            "INSERT INTO submissions(date, user_id, problem_id, contest_id, correct) VALUES(datetime('now'), :uid, :pid, :cid, 0)",
-            uid=session["user_id"], pid=problem_id, cid=contest_id)
+            "INSERT INTO submissions(date, user_id, problem_id, contest_id, correct, submitted) VALUES(datetime('now'), :uid, :pid, :cid, 0, :flag)",
+            uid=session["user_id"], pid=problem_id, cid=contest_id, flag=flag)
         flash('Your flag is incorrect', 'danger')
         return render_template("contest/contest_problem.html", data=check[0])
 
     db.execute(
-        "INSERT INTO submissions(date, user_id, problem_id, contest_id, correct) VALUES(datetime('now'), :uid, :pid, :cid, 1)",
-        uid=session["user_id"], pid=problem_id, cid=contest_id)
+        "INSERT INTO submissions(date, user_id, problem_id, contest_id, correct, submitted) VALUES(datetime('now'), :uid, :pid, :cid, 1, :flag)",
+        uid=session["user_id"], pid=problem_id, cid=contest_id, flag=flag)
 
     # Check if user has already found this flag
     check1 = db.execute("SELECT * FROM contest_solved WHERE contest_id=:cid AND user_id=:uid AND problem_id=:pid",
@@ -724,10 +728,14 @@ def edit_contest_problem(contest_id, problem_id):
     new_flag = request.form.get("flag")
 
     if not new_name or not new_description or not new_category or not new_points:
-        flash('You have not entered all required fields', 'danger'), 400
-        return render_template('problem/editproblem.html', data=data[0])
+        flash('You have not entered all required fields', 'danger')
+        return render_template('problem/editproblem.html', data=data[0]), 400
 
-    if not new_flag:
+    if new_flag:
+        if not verify_flag(new_flag):
+            flash('Invalid flag', 'danger')
+            return render_template('problem/editproblem.html', data=data[0]), 400
+    else:
         new_flag = data[0]["flag"]
 
     new_description = new_description.replace('\r', '')
@@ -831,8 +839,13 @@ def contest_add_problem(contest_id):
         return render_template("contest/createproblem.html"), 400
 
     # Check if problem ID is valid
-    if not verify_text(request.form.get("id")):
+    if not verify_text(problem_id):
         flash('Invalid problem ID', 'danger')
+        return render_template("contest/createproblem.html"), 400
+
+    # Check if flag is valid
+    if not verify_flag(flag):
+        flash('Invalid flag', 'danger')
         return render_template("contest/createproblem.html"), 400
 
     description = description.replace('\r', '')
@@ -1032,16 +1045,20 @@ def problem(problem_id):
         return render_template('problem/problem.html', data=data[0])
 
     # Reached via POST
-    flag = data[0]["flag"]
+    flag = request.form.get("flag")
 
-    if not request.form.get("flag"):
+    if not flag:
         flash('Cannot submit an empty flag', 'danger')
         return render_template('problem/problem.html', data=data[0]), 400
 
-    check = request.form.get("flag") == flag
+    if not verify_flag(flag):
+        flash('Invalid flag', 'danger')
+        return render_template('problem/problem.html', data=data[0]), 400
+
+    check = data[0]["flag"] == flag
     db.execute(
-        "INSERT INTO submissions (date, user_id, problem_id, correct) VALUES (datetime('now'), :user_id, :problem_id, :check)",
-        user_id=session["user_id"], problem_id=problem_id, check=check)
+        "INSERT INTO submissions (date, user_id, problem_id, correct, submitted) VALUES (datetime('now'), :user_id, :problem_id, :check, :flag)",
+        user_id=session["user_id"], problem_id=problem_id, check=check, flag=flag)
 
     if not check:
         flash('The flag you submitted was incorrect', 'danger')
@@ -1122,10 +1139,14 @@ def editproblem(problem_id):
     new_flag = request.form.get("flag")
 
     if not new_name or not new_description or not new_category or not new_points:
-        flash('You have not entered all required fields', 'danger'), 400
-        return render_template('problem/editproblem.html', data=data[0])
+        flash('You have not entered all required fields', 'danger')
+        return render_template('problem/editproblem.html', data=data[0]), 400
 
-    if not new_flag:
+    if new_flag:
+        if not verify_flag(new_flag):
+            flash('Invalid flag', 'danger')
+            return render_template('problem/editproblem.html', data=data[0]), 400
+    else:
         new_flag = data[0]["flag"]
 
     new_description = new_description.replace('\r', '')
@@ -1334,6 +1355,11 @@ def createproblem():
     # Check if problem ID is valid
     if not verify_text(problem_id):
         flash('Invalid problem ID', 'danger')
+        return render_template("admin/createproblem.html"), 400
+
+    # Check if flag is valid
+    if not verify_flag(flag):
+        flash('Invalid flag', 'danger')
         return render_template("admin/createproblem.html"), 400
 
     description = description.replace('\r', '')

@@ -69,6 +69,12 @@ def verify_text(text):
     """
     return bool(re.match(r'^[\w\-]+$', text))
 
+def verify_flag(flag):
+    """
+    Check if flag contains only up to 1024 printable ASCII characters
+    """
+    return bool(re.match(r'^[ -~]{0,1024}$', flag))
+
 
 def check_captcha(secret, response, sitekey):
     """
