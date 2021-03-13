@@ -37,7 +37,8 @@ for row in problem_flags:
 
 if invalid_flag:
     print('Please fix invalid flags before running this script again.')
-    sys.exit()
+    print('Valid flags should contain only printable ASCII characters and be 0-1024 characters in length.')
+    sys.exit(1)
 
 
 # Change score table to allow dynamic scoring
