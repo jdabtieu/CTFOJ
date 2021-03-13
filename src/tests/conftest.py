@@ -13,6 +13,7 @@ os.mkdir("metadata/announcements")
 
 from application import app  # noqa
 
+
 @pytest.fixture
 def client():
     app.config['TESTING'] = True

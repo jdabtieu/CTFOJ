@@ -68,6 +68,7 @@ def check_for_maintenance():
         elif not session['admin']:
             return render_template("error/maintenance.html"), 503
 
+
 @app.route("/")
 @login_required
 def index():
@@ -164,9 +165,8 @@ def login():
             send_email('Confirm Your CTF Login',
                        app.config['MAIL_DEFAULT_SENDER'], [email], text, mail)
 
-        flash(
-            'A login confirmation email has been sent to the email address you provided. Be sure to check your spam folder!',
-            'success')
+        flash(('A login confirmation email has been sent to the email address you '
+              'provided. Be sure to check your spam folder!'), 'success')
         return render_template("login.html", site_key=app.config['HCAPTCHA_SITE'])
 
     # Remember which user has logged in
@@ -194,19 +194,21 @@ def register():
 
     # Reached using POST
 
+    username = request.form.get("username")
+    password = request.form.get("password")
+    confirmation = request.form.get("confirmation")
+    email = request.form.get("email")
+
     # Ensure username is valid
-    if not request.form.get("username"):
-        flash('Username cannot be blank', 'danger')
-        return render_template("register.html", site_key=app.config['HCAPTCHA_SITE']), 400
-    if not verify_text(request.form.get("username")):
+    if not username or not verify_text(username):
         flash('Invalid username', 'danger')
         return render_template("register.html", site_key=app.config['HCAPTCHA_SITE']), 400
 
     # Ensure password is not blank
-    if not request.form.get("password") or len(request.form.get("password")) < 8:
+    if not password or len(password) < 8:
         flash('Password must be at least 8 characters', 'danger')
         return render_template("register.html", site_key=app.config['HCAPTCHA_SITE']), 400
-    if not request.form.get("confirmation") or request.form.get("password") != request.form.get("confirmation"):
+    if not confirmation or password != confirmation:
         flash('Passwords do not match', 'danger')
         return render_template("register.html", site_key=app.config['HCAPTCHA_SITE']), 400
 
@@ -220,34 +222,29 @@ def register():
                                    site_key=app.config['HCAPTCHA_SITE']), 400
 
     # Ensure username and email do not already exist
-    rows = db.execute("SELECT * FROM users WHERE username = :username",
-                      username=request.form.get("username"))
+    rows = db.execute("SELECT * FROM users WHERE username = :username", username=username)
     if len(rows) > 0:
         flash('Username already exists', 'danger')
         return render_template("register.html", site_key=app.config['HCAPTCHA_SITE']), 409
-    rows = db.execute("SELECT * FROM users WHERE email = :email",
-                      email=request.form.get("email"))
+
+    rows = db.execute("SELECT * FROM users WHERE email = :email", email=email)
     if len(rows) > 0:
         flash('Email already exists', 'danger')
         return render_template("register.html", site_key=app.config['HCAPTCHA_SITE']), 409
 
-    email = request.form.get('email')
     token = create_jwt({'email': email}, app.config['SECRET_KEY'])
     text = render_template('email/confirm_account_text.txt',
-                           username=request.form.get('username'), token=token)
+                           username=username, token=token)
 
     db.execute(("INSERT INTO users(username, password, email, join_date) "
                 "VALUES(:username, :password, :email, datetime('now'))"),
-               username=request.form.get("username"),
-               password=generate_password_hash(request.form.get("password")),
-               email=request.form.get("email"))
+               username=username, password=generate_password_hash(password), email=email)
     if not app.config['TESTING']:
         send_email('Confirm Your CTF Account',
                    app.config['MAIL_DEFAULT_SENDER'], [email], text, mail)
 
-    flash(
-        'An account creation confirmation email has been sent to the email address you provided. Be sure to check your spam folder!',
-        'success')
+    flash(('An account creation confirmation email has been sent to the email address '
+           'you provided. Be sure to check your spam folder!'), 'success')
     return render_template("register.html", site_key=app.config['HCAPTCHA_SITE'])
 
 
@@ -318,27 +315,29 @@ def changepassword():
 
     # Reached using POST
 
+    old_password = request.form.get("password")
+    new_password = request.form.get("newPassword")
+    confirmation = request.form.get("confirmation")
+
     # Ensure passwords were submitted and they match
-    if not request.form.get("password"):
+    if not old_password:
         flash('Password cannot be blank', 'danger')
         return render_template("changepassword.html"), 400
-    if not request.form.get("newPassword") or len(request.form.get("newPassword")) < 8:
+    if not new_password or len(new_password) < 8:
         flash('New password must be at least 8 characters', 'danger')
         return render_template("changepassword.html"), 400
-    if not request.form.get("confirmation") or request.form.get("newPassword") != request.form.get("confirmation"):
+    if not confirmation or new_password != confirmation:
         flash('Passwords do not match', 'danger')
         return render_template("changepassword.html"), 400
 
     # Ensure username exists and password is correct
-    rows = db.execute("SELECT * FROM users WHERE id = :id",
-                      id=session["user_id"])
-    if len(rows) != 1 or not check_password_hash(rows[0]["password"], request.form.get("password")):
+    rows = db.execute("SELECT * FROM users WHERE id=:id", id=session["user_id"])
+    if len(rows) != 1 or not check_password_hash(rows[0]["password"], old_password):
         flash('Incorrect password', 'danger')
         return render_template("changepassword.html"), 401
 
-    db.execute("UPDATE users SET password = :new WHERE id = :id",
-               new=generate_password_hash(request.form.get("newPassword")),
-               id=session["user_id"])
+    db.execute("UPDATE users SET password=:new WHERE id=:id",
+               new=generate_password_hash(new_password), id=session["user_id"])
 
     flash("Password change successful", "success")
     return redirect("/settings")
@@ -405,7 +404,8 @@ def forgotpassword():
             send_email('Reset Your CTF Password',
                        app.config['MAIL_DEFAULT_SENDER'], [email], text, mail)
 
-    flash('If there is an account associated with that email, a password reset email has been sent', 'success')
+    flash(('If there is an account associated with that email, a password reset email has '
+           'been sent'), 'success')
     return render_template("forgotpassword.html")
 
 

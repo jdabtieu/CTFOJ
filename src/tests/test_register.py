@@ -37,7 +37,7 @@ def test_register(client, database):
     }, follow_redirects=True)
 
     assert result.status_code == 400
-    assert b'cannot be blank' in result.data
+    assert b'Invalid username' in result.data
 
     result = client.post('/register', data={
         'username': 'testing-()*',
@@ -47,7 +47,7 @@ def test_register(client, database):
     }, follow_redirects=True)
 
     assert result.status_code == 400
-    assert b'Invalid' in result.data
+    assert b'Invalid username' in result.data
 
     result = client.post('/register', data={
         'username': 'testing',
