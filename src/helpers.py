@@ -5,7 +5,7 @@ import requests
 from datetime import datetime, timedelta
 from functools import wraps
 
-from flask import redirect, request, session, flash
+from flask import redirect, request, session, flash, Markup
 from flask_mail import Message
 
 
@@ -99,9 +99,10 @@ def check_version():
         latest_version = requests.get(
             "https://api.github.com/repos/jdabtieu/CTFOJ/releases/latest").json()["name"]
         if curr_version != latest_version:
-            flash(("You are not up-to-date! Please notify the site administrator. "
-                  f"Current version: {curr_version}, Latest version: {latest_version}"),
-                  "danger")
+            message = Markup("You are not up-to-date! Please notify the site administrator."
+                f"Current version: {curr_version}, Latest version: {latest_version}, Upgrade <a href=\"https://github.com/jdabtieu/CTFOJ/releases\">here</a>. ")
+            flash(message, "danger")
+
     except Exception:
         flash(("Latest version could not be detected. Please make sure "
                "https://api.github.com isn't blocked by a firewall."), "warning")
