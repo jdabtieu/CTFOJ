@@ -69,6 +69,7 @@ def verify_text(text):
     """
     return bool(re.match(r'^[\w\-]+$', text))
 
+
 def verify_flag(flag):
     """
     Check if flag contains only up to 1024 printable ASCII characters
