@@ -95,13 +95,13 @@ def check_version():
     """
     Checks if CTFOJ is up to date with the latest version on GitHub
     """
-    curr_version = "v2.2.0"
+    curr_version = "v2.3.0-patch1"
     try:
         latest_version = requests.get(
             "https://api.github.com/repos/jdabtieu/CTFOJ/releases/latest").json()["name"]
         if curr_version != latest_version:
-            message = Markup("You are not up-to-date! Please notify the site administrator."
-                f"Current version: {curr_version}, Latest version: {latest_version}, Upgrade <a href=\"https://github.com/jdabtieu/CTFOJ/releases\">here</a>. ")
+            message = Markup("You are not up-to-date! Please notify the site administrator. "
+                f"Current version: {curr_version}, Latest version: {latest_version}. Upgrade <a href=\"https://github.com/jdabtieu/CTFOJ/releases\">here</a>. ")
             flash(message, "danger")
 
     except Exception:
