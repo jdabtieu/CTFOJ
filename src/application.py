@@ -261,7 +261,8 @@ def confirm_register(token):
     if datetime.strptime(token["expiration"], "%Y-%m-%dT%H:%M:%S.%f") < datetime.utcnow():
         db.execute(
             "DELETE FROM users WHERE verified=0 and email=:email", email=token['email'])
-        flash("Email verification link expired. Please register again using the same email", "danger")
+        flash("Email verification link expired. Please register again using the same email",  # noqa
+              "danger")
         return redirect("/register")
 
     db.execute("UPDATE users SET verified=1 WHERE email=:email", email=token['email'])
@@ -404,8 +405,8 @@ def forgotpassword():
             send_email('Reset Your CTF Password',
                        app.config['MAIL_DEFAULT_SENDER'], [email], text, mail)
 
-    flash(('If there is an account associated with that email, a password reset email has '
-           'been sent'), 'success')
+    flash(('If there is an account associated with that email, a password reset email '
+           'has been sent'), 'success')
     return render_template("forgotpassword.html")
 
 
@@ -424,15 +425,18 @@ def reset_password_user(token):
     if request.method == "GET":
         return render_template('resetpassword.html')
 
-    if not request.form.get("password") or len(request.form.get("password")) < 8:
+    password = request.form.get("password")
+    confirmation = request.form.get("confirmation")
+
+    if not password or len(password) < 8:
         flash('New password must be at least 8 characters', 'danger')
         return render_template("resetpassword.html"), 400
-    if not request.form.get("confirmation") or request.form.get("password") != request.form.get("confirmation"):
+    if not confirmation or password != confirmation:
         flash('Passwords do not match', 'danger')
         return render_template("resetpassword.html"), 400
 
-    db.execute("UPDATE users SET password = :new WHERE id = :id",
-               new=generate_password_hash(request.form.get("password")), id=user_id)
+    db.execute("UPDATE users SET password=:new WHERE id=:id",
+               new=generate_password_hash(password), id=user_id)
 
     flash('Your password has been successfully reset', 'success')
     return redirect("/login")
@@ -1056,9 +1060,9 @@ def problem(problem_id):
         return render_template('problem/problem.html', data=data[0]), 400
 
     check = data[0]["flag"] == flag
-    db.execute(
-        "INSERT INTO submissions (date, user_id, problem_id, correct, submitted) VALUES (datetime('now'), :user_id, :problem_id, :check, :flag)",
-        user_id=session["user_id"], problem_id=problem_id, check=check, flag=flag)
+    db.execute(("INSERT INTO submissions (date, user_id, problem_id, correct, submitted) "
+                "VALUES (datetime('now'), :user_id, :problem_id, :check, :flag)"),
+               user_id=session["user_id"], problem_id=problem_id, check=check, flag=flag)
 
     if not check:
         flash('The flag you submitted was incorrect', 'danger')
@@ -1381,10 +1385,10 @@ def createproblem():
         description += f'\n\n[{filename}](/dl/{filename})'
 
     # Modify problems table
-    db.execute(
-        "INSERT INTO problems (id, name, point_value, category, flag, draft) VALUES (:id, :name, :point_value, :category, :flag, :draft)",
-        id=problem_id, name=name, point_value=point_value, category=category,
-        flag=flag, draft=draft)
+    db.execute(("INSERT INTO problems (id, name, point_value, category, flag, draft) "
+                "VALUES (:id, :name, :point_value, :category, :flag, :draft)"),
+               id=problem_id, name=name, point_value=point_value, category=category,
+               flag=flag, draft=draft)
 
     os.makedirs('metadata/problems/' + problem_id)
     write_file('metadata/problems/' + problem_id + '/description.md', description)
@@ -1449,7 +1453,8 @@ def reset_password():
     db.execute("UPDATE users SET password=:p WHERE id=:id",
                p=generate_password_hash(password), id=user_id)
 
-    flash("Password for " + user[0]["username"] + " resetted! Their new password is " + password, "success")
+    flash(f"Password for {user[0]['username']} resetted! Their new password is {password}",  # noqa
+          "success")
     return redirect("/admin/users")
 
 
@@ -1625,7 +1630,8 @@ def editcontest(contest_id):
         flash('Contest cannot end before it starts!', 'danger')
         return render_template("admin/editcontest.html"), 400
 
-    db.execute("UPDATE contests SET name=:name, start=datetime(:start), end=datetime(:end) WHERE id=:cid",
+    db.execute(("UPDATE contests SET name=:name, start=datetime(:start), "
+                "end=datetime(:end) WHERE id=:cid"),
                name=new_name, start=start, end=end, cid=contest_id)
 
     write_file('metadata/contests/' + contest_id + '/description.md', new_description)
@@ -1645,7 +1651,8 @@ def download_problem(problem_id):
         zf.write(f'dl/{problem_id}.zip', f'{problem_id}.zip')
     zf.close()
     temp_zipfile.seek(0)
-    return send_file(temp_zipfile, mimetype='zip', attachment_filename=f'{problem_id}.zip', as_attachment=True)
+    return send_file(temp_zipfile, mimetype='zip',
+                     attachment_filename=f'{problem_id}.zip', as_attachment=True)
 
 
 @app.route('/contest/<contest_id>/problem/<problem_id>/download')
@@ -1659,7 +1666,8 @@ def download_contest_problem(contest_id, problem_id):
         zf.write(f'dl/{contest_id}/{problem_id}.zip', f'{problem_id}.zip')
     zf.close()
     temp_zipfile.seek(0)
-    return send_file(temp_zipfile, mimetype='zip', attachment_filename=f'{problem_id}.zip', as_attachment=True)
+    return send_file(temp_zipfile, mimetype='zip',
+                     attachment_filename=f'{problem_id}.zip', as_attachment=True)
 
 
 @app.route("/admin/maintenance", methods=["POST"])
