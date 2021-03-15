@@ -1,6 +1,7 @@
 import os
 
 open('database.db', 'a').close()
+open('logs/application.log', 'a').close()
 
 import daily_tasks  # noqa
 
