@@ -175,9 +175,10 @@ def login():
     session["admin"] = rows[0]["admin"]
 
     # Redirect user to next page
-    if request.form.get("next"):
-        return redirect(request.form.get("next"))
-    return redirect("/")
+    next_url = request.form.get("next")
+    if next_url and '//' not in next_url and ':' not in next_url:
+        return redirect(next_url)
+    return redirect('/')
 
 
 @app.route("/logout")

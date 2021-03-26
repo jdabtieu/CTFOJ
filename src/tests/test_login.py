@@ -25,6 +25,20 @@ def test_login(client, database):
     assert result.status_code == 200
     assert b'Submissions' in result.data
 
+    result = client.post('/login', data={
+        'username': 'admin',
+        'password': 'CTFOJadmin',
+        'next': 'https:google.com'
+    }, follow_redirects=True)
+    assert b'Google' not in result.data
+
+    result = client.post('/login', data={
+        'username': 'admin',
+        'password': 'CTFOJadmin',
+        'next': '//google.com'
+    }, follow_redirects=True)
+    assert b'Google' not in result.data
+
     '''Test login errors.'''
     result = client.post('/login', data={
         'username': 'noexist',
