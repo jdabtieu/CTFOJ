@@ -1240,39 +1240,36 @@ def admin_submissions():
 
     if request.args.get("username"):
         modifier += " username=? AND"
-        args.insert(len(args), request.args.get("username"))
+        args.append(request.args.get("username"))
 
     if request.args.get("problem_id"):
         modifier += " problem_id=? AND"
-        args.insert(len(args), request.args.get("problem_id"))
+        args.append( request.args.get("problem_id"))
 
     if request.args.get("contest_id"):
-        modifier += " contest_id=? AND"
-        args.insert(len(args), request.args.get("contest_id"))
+        if request.args.get("contest_id") == "None":
+            modifier += " contest_id IS NULL AND"
+        else:
+            modifier += " contest_id=? AND"
+            args.append(request.args.get("contest_id"))
 
     if request.args.get("correct"):
         modifier += " correct=? AND"
-        args.insert(len(args), request.args.get("correct") == "AC")
+        args.append(request.args.get("correct") == "AC")
 
     page = request.args.get("page")
     if not page:
         page = "1"
     page = (int(page) - 1) * 50
+    modifier += " 1=1"
 
-    if len(args) == 0:
-        submissions = db.execute(("SELECT submissions.*, users.username FROM submissions "
-                                  "LEFT JOIN users ON user_id=users.id LIMIT 50 "
-                                  "OFFSET ?"), page)
-        length = len(db.execute("SELECT * FROM submissions"))
-    else:
-        modifier = modifier[:-4]
-        length = len(db.execute(("SELECT submissions.*, users.username FROM submissions "
-                                 "LEFT JOIN users ON user_id=users.id") + modifier,
-                                *args))
-        args.append(page)
-        submissions = db.execute(("SELECT submissions.*, users.username FROM submissions "
-                                  f"LEFT JOIN users ON user_id=users.id {modifier}"
-                                  " LIMIT 50 OFFSET ?"), *args)
+    length = len(db.execute(("SELECT submissions.*, users.username FROM submissions "
+                             "LEFT JOIN users ON user_id=users.id") + modifier, *args))
+
+    args.append(page)
+    submissions = db.execute(("SELECT submissions.*, users.username FROM submissions "
+                              f"LEFT JOIN users ON user_id=users.id {modifier}"
+                              " LIMIT 50 OFFSET ?"), *args)
 
     return render_template("admin/submissions.html",
                            data=submissions, length=-(-length // 50))
