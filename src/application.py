@@ -811,7 +811,9 @@ def contest_dq(contest_id):
         flash("No user ID specified, please try again", "danger")
         return redirect("/contest/" + contest_id + "/scoreboard")
 
-    db.execute("UPDATE contest_users SET points=-999999 WHERE user_id=?", user_id)
+    db.execute(
+        "UPDATE contest_users SET points=-999999 WHERE user_id=:uid AND contset_id=:cid",
+        uid=user_id, cid=contest_id)
 
     return redirect("/contest/" + contest_id + "/scoreboard")
 
