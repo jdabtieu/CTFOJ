@@ -812,7 +812,7 @@ def contest_dq(contest_id):
         return redirect("/contest/" + contest_id + "/scoreboard")
 
     db.execute(
-        "UPDATE contest_users SET points=-999999 WHERE user_id=:uid AND contset_id=:cid",
+        "UPDATE contest_users SET points=-999999 WHERE user_id=:uid AND contest_id=:cid",
         uid=user_id, cid=contest_id)
 
     return redirect("/contest/" + contest_id + "/scoreboard")
