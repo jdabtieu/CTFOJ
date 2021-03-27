@@ -16,6 +16,17 @@
         <nav class="navbar navbar-expand-md navbar-dark bg-primary">
             <div class="container-fluid">
                 <a class="navbar-brand" href="/">{{ CLUB_NAME }}</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbar">
+                    <ul class="navbar-nav ms-auto">
+                        <div class="form-check form-switch nav-link">
+                            <input class="form-check-input dark-toggle" onclick="toggleDark()" type="checkbox">
+                        </div>
+                        <li><a class="nav-link" href="/login">Log In</a></li>
+                    </ul>
+                </div>
             </div>
         </nav>
 
@@ -28,5 +39,6 @@
             <p class="text-center">© 2020, {{ CLUB_NAME }}. Source code available <a href="https://github.com/jdabtieu/CTFOJ">here</a>.</p>
         </footer>
         <script src="/assets/js/darkMode.js"></script>
+        <script src="/assets/js/bootstrap.bundle.min.js"></script>
     </body>
 </html>

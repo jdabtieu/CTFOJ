@@ -59,14 +59,19 @@ csrf.init_app(app)
 
 @app.before_request
 def check_for_maintenance():
-    # crappy if/elses used here for future expandability
+    # Don't prevent login or getting assets
+    if request.path == '/login' or (len(request.path) > 8 and request.path[0:8] == '/assets/' and '..' not in request.path):
+        return
+
     maintenance_mode = bool(os.path.exists('maintenance_mode'))
-    # don't block the user if they only have the csrf token
-    if maintenance_mode and request.path != '/login':
+    if maintenance_mode:
+        # Prevent Internal Server error if session only contains CSRF token
         if not session or 'admin' not in session:
             return render_template("error/maintenance.html"), 503
         elif not session['admin']:
             return render_template("error/maintenance.html"), 503
+        else:
+            flash("Maintenance mode is enabled", "warning")
 
 
 @app.route("/")
