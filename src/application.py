@@ -1299,7 +1299,7 @@ def admin_createcontest():
     contest_id = request.form.get("contest_id")
 
     # Ensure contest ID is valid
-    if not verify_text(contest_id):
+    if not contest_id or not verify_text(contest_id) or contest_id == "None":
         flash('Invalid contest ID', 'danger')
         return render_template("admin/createcontest.html"), 400
 
