@@ -95,7 +95,7 @@ def check_version():
     """
     Checks if CTFOJ is up to date with the latest version on GitHub
     """
-    curr_version = "v2.3.0-patch1"
+    curr_version = "v2.3.1"
     try:
         latest_version = requests.get(
             "https://api.github.com/repos/jdabtieu/CTFOJ/releases/latest").json()["name"]
