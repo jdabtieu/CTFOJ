@@ -26,11 +26,9 @@
                     <td>{{ row["username"] }}</td>
                     <td>{{ row["problem_id"] }}</td>
                     <td>{{ row["contest_id"] }}</td>
-                    <td>{% if row["correct"] == True %}
-                            AC
-                        {% else %}
-                            WA
-                        {% endif %}
+                    <td onclick="alert('{{ row["submitted"] }}')"><a href="#" onclick="return false;">
+                        {{ 'AC' if row["correct"] else 'WA' }}
+                    </a>
                     </td>
                 </tr>
                 {% endfor %}
