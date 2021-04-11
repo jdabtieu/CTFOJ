@@ -144,15 +144,14 @@ def update_dyn_score(contest_id, problem_id, update_curr_user=True):
     point_diff = new_points - old_points
 
     # Set new point value of problem
-    print(new_points, contest_id, problem_id)
     db.execute(("UPDATE contest_problems SET point_value=:pv WHERE "
                 "contest_id=:cid AND problem_id=:pid"),
                pv=new_points, cid=contest_id, pid=problem_id)
 
     if update_curr_user:
-        db.execute(("UPDATE contest_users SET lastAC=datetime('now'), points=points+:points "
-                    "WHERE contest_id=:cid AND user_id=:uid"),
-                    cid=contest_id, points=old_points, uid=session["user_id"])
+        db.execute(("UPDATE contest_users SET lastAC=datetime('now'), "
+                    "points=points+:points WHERE contest_id=:cid AND user_id=:uid"),
+                   cid=contest_id, points=old_points, uid=session["user_id"])
 
     # Update points of all users who previously solved the problem
     db.execute(("UPDATE contest_users SET points=points+:point_change "

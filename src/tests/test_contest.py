@@ -49,6 +49,7 @@ def test_contest(client, database):
         'point_value': 1,
         'category': 'general',
         'flag': 'ctf{hello}',
+        'draft': True,
         'file': ('test_upload.txt', 'test_upload.txt')
     })
     os.remove('test_upload.txt')
@@ -59,8 +60,7 @@ def test_contest(client, database):
         'description': 'a short fun problem 2',
         'hint': 'try looking at the title 2',
         'point_value': 2,
-        'category': 'web',
-        'draft': True
+        'category': 'web'
     })
     assert result.status_code == 302
 
@@ -102,6 +102,57 @@ def test_contest(client, database):
                          follow_redirects=True)
     assert result.status_code == 200
     assert b'exported' in result.data
+
+    file = open("test_upload.txt", "w")
+    file.write('ree')
+    file.close()
+    result = client.post('/contest/testingcontest/addproblem', data={
+        'id': 'dynscore',
+        'name': 'dynamic',
+        'description': 'dyntest',
+        'hints': '',
+        'score_type': 'dynamic',
+        'min_point_value': 1,
+        'max_point_value': 500,
+        'users_point_value': 0,
+        'category': 'general',
+        'flag': 'ctf{hello}',
+        'draft': False,
+        'file': ('test_upload.txt', 'test_upload.txt')
+    })
+    os.remove("test_upload.txt")
+    assert result.status_code == 302
+
+    result = client.post('/contest/testingcontest/problem/dynscore', data={
+        'flag': 'ctf{hello}'
+    })
+    assert result.status_code == 200
+
+    result = client.get('/contest/testingcontest/problem/dynscore')
+    assert b'457' in result.data
+
+    result = client.post('/contest/testingcontest/problem/dynscore/edit', data={
+        'name': 'dynscore',
+        'description': 'dynamic is fun',
+        'category': 'web',
+        'flag': 'ctf{nobodywillguessme}'
+    })
+    assert result.status_code == 302
+
+    result = client.get('/contest/testingcontest/problem/dynscore')
+    assert b'457' in result.data
+
+    result = client.post('/contest/testingcontest/problem/dynscore/edit', data={
+        'name': 'dynscore',
+        'description': 'dynamic is fun',
+        'category': 'web',
+        'flag': 'ctf{nobodywillguessmeagain}',
+        'rejudge': True
+    })
+    assert result.status_code == 302
+
+    result = client.get('/contest/testingcontest/problem/dynscore')
+    assert b'500' in result.data
 
     client.post('/admin/deletecontest/testingcontest', follow_redirects=True)
     assert result.status_code == 200

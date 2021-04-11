@@ -1,5 +1,4 @@
 import logging
-import math
 import os
 import shutil
 import sys
@@ -892,7 +891,7 @@ def contest_add_problem(contest_id):
         max_points = request.form.get("max_point_value")
         users_decay = request.form.get("users_point_value")
         if not min_points or not max_points or not users_decay:
-            flash('You have not entered all required fields', 'danger'), 400
+            flash('You have not entered all required fields', 'danger')
             return render_template("contest/createproblem.html"), 400
 
         # Modify problems table
@@ -903,7 +902,7 @@ def contest_add_problem(contest_id):
     else:  # assume static
         point_value = request.form.get("point_value")
         if not point_value:
-            flash('You have not entered all required fields', 'danger'), 400
+            flash('You have not entered all required fields', 'danger')
             return render_template("contest/createproblem.html"), 400
 
         # Modify problems table
