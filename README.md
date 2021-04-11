@@ -44,7 +44,7 @@ Additionally, you will be able to manage users and view submissions.
 
 ## Contributing
 Contributors are welcome. If you want to help, feel free to submit a pull request or open an issue. Additionally,
-please make sure to test your changes manually and using our [test suite](https://github.com/jdabtieu/CTFOJ/tree/master/tests).
+please make sure to test your changes manually and using our [test suite](https://github.com/jdabtieu/CTFOJ/tree/master/src/tests).
 
 Notice a security vulnerability? Refer to [SECURITY.md](docs/SECURITY.md) to determine what to do.
 
