@@ -503,25 +503,25 @@ def contest(contest_id):
         solved_data.add(row["problem_id"])
 
     data = []
-
-    info = db.execute(("SELECT * FROM contest_problems WHERE contest_id=:cid "
-                       "AND draft=0 ORDER BY problem_id ASC, category ASC"),
-                      cid=contest_id)
+    info = db.execute(
+        ("SELECT contest_problems.*, COUNT(contest_solved.user_id) AS solves "
+         "FROM contest_problems LEFT JOIN contest_solved ON "
+         "contest_problems.problem_id=contest_solved.problem_id WHERE "
+         "contest_problems.contest_id=:cid AND draft=0 GROUP BY "
+         "contest_problems.problem_id ORDER BY problem_id ASC, category ASC"),
+        cid=contest_id)
 
     for row in info:
-        sols = db.execute("SELECT COUNT(*) FROM contest_solved WHERE problem_id=:pid AND contest_id=:cid",
-                          pid=row["problem_id"], cid=contest_id)[0]["COUNT(*)"]
-
         keys = {
             "name": row["name"],
             "category": row["category"],
             "problem_id": row["problem_id"],
             "solved": 1 if row["problem_id"] in solved_data else 0,
             "point_value": row["point_value"],
-            "sols": sols,
+            "sols": row["solves"],
             "dynamic": 0 if row["score_users"] == -1 else 1,
         }
-        data.insert(len(data), keys)
+        data.append(keys)
 
     return render_template("contest/contest.html", title=title, scoreboard=scoreboard,
                            data=data)
@@ -998,21 +998,23 @@ def problems():
 
     if category is not None:
         data = db.execute(
-            "SELECT * FROM problems WHERE (draft=0 AND category=?) ORDER BY id ASC LIMIT 50 OFFSET ?",
+            ("SELECT problems.*, COUNT(DISTINCT problem_solved.user_id) AS sols "
+             "FROM problems LEFT JOIN problem_solved ON "
+             "problems.id=problem_solved.problem_id WHERE (draft=0 AND category=?)"
+             "GROUP BY problems.id ORDER BY id ASC LIMIT 50 OFFSET ?"),
             category, page)
         length = len(db.execute("SELECT * FROM problems WHERE (draft=0 AND category=?)",
                                 category))
     else:
         data = db.execute(
-            "SELECT * FROM problems WHERE draft=0 ORDER BY id ASC LIMIT 50 OFFSET ?", page)
+            ("SELECT problems.*, COUNT(DISTINCT problem_solved.user_id) AS sols "
+             "FROM problems LEFT JOIN problem_solved ON "
+             "problems.id=problem_solved.problem_id WHERE draft=0 "
+             "GROUP BY problems.id ORDER BY id ASC LIMIT 50 OFFSET ?"), page)
         length = len(db.execute("SELECT * FROM problems WHERE draft=0"))
 
     categories = db.execute("SELECT DISTINCT category FROM problems")
     categories.sort(key=lambda x: x['category'])
-
-    for row in data:
-        row["sols"] = db.execute("SELECT COUNT(DISTINCT user_id) FROM submissions WHERE problem_id=:problem_id", problem_id=row["id"])[
-            0]["COUNT(DISTINCT user_id)"]
 
     return render_template('problem/problems.html',
                            data=data, solved=solved, length=-(-length // 50),
