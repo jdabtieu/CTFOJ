@@ -1,4 +1,5 @@
 import jwt
+import math
 import secrets
 import re
 import requests
@@ -118,3 +119,44 @@ def create_jwt(data, secret_key):
     """
     data['expiration'] = (datetime.utcnow() + timedelta(seconds=1800)).isoformat()
     return jwt.encode(data, secret_key, algorithm='HS256')
+
+
+def update_dyn_score(contest_id, problem_id, update_curr_user=True):
+    from application import db
+    """
+    Updates the dynamic scoring of contest_id/problem_id, using the db object
+    For details see: https://www.desmos.com/calculator/eifeir81wk
+                     https://github.com/jdabtieu/CTFOJ/issues/2
+    Prereqs for using this function: user solve entry must already be in contest_solved
+    """
+    db.execute("BEGIN")
+    check = db.execute(("SELECT * FROM contest_problems WHERE contest_id=:cid AND "
+                        "problem_id=:pid"), cid=contest_id, pid=problem_id)
+    solves = len(db.execute(
+        "SELECT user_id FROM contest_solved WHERE contest_id=:cid AND problem_id=:pid",
+        cid=contest_id, pid=problem_id))
+    N_min = check[0]["score_min"]
+    N_max = check[0]["score_max"]
+    N_users = check[0]["score_users"]
+    d = 11 * math.log(N_max - N_min) + N_users
+    old_points = min(math.ceil(math.e**((d - solves + 1) / 11) + N_min), N_max)
+    new_points = min(math.ceil(math.e**((d - solves) / 11) + N_min), N_max)
+    point_diff = new_points - old_points
+
+    # Set new point value of problem
+    db.execute(("UPDATE contest_problems SET point_value=:pv WHERE "
+                "contest_id=:cid AND problem_id=:pid"),
+               pv=new_points, cid=contest_id, pid=problem_id)
+
+    if update_curr_user:
+        db.execute(("UPDATE contest_users SET lastAC=datetime('now'), "
+                    "points=points+:points WHERE contest_id=:cid AND user_id=:uid"),
+                   cid=contest_id, points=old_points, uid=session["user_id"])
+
+    # Update points of all users who previously solved the problem
+    db.execute(("UPDATE contest_users SET points=points+:point_change "
+                "WHERE contest_id=:cid AND user_id IN "
+                "(SELECT user_id FROM contest_solved WHERE "
+                "contest_id=:cid AND problem_id=:pid)"),
+               point_change=point_diff, cid=contest_id, pid=problem_id)
+    db.execute("COMMIT")
