@@ -103,7 +103,7 @@ def check_version():
             message = Markup((
                 "You are not up-to-date! Please notify the site administrator. "
                 f"Current version: {curr_version}, Latest version: {latest_version}. "
-                 "Upgrade <a href=\"https://github.com/jdabtieu/CTFOJ/releases\">here</a>.")) # noqa
+                 "Upgrade <a href=\"https://github.com/jdabtieu/CTFOJ/releases\">here</a>."))  # noqa
             flash(message, "danger")
 
     except Exception:
