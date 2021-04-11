@@ -1081,8 +1081,13 @@ def problem(problem_id):
         flash('The flag you submitted was incorrect', 'danger')
         return render_template('problem/problem.html', data=data[0])
 
-    db.execute("INSERT INTO problem_solved(user_id, problem_id) VALUES(:uid, :pid)",
-               uid=session["user_id"], pid=problem_id)
+    # Check if user already solved this problem
+    check = db.execute(
+        "SELECT * FROM problem_solved WHERE user_id=:uid AND problem_id=:pid",
+        uid=session["user_id"], pid=problem_id)
+    if len(check) == 0:
+        db.execute("INSERT INTO problem_solved(user_id, problem_id) VALUES(:uid, :pid)",
+                   uid=session["user_id"], pid=problem_id)
 
     flash('Congratulations! You have solved this problem!', 'success')
     return render_template('problem/problem.html', data=data[0])
