@@ -741,10 +741,45 @@ def edit_contest_problem(contest_id, problem_id):
         flash('You have not entered all required fields', 'danger')
         return render_template('problem/editproblem.html', data=data[0]), 400
 
-    if new_flag:
+    if new_flag:#CTF{threefourseveneightninefour}
         if not verify_flag(new_flag):
             flash('Invalid flag', 'danger')
             return render_template('problem/editproblem.html', data=data[0]), 400
+        if request.form.get("rejudge"):
+            db.execute("UPDATE contest_users SET points=points-:points WHERE user_id IN SELECT DISTINCT(user_id) FROM submissions WHERE contest_id=:cid AND problem_id=:pid AND correct=1", points=data[0]["point_value"], cid=contest_id, pid=problem_id)
+            db.execute("UPDATE submissions SET correct=0 WHERE contest_id=:cid AND problem_id=:pid", cid=contest_id, pid=problem_id)
+            db.execute("DELETE FROM contest_solved WHERE contest_id=:cid AND problem_id=:pid", cid=contest_id, pid=problem_id)
+            db.execute("UPDATE submissions SET correct=1 WHERE contest_id=:cid AND problem_id=:pid AND submitted=:flag", cid=contest_id, pid=problem_id, flag=new_flag)
+            ## WIP db.execute("INSERT INTO contest_solved (contest_id, user_id, problem_id) VALUES SET points=points-:points WHERE user_id IN SELECT DISTINCT(user_id) FROM submissions WHERE contest_id=:cid AND problem_id=:pid AND correct=1", points=data[0]["point_value"], cid=contest_id, pid=problem_id)
+            if data[0]["score_users"] == -1:  # Instructions for static scoring
+                db.execute("UPDATE contest_users SET points=points+:points WHERE user_id IN SELECT DISTINCT(user_id) FROM submissions WHERE contest_id=:cid AND problem_id=:pid AND correct=1", points=data[0]["point_value"], cid=contest_id, pid=problem_id)
+            else:  # Instructions for dynamic scoring ## WIP
+                num_users = len(db.execute("SELECT * FROM submissions WHERE correct=1 AND contest_id=:cid AND problem_id=:pid", cid=contest_id, pid=problem_id))
+                solved_users = db.execute(
+                    "SELECT user_id FROM contest_solved WHERE contest_id=:cid AND problem_id=:pid",
+                    cid=contest_id, pid=problem_id)
+                N_min = check[0]["score_min"]
+                N_max = check[0]["score_max"]
+                N_users = check[0]["score_users"]
+                d = 11 * math.log(N_max - N_min) + N_users
+                solves = len(solved_users)
+                old_points = min(math.ceil(math.e**((d - solves + 1) / 11) + N_min), N_max)
+                new_points = min(math.ceil(math.e**((d - solves) / 11) + N_min), N_max)
+                point_diff = new_points - old_points
+                db.execute(
+                    "UPDATE contest_users SET lastAC=datetime('now'), points=points+:points WHERE contest_id=:cid AND user_id=:uid",
+                    cid=contest_id, points=old_points, uid=session["user_id"])
+
+                # Update points of all users who previously solved the problem
+                need_update = [user["user_id"] for user in solved_users]
+                db.execute(
+                    f"UPDATE contest_users SET points = points + :point_change WHERE contest_id=:cid AND user_id IN ({','.join([str(user) for user in need_update])})",
+                    point_change=point_diff, cid=contest_id)
+
+                # Set new point value of problem
+                db.execute("UPDATE contest_problems SET point_value=:pv WHERE contest_id=:cid AND problem_id=:pid",
+                           pv=new_points, cid=contest_id, pid=problem_id)
+
     else:
         new_flag = data[0]["flag"]
 
@@ -1158,6 +1193,12 @@ def editproblem(problem_id):
         if not verify_flag(new_flag):
             flash('Invalid flag', 'danger')
             return render_template('problem/editproblem.html', data=data[0]), 400
+        if request.form.get("rejudge"):
+            db.execute("UPDATE submissions SET correct=0 WHERE problem_id=:pid",
+                       pid=problem_id)
+            db.execute(("UPDATE submissions SET correct=1 WHERE "
+                        "problem_id=:pid AND submitted=:flag"),
+                       pid=problem_id, flag=new_flag)
     else:
         new_flag = data[0]["flag"]
 

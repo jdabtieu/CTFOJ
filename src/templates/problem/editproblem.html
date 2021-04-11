@@ -15,7 +15,13 @@
         <div id="hints-out" class="md-preview"></div>
     </div>
     <input class="form-control mb-3" id="category" name="category" value="{{ data['category'] }}" placeholder="Category" required>
-    <input class="form-control mb-3" id="flag" name="flag" placeholder="New flag (optional)">
+    <div style="position: relative;">
+        <input class="form-control mb-3" id="flag" name="flag" placeholder="New flag (optional)">
+        <div style="position: absolute; right: 0; top: 0; width: initial;" class="form-control">
+            <input type="checkbox" id="rejudge" name="rejudge">
+            <label for="rejudge">Rejudge?</label>
+        </div>
+    </div>
     <input class="form-control mb-3"
            type="number"
            id="point_value"
