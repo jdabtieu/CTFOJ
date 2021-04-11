@@ -720,17 +720,34 @@ def edit_contest_problem(contest_id, problem_id):
             flash('Invalid flag', 'danger')
             return render_template('problem/editproblem.html', data=data[0]), 400
         if request.form.get("rejudge"):
-            db.execute("UPDATE contest_users SET points=points-:points WHERE user_id IN (SELECT user_id FROM contest_solved WHERE contest_id=:cid AND problem_id=:pid)", points=data[0]["point_value"], cid=contest_id, pid=problem_id)
-            db.execute("UPDATE submissions SET correct=0 WHERE contest_id=:cid AND problem_id=:pid", cid=contest_id, pid=problem_id)
-            db.execute("DELETE FROM contest_solved WHERE contest_id=:cid AND problem_id=:pid", cid=contest_id, pid=problem_id)
+            db.execute(("UPDATE contest_users SET points=points-:points WHERE user_id IN "
+                        "(SELECT user_id FROM contest_solved WHERE "
+                        "contest_id=:cid AND problem_id=:pid)"),
+                       points=data[0]["point_value"], cid=contest_id, pid=problem_id)
+            db.execute(("UPDATE submissions SET correct=0 WHERE "
+                        "contest_id=:cid AND problem_id=:pid"),
+                       cid=contest_id, pid=problem_id)
+            db.execute(("DELETE FROM contest_solved WHERE contest_id=:cid AND "
+                        "problem_id=:pid"), cid=contest_id, pid=problem_id)
             if data[0]["score_users"] >= 0:  # Reset dynamic scoring
                 update_dyn_score(contest_id, problem_id, update_curr_user=False)
-            db.execute("UPDATE submissions SET correct=1 WHERE contest_id=:cid AND problem_id=:pid AND submitted=:flag", cid=contest_id, pid=problem_id, flag=new_flag)
-            db.execute("INSERT INTO contest_solved (user_id, contest_id, problem_id) SELECT DISTINCT user_id, contest_id, problem_id FROM submissions WHERE contest_id=:cid AND problem_id=:pid AND correct=1", cid=contest_id, pid=problem_id)
+            db.execute(("UPDATE submissions SET correct=1 WHERE contest_id=:cid AND "
+                        "problem_id=:pid AND submitted=:flag"),
+                       cid=contest_id, pid=problem_id, flag=new_flag)
+            db.execute(("INSERT INTO contest_solved (user_id, contest_id, problem_id) "
+                        "SELECT DISTINCT user_id, contest_id, problem_id FROM submissions "  # noqa
+                        "WHERE contest_id=:cid AND problem_id=:pid AND correct=1"),
+                       cid=contest_id, pid=problem_id)
             if data[0]["score_users"] == -1:  # Instructions for static scoring
-                db.execute("UPDATE contest_users SET points=points+:points WHERE user_id IN (SELECT user_id FROM contest_solved WHERE contest_id=:cid AND problem_id=:pid)", points=data[0]["point_value"], cid=contest_id, pid=problem_id)
+                db.execute(("UPDATE contest_users SET points=points+:points WHERE "
+                            "user_id IN (SELECT user_id FROM contest_solved WHERE "
+                            "contest_id=:cid AND problem_id=:pid)"),
+                           points=data[0]["point_value"], cid=contest_id, pid=problem_id)
             else:  # Instructions for dynamic scoring
-                db.execute("UPDATE contest_users SET points=points+:points WHERE user_id IN (SELECT user_id FROM contest_solved WHERE contest_id=:cid AND problem_id=:pid)", points=data[0]["score_max"], cid=contest_id, pid=problem_id)
+                db.execute(("UPDATE contest_users SET points=points+:points WHERE "
+                            "user_id IN (SELECT user_id FROM contest_solved WHERE "
+                            "contest_id=:cid AND problem_id=:pid)"),
+                           points=data[0]["score_max"], cid=contest_id, pid=problem_id)
                 update_dyn_score(contest_id, problem_id, update_curr_user=False)
     else:
         new_flag = data[0]["flag"]
@@ -743,18 +760,20 @@ def edit_contest_problem(contest_id, problem_id):
         old_points = data[0]["point_value"]
         if old_points != new_points:
             point_change = int(new_points) - old_points
-            db.execute(
-                "UPDATE contest_users SET points=points+:point_change WHERE contest_id=:cid AND user_id IN (SELECT user_id FROM contest_solved WHERE contest_id=:cid AND problem_id=:pid)",
-                point_change=point_change, cid=contest_id, pid=problem_id)
+            db.execute(("UPDATE contest_users SET points=points+:point_change WHERE "
+                        "contest_id=:cid AND user_id IN (SELECT user_id FROM "
+                        "contest_solved WHERE contest_id=:cid AND problem_id=:pid)"),
+                       point_change=point_change, cid=contest_id, pid=problem_id)
     else:  # Forcefully prevent score to be edited for dynamic score problems
-        data = db.execute("SELECT * FROM contest_problems WHERE contest_id=:cid AND problem_id=:pid",
-                          cid=contest_id, pid=problem_id)
+        data = db.execute(
+            "SELECT * FROM contest_problems WHERE contest_id=:cid AND problem_id=:pid",
+            cid=contest_id, pid=problem_id)
         new_points = data[0]["point_value"]
 
-    db.execute(
-        "UPDATE contest_problems SET name=:name, category=:category, point_value=:pv, flag=:flag WHERE contest_id=:cid AND problem_id=:pid",
-        name=new_name, category=new_category, pv=new_points,
-        flag=new_flag, cid=contest_id, pid=problem_id)
+    db.execute(("UPDATE contest_problems SET name=:name, category=:category, "
+                "point_value=:pv, flag=:flag WHERE contest_id=:cid AND problem_id=:pid"),
+               name=new_name, category=new_category, pv=new_points,
+               flag=new_flag, cid=contest_id, pid=problem_id)
 
     write_file(f'metadata/contests/{contest_id}/{problem_id}/description.md', new_description)  # noqa
     write_file(f'metadata/contests/{contest_id}/{problem_id}/hints.md', new_hint)
