@@ -49,7 +49,8 @@ db.execute("ALTER TABLE contest_problems ADD COLUMN 'score_users' integer NOT NU
 # Change submissions tables to allow for storing submissions
 db.execute("ALTER TABLE submissions ADD COLUMN 'submitted' text NOT NULL DEFAULT('')")
 
-last_num = db.execute("SELECT sub_id FROM submissions ORDER BY sub_id DESC LIMIT 1")[0]["sub_id"]
+last_num = db.execute("SELECT sub_id FROM submissions ORDER BY sub_id DESC LIMIT 1")[
+    0]["sub_id"]
 for submission in db.execute("SELECT * FROM submissions"):
     # Would probably be faster with multithreading but cs50.SQL really hates multithreading
     print(f"Processing submission {submission['sub_id']} of {last_num}...")
@@ -58,7 +59,9 @@ for submission in db.execute("SELECT * FROM submissions"):
             flag = db.execute("SELECT * FROM contest_problems WHERE problem_id=? AND contest_id=?",
                               submission["problem_id"], submission["contest_id"])[0]["flag"]
         else:
-            flag = db.execute("SELECT * FROM problems WHERE id=?", submission["problem_id"])[0]["flag"]
-        db.execute("UPDATE submissions SET submitted=? WHERE sub_id=?", flag, submission["sub_id"])
+            flag = db.execute("SELECT * FROM problems WHERE id=?",
+                              submission["problem_id"])[0]["flag"]
+        db.execute("UPDATE submissions SET submitted=? WHERE sub_id=?",
+                   flag, submission["sub_id"])
 
 print('Migration completed.')

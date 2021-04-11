@@ -78,6 +78,7 @@ def test_admin(client, database):
     assert result.status_code == 200
     assert b'successfully edited' in result.data
 
-    result = client.post('/admin/deleteannouncement', data={'aid': 1}, follow_redirects=True)
+    result = client.post('/admin/deleteannouncement',
+                         data={'aid': 1}, follow_redirects=True)
     assert result.status_code == 200
     assert b'successfully deleted' in result.data
