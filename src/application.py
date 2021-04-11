@@ -171,7 +171,7 @@ def login():
                        app.config['MAIL_DEFAULT_SENDER'], [email], text, mail)
 
         flash(('A login confirmation email has been sent to the email address you '
-              'provided. Be sure to check your spam folder!'), 'success')
+               'provided. Be sure to check your spam folder!'), 'success')
         return render_template("login.html", site_key=app.config['HCAPTCHA_SITE'])
 
     # Remember which user has logged in
@@ -1042,7 +1042,8 @@ def problems():
     categories.sort(key=lambda x: x['category'])
 
     for row in data:
-        row["sols"] = db.execute("SELECT COUNT(DISTINCT user_id) FROM submissions WHERE problem_id=:problem_id", problem_id=row["id"])[0]["COUNT(DISTINCT user_id)"]
+        row["sols"] = db.execute("SELECT COUNT(DISTINCT user_id) FROM submissions WHERE problem_id=:problem_id", problem_id=row["id"])[
+            0]["COUNT(DISTINCT user_id)"]
 
     return render_template('problem/problems.html',
                            data=data, solved=solved, length=-(-length // 50),
@@ -1285,7 +1286,7 @@ def admin_submissions():
 
     if request.args.get("problem_id"):
         modifier += " problem_id=? AND"
-        args.append( request.args.get("problem_id"))
+        args.append(request.args.get("problem_id"))
 
     if request.args.get("contest_id"):
         if request.args.get("contest_id") == "None":

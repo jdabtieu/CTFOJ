@@ -6,7 +6,8 @@ def test_2fa(client, database):
     assert b'Invalid' in result.data
 
     client.post('/login', data={'username': 'admin', 'password': 'CTFOJadmin'})
-    result = client.post('/settings/toggle2fa', data={'password': 'CTFOJadmin'}, follow_redirects=True)
+    result = client.post('/settings/toggle2fa',
+                         data={'password': 'CTFOJadmin'}, follow_redirects=True)
     assert result.status_code == 200
     assert b'successfully enabled' in result.data
     client.get('/logout', follow_redirects=True)

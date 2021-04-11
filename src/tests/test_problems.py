@@ -31,7 +31,8 @@ def test_problem(client, database):
     assert result.status_code == 200
     assert b'published' in result.data
 
-    result = client.post('/problem/helloworldtesting/editeditorial', data={'editorial': 'sample editorial'}, follow_redirects=True)
+    result = client.post('/problem/helloworldtesting/editeditorial',
+                         data={'editorial': 'sample editorial'}, follow_redirects=True)
     assert result.status_code == 200
     assert b'edited' in result.data
 
