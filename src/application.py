@@ -59,7 +59,8 @@ csrf.init_app(app)
 @app.before_request
 def check_for_maintenance():
     # Don't prevent login or getting assets
-    if request.path == '/login' or (len(request.path) > 8 and request.path[0:8] == '/assets/' and '..' not in request.path):
+    if request.path == '/login' or (request.path[0:8] == '/assets/'
+                                    and '..' not in request.path):
         return
 
     maintenance_mode = bool(os.path.exists('maintenance_mode'))
@@ -423,7 +424,8 @@ def reset_password_user(token):
     except Exception as e:
         sys.stderr.write(str(e))
         user_id = 0
-    if not user_id or datetime.strptime(token["expiration"], "%Y-%m-%dT%H:%M:%S.%f") < datetime.utcnow():
+    if not user_id or datetime.strptime(token["expiration"],
+                                        "%Y-%m-%dT%H:%M:%S.%f") < datetime.utcnow():
         flash('Password reset link expired/invalid', 'danger')
         return redirect('/forgotpassword')
 
@@ -453,7 +455,8 @@ def contests():
     past = db.execute(
         "SELECT * FROM contests WHERE end < datetime('now') ORDER BY end DESC")
     current = db.execute(
-        "SELECT * FROM contests WHERE end > datetime('now') AND start <= datetime('now') ORDER BY end DESC")
+        ("SELECT * FROM contests WHERE end > datetime('now') AND "
+         "start <= datetime('now') ORDER BY end DESC"))
     future = db.execute(
         "SELECT * FROM contests WHERE start > datetime('now') ORDER BY start DESC")
     for contest in past:
@@ -488,15 +491,17 @@ def contest(contest_id):
     # Check for scoreboard permission
     scoreboard = contest_info[0]["scoreboard_visible"] or session["admin"]
 
-    user_info = db.execute("SELECT * FROM contest_users WHERE contest_id=:cid AND user_id=:uid",
-                           cid=contest_id, uid=session["user_id"])
+    user_info = db.execute(
+        "SELECT * FROM contest_users WHERE contest_id=:cid AND user_id=:uid",
+        cid=contest_id, uid=session["user_id"])
 
     if len(user_info) == 0:
         db.execute("INSERT INTO contest_users (contest_id, user_id) VALUES(:cid, :uid)",
                    cid=contest_id, uid=session["user_id"])
 
-    solved_info = db.execute("SELECT problem_id FROM contest_solved WHERE contest_id=:cid AND user_id=:uid",
-                             cid=contest_id, uid=session["user_id"])
+    solved_info = db.execute(
+        "SELECT problem_id FROM contest_solved WHERE contest_id=:cid AND user_id=:uid",
+        cid=contest_id, uid=session["user_id"])
 
     solved_data = set()
     for row in solved_info:
@@ -542,9 +547,9 @@ def contest_notify(contest_id):
         flash('Must provide message', 'danger')
         return render_template('admin/contestnotify.html'), 400
 
-    data = db.execute(
-        "SELECT email FROM contest_users JOIN users on user_id=users.id WHERE contest_users.contest_id=:cid",
-        cid=contest_id)
+    data = db.execute(("SELECT email FROM contest_users JOIN users on user_id=users.id "
+                       "WHERE contest_users.contest_id=:cid"),
+                      cid=contest_id)
     emails = [participant["email"] for participant in data]
     if not app.config['TESTING']:
         send_email(subject, app.config['MAIL_DEFAULT_SENDER'], [], message, mail, emails)
@@ -576,13 +581,15 @@ def contest_problem(contest_id, problem_id):
     if len(check) != 1:
         return render_template("contest/contest_noexist.html"), 404
 
-    check = db.execute("SELECT * FROM contest_problems WHERE contest_id=:cid AND problem_id=:pid",
-                       cid=contest_id, pid=problem_id)
+    check = db.execute(
+        "SELECT * FROM contest_problems WHERE contest_id=:cid AND problem_id=:pid",
+        cid=contest_id, pid=problem_id)
     if len(check) != 1:
         return render_template("contest/contest_problem_noexist.html"), 404
 
     # check problem exists
-    check1 = db.execute("SELECT * FROM contest_problems WHERE contest_id=:cid AND problem_id=:pid AND draft=0",
+    check1 = db.execute(("SELECT * FROM contest_problems WHERE contest_id=:cid AND "
+                         "problem_id=:pid AND draft=0"),
                         cid=contest_id, pid=problem_id)
     if len(check1) != 1 and session["admin"] != 1:
         return render_template("contest/contest_problem_noexist.html"), 404
@@ -622,37 +629,42 @@ def contest_problem(contest_id, problem_id):
     # Check if flag is correct
     if flag != check[0]["flag"]:
         db.execute(
-            "INSERT INTO submissions(date, user_id, problem_id, contest_id, correct, submitted) VALUES(datetime('now'), :uid, :pid, :cid, 0, :flag)",
+            ("INSERT INTO submissions(date, user_id, problem_id, contest_id, correct, "
+             "submitted) VALUES(datetime('now'), :uid, :pid, :cid, 0, :flag)"),
             uid=session["user_id"], pid=problem_id, cid=contest_id, flag=flag)
         flash('Your flag is incorrect', 'danger')
         return render_template("contest/contest_problem.html", data=check[0])
 
     db.execute(
-        "INSERT INTO submissions(date, user_id, problem_id, contest_id, correct, submitted) VALUES(datetime('now'), :uid, :pid, :cid, 1, :flag)",
+        ("INSERT INTO submissions(date, user_id, problem_id, contest_id, correct, "
+         "submitted) VALUES(datetime('now'), :uid, :pid, :cid, 1, :flag)"),
         uid=session["user_id"], pid=problem_id, cid=contest_id, flag=flag)
 
     # Check if user has already found this flag
-    check1 = db.execute("SELECT * FROM contest_solved WHERE contest_id=:cid AND user_id=:uid AND problem_id=:pid",
+    check1 = db.execute(("SELECT * FROM contest_solved WHERE contest_id=:cid "
+                         "AND user_id=:uid AND problem_id=:pid"),
                         cid=contest_id, uid=session["user_id"], pid=problem_id)
 
     # check if user is in the contest
-    check2 = db.execute("SELECT * FROM contest_users WHERE contest_id=:cid AND user_id=:uid",
-                        cid=contest_id, uid=session["user_id"])
+    check2 = db.execute(
+        "SELECT * FROM contest_users WHERE contest_id=:cid AND user_id=:uid",
+        cid=contest_id, uid=session["user_id"])
     if len(check2) == 0:
         db.execute("INSERT INTO contest_users(contest_id, user_id) VALUES (:cid, :uid)",
                    cid=contest_id, uid=session["user_id"])
 
     if len(check1) == 0:
-        db.execute("INSERT INTO contest_solved(contest_id, user_id, problem_id) VALUES(:cid, :uid, :pid)",
+        db.execute(("INSERT INTO contest_solved(contest_id, user_id, problem_id) "
+                    "VALUES(:cid, :uid, :pid)"),
                    cid=contest_id, pid=problem_id, uid=session["user_id"])
 
         if check[0]["score_users"] != -1:  # Dynamic scoring
             update_dyn_score(contest_id, problem_id)
         else:  # Static scoring
             points = check[0]["point_value"]
-            db.execute(
-                "UPDATE contest_users SET lastAC=datetime('now'), points=points+:points WHERE contest_id=:cid AND user_id=:uid",
-                cid=contest_id, points=points, uid=session["user_id"])
+            db.execute(("UPDATE contest_users SET lastAC=datetime('now'), "
+                        "points=points+:points WHERE contest_id=:cid AND user_id=:uid"),
+                       cid=contest_id, points=points, uid=session["user_id"])
 
     flash('Congratulations! You have solved this problem!', 'success')
     return render_template("contest/contest_problem.html", data=check[0])
@@ -666,14 +678,16 @@ def publish_contest_problem(contest_id, problem_id):
     if len(check) != 1:
         return render_template("contest/contest_noexist.html"), 404
 
-    check = db.execute("SELECT * FROM contest_problems WHERE contest_id=:cid AND problem_id=:pid",
-                       cid=contest_id, pid=problem_id)
+    check = db.execute(
+        "SELECT * FROM contest_problems WHERE contest_id=:cid AND problem_id=:pid",
+        cid=contest_id, pid=problem_id)
 
     if len(check) != 1:
         return render_template("contest/contest_problem_noexist.html"), 404
 
-    db.execute("UPDATE contest_problems SET draft=0 WHERE problem_id=:pid AND contest_id=:cid",
-               pid=problem_id, cid=contest_id)
+    db.execute(
+        "UPDATE contest_problems SET draft=0 WHERE problem_id=:pid AND contest_id=:cid",
+        pid=problem_id, cid=contest_id)
 
     flash('Problem successfully published', 'success')
     return redirect("/contest/" + contest_id + "/problem/" + problem_id)
@@ -688,8 +702,9 @@ def edit_contest_problem(contest_id, problem_id):
         return render_template("contest/contest_noexist.html"), 404
 
     # Ensure problem exists
-    data = db.execute("SELECT * FROM contest_problems WHERE contest_id=:cid AND problem_id=:pid",
-                      cid=contest_id, pid=problem_id)
+    data = db.execute(
+        "SELECT * FROM contest_problems WHERE contest_id=:cid AND problem_id=:pid",
+        cid=contest_id, pid=problem_id)
     if len(data) != 1:
         return render_template("contest/contest_problem_noexist.html"), 404
 
@@ -710,7 +725,8 @@ def edit_contest_problem(contest_id, problem_id):
     new_points = request.form.get("point_value")
     new_flag = request.form.get("flag")
 
-    if not new_name or not new_description or not new_category or (not new_points and data[0]["score_users"] == -1):
+    if (not new_name or not new_description or not new_category
+            or (not new_points and data[0]["score_users"] == -1)):
         flash('You have not entered all required fields', 'danger')
         return render_template('problem/editproblem.html', data=data[0]), 400
 
@@ -796,7 +812,9 @@ def contest_scoreboard(contest_id):
 
     # Render page
     data = db.execute(
-        "SELECT user_id, points, lastAC, username FROM contest_users JOIN users on user_id=users.id WHERE contest_users.contest_id=:cid ORDER BY points DESC, lastAC ASC",
+        ("SELECT user_id, points, lastAC, username FROM contest_users "
+         "JOIN users on user_id=users.id WHERE contest_users.contest_id=:cid "
+         "ORDER BY points DESC, lastAC ASC"),
         cid=contest_id)
     return render_template("contest/contestscoreboard.html",
                            title=contest_info[0]["name"], data=data)
@@ -851,7 +869,7 @@ def contest_add_problem(contest_id):
     draft = 1 if request.form.get("draft") else 0
 
     if not problem_id or not name or not description or not category or not flag:
-        flash('You have not entered all required fields', 'danger'), 400
+        flash('You have not entered all required fields', 'danger')
         return render_template("contest/createproblem.html"), 400
 
     # Check if problem ID is valid
@@ -867,9 +885,9 @@ def contest_add_problem(contest_id):
     description = description.replace('\r', '')
 
     # Ensure problem does not already exist
-    problem_info = db.execute(
-        "SELECT * FROM contest_problems WHERE contest_id=:cid AND (problem_id=:pid OR name=:name)",
-        cid=contest_id, pid=problem_id, name=name)
+    problem_info = db.execute(("SELECT * FROM contest_problems WHERE contest_id=:cid AND "
+                               "(problem_id=:pid OR name=:name)"),
+                              cid=contest_id, pid=problem_id, name=name)
     if len(problem_info) != 0:
         flash('A problem with this name or ID already exists', 'danger')
         return render_template("contest/createproblem.html"), 409
@@ -895,7 +913,8 @@ def contest_add_problem(contest_id):
             return render_template("contest/createproblem.html"), 400
 
         # Modify problems table
-        db.execute("INSERT INTO contest_problems VALUES(:cid, :pid, :name, :pv, :category, :flag, :draft, :min, :max, :users)",
+        db.execute(("INSERT INTO contest_problems VALUES(:cid, :pid, :name, :pv, "
+                    ":category, :flag, :draft, :min, :max, :users)"),
                    cid=contest_id, pid=problem_id, name=name, pv=max_points,
                    category=category, flag=flag, draft=draft, min=min_points,
                    max=max_points, users=users_decay)
@@ -906,10 +925,11 @@ def contest_add_problem(contest_id):
             return render_template("contest/createproblem.html"), 400
 
         # Modify problems table
-        db.execute(
-            "INSERT INTO contest_problems(contest_id, problem_id, name, point_value, category, flag, draft) VALUES(:cid, :pid, :name, :pv, :category, :flag, :draft)",
-            cid=contest_id, pid=problem_id, name=name, pv=point_value,
-            category=category, flag=flag, draft=draft)
+        db.execute(("INSERT INTO contest_problems(contest_id, problem_id, name, "
+                    "point_value, category, flag, draft) "
+                    "VALUES(:cid, :pid, :name, :pv, :category, :flag, :draft)"),
+                   cid=contest_id, pid=problem_id, name=name, pv=point_value,
+                   category=category, flag=flag, draft=draft)
 
     os.makedirs(f'metadata/contests/{contest_id}/{problem_id}')
     write_file(f'metadata/contests/{contest_id}/{problem_id}/description.md', description)
@@ -929,8 +949,9 @@ def export_contest_problem(contest_id, problem_id):
         return render_template("contest/contest_noexist.html"), 404
 
     # Ensure problem exists
-    data = db.execute("SELECT * FROM contest_problems WHERE contest_id=:cid AND problem_id=:pid",
-                      cid=contest_id, pid=problem_id)
+    data = db.execute(
+        "SELECT * FROM contest_problems WHERE contest_id=:cid AND problem_id=:pid",
+        cid=contest_id, pid=problem_id)
     if len(data) != 1:
         return render_template("contest/contest_problem_noexist.html"), 404
 
@@ -955,11 +976,13 @@ def export_contest_problem(contest_id, problem_id):
 
     # Insert into problems databases
     db.execute("BEGIN")
-    db.execute("INSERT INTO problems(id, name, point_value, category, flag) VALUES(:id, :name, :pv, :cat, :flag)",
+    db.execute(("INSERT INTO problems(id, name, point_value, category, flag) "
+                "VALUES(:id, :name, :pv, :cat, :flag)"),
                id=new_id, name=new_name, pv=data[0]["point_value"],
                cat=data[0]["category"], flag=data[0]["flag"])
 
-    solved = db.execute("SELECT user_id, problem_id FROM contest_solved WHERE contest_id=:cid AND problem_id=:pid",
+    solved = db.execute(("SELECT user_id, problem_id FROM contest_solved WHERE "
+                         "contest_id=:cid AND problem_id=:pid"),
                         cid=contest_id, pid=problem_id)
     for row in solved:
         db.execute("INSERT INTO problem_solved(user_id, problem_id) VALUES(:uid, :pid)",
@@ -1183,8 +1206,10 @@ def editproblem(problem_id):
     if not new_hint:
         new_hint = ""
 
-    db.execute("UPDATE problems SET name=:name, category=:category, point_value=:pv, flag=:flag WHERE id=:problem_id",
-               name=new_name, category=new_category, pv=new_points, problem_id=problem_id, flag=new_flag)
+    db.execute(("UPDATE problems SET name=:name, category=:category, point_value=:pv, "
+                "flag=:flag WHERE id=:problem_id"),
+               name=new_name, category=new_category, pv=new_points,
+               problem_id=problem_id, flag=new_flag)
     write_file('metadata/problems/' + problem_id + '/description.md', new_description)
     write_file('metadata/problems/' + problem_id + '/hints.md', new_hint)
 
@@ -1324,8 +1349,8 @@ def admin_createcontest():
     contest_name = request.form.get("contest_name")
 
     # Ensure contest doesn't already exist
-    check = db.execute("SELECT * FROM contests WHERE id=:contest_id OR name=:contest_name",  # noqa
-                       contest_id=contest_id, contest_name=contest_name)
+    check = db.execute("SELECT * FROM contests WHERE id=:cid OR name=:contest_name",
+                       cid=contest_id, contest_name=contest_name)
     if len(check) != 0:
         flash('A contest with that name or ID already exists', 'danger')
         return render_template("admin/createcontest.html"), 409
@@ -1347,7 +1372,8 @@ def admin_createcontest():
         return render_template("admin/createcontest.html"), 400
 
     db.execute(
-        "INSERT INTO contests (id, name, start, end, scoreboard_visible) VALUES (:id, :name, datetime(:start), datetime(:end), :scoreboard_visible)",
+        ("INSERT INTO contests (id, name, start, end, scoreboard_visible) "
+         "VALUES (:id, :name, datetime(:start), datetime(:end), :scoreboard_visible)"),
         id=contest_id, name=contest_name, start=start, end=end,
         scoreboard_visible=scoreboard_visible)
 
@@ -1375,7 +1401,8 @@ def createproblem():
     flag = request.form.get("flag")
     draft = 1 if request.form.get("draft") else 0
 
-    if not problem_id or not name or not description or not point_value or not category or not flag:
+    if (not problem_id or not name or not description or not point_value
+            or not category or not flag):
         flash('You have not entered all required fields', 'danger')
         return render_template("admin/createproblem.html"), 400
 
