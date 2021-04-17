@@ -1,3 +1,6 @@
+from helpers import create_jwt
+
+
 def test_pages(client, database):
     '''Test if all the normal pages are accessible.'''
     database.execute(
@@ -86,9 +89,28 @@ def test_pages(client, database):
     assert result.status_code == 200
     assert b'Forgot' in result.data
 
+    token = create_jwt({'user_id': 2}, 'testing_secret_key')
+    result = client.get('/resetpassword/' + token, follow_redirects=True)
+    assert result.status_code == 200
+    assert b'Reset Password' in result.data
+
+    token = create_jwt({'user_id': 2}, 'testing_secret_key')
+    result = client.post('/resetpassword/' + token, data={
+        'password': 'CTFOJadmin321',
+        'confirmation': 'CTFOJadmin123'
+    }, follow_redirects=True)
+    assert b'do not match' in result.data
+
+    token = create_jwt({'user_id': 2}, 'testing_secret_key')
+    result = client.post('/resetpassword/' + token, data={
+        'password': 'CTFOJadmin321',
+        'confirmation': 'CTFOJadmin321'
+    }, follow_redirects=True)
+    assert b'Log In' in result.data
+
     result = client.post('/login', data={
         'username': 'normal_user',
-        'password': 'CTFOJadmin123'
+        'password': 'CTFOJadmin321'
     }, follow_redirects=True)
     assert result.status_code == 200
     assert b'Welcome' in result.data
