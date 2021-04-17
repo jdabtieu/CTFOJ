@@ -19,7 +19,11 @@
         </div>
         {% if data["hints"] %}
             <div style="margin-top: 16px;">
-                <a class="btn btn-secondary" id="togglehint" onclick="document.getElementById('hint').classList.toggle('hidden')">Show/Hide Hints</a>
+                <a class="btn btn-secondary"
+                   id="togglehint"
+                   onclick="document.getElementById('hint').classList.toggle('hidden')">
+                    Show/Hide Hints
+                </a>
                 <div id="hint" class="card showdown hidden">
                     <textarea style="display: none;">{{ data["hints"] | safe }}</textarea>
                 </div>
@@ -28,7 +32,11 @@
     </div>
     <div style="flex: 1; padding: 4px;">
         <form autocomplete="off" method="post" style="margin-bottom: 0.5rem;">
-            <input class="form-control" type="text" id="flag" name="flag" placeholder="Flag" style="margin-bottom: 0.5rem;" required>
+            <input class="form-control"
+                   name="flag"
+                   placeholder="Flag"
+                   style="margin-bottom: 0.5rem;"
+                   required>
             <input class="btn btn-primary problem-submit-button" type="submit" value="Submit">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         </form>
@@ -40,7 +48,9 @@
                 <br><a href="{{ request.path }}/editorial">View editorial</a>
             {% endif %}
             {% if session["admin"] %}
-                <br><a href="/admin/submissions?problem_id={{ request.path.split("/")[2] }}">View submissions</a>
+                <br><a href="/admin/submissions?problem_id={{ request.path.split('/')[2] }}">
+                        View submissions
+                    </a>
                 <br><a href="{{ request.path }}/editeditorial">Create/edit editorial</a>
                 <br><a href="{{ request.path }}/edit">Edit problem</a>
                 <br><a href="{{ request.path }}/download">Download problem</a>
@@ -58,14 +68,18 @@
     <script>
         function deletemsg() {
             document.getElementById("confirm").style.display = "";
-            document.querySelector("#confirm form").setAttribute("action", window.location.pathname + "/delete");
-            document.querySelector("#confirm form .btn").setAttribute("value", "Are you sure you want to delete this problem? Click here to confirm.");
+            document.querySelector("#confirm form")
+                    .setAttribute("action", window.location.pathname + "/delete");
+            document.querySelector("#confirm form .btn")
+                    .setAttribute("value", "Are you sure you want to delete this problem? Click here to confirm.");
         }
         
         function publishmsg() {
             document.getElementById("confirm").style.display = "";
-            document.querySelector("#confirm form").setAttribute("action", window.location.pathname + "/publish");
-            document.querySelector("#confirm form .btn").setAttribute("value", "Are you sure you want to publish this problem? Click here to confirm.");
+            document.querySelector("#confirm form")
+                    .setAttribute("action", window.location.pathname + "/publish");
+            document.querySelector("#confirm form .btn")
+                    .setAttribute("value", "Are you sure you want to publish this problem? Click here to confirm.");
         }
     </script>
     {% endblock %}

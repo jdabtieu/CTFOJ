@@ -56,7 +56,8 @@
     <script>
         function createForm(user_id, username) {
             document.getElementById("confirm").style.display = "";
-            document.querySelector("#confirm .btn").setAttribute("value", `Are you sure you want to disqualify ${username}? This action is irreversible. Click here to confirm`);
+            document.querySelector("#confirm .btn")
+                    .setAttribute("value", `Are you sure you want to disqualify ${username}? This action is irreversible. Click here to confirm`);
             document.querySelector("#confirm input[name=user_id]").setAttribute("value", user_id);
         }
 

@@ -5,29 +5,54 @@
 {% block main %}
 <h1>Edit Contest</h1>
 <form autocomplete="off" method="post" id="edit" name="edit">
-    <input class="form-control mb-3" type="text" id="name" name="name" placeholder="Name" value="{{ data['name'] }}" required>
+    <input class="form-control mb-3"
+           name="name"
+           placeholder="Name"
+           value="{{ data['name'] }}"
+           required>
     <div style="position: relative;">
-        <textarea class="form-control mb-3 md-preview" id="description" name="description" rows="20" placeholder="Description" required>{{ data["description"] }}</textarea>
+        <textarea class="form-control mb-3 md-preview"
+                  id="description"
+                  name="description"
+                  rows="20"
+                  placeholder="Description"
+                  required>{{ data["description"] }}</textarea>
         <div id="description-out" class="md-preview"></div>
     </div>
-    <input class="form-control mb-3 dtl" type="datetime-local" id="start" name="start" placeholder="Start Date & Time" value="{{ data['start'] }}" required>
-    <input class="form-control mb-3 dtl" type="datetime-local" id="end" name="end" placeholder="End Date & Time" value="{{ data['end'] }}" required>
+    <input class="form-control mb-3 dtl"
+           type="datetime-local"
+           id="start"
+           name="start"
+           placeholder="Start Date & Time"
+           value="{{ data['start'] }}"
+           required>
+    <input class="form-control mb-3 dtl"
+           type="datetime-local"
+           id="end"
+           name="end"
+           placeholder="End Date & Time"
+           value="{{ data['end'] }}"
+           required>
     <input class="btn btn-primary" type="submit" id="submit" name="submit" value="Edit">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 </form>
 {% endblock %}
 {% block script %}
 <script>
-    var product = converter.makeHtml(document.getElementById('description').value);
-    document.getElementById('description-out').innerHTML = product;
-    document.getElementById("description").style.height = document.getElementById("description-out").offsetHeight + "px";
+    function update() {
+        var product = converter.makeHtml(document.getElementById('description').value);
+        var outputDiv = document.getElementById("description-out");
+        outputDiv.innerHTML = product;
+        document.getElementById("description").style.height = outputDiv.offsetHeight + "px";
+    }
+    update();
 
     document.querySelectorAll(".dtl").forEach(function (e) {
         var split = e.getAttribute("value").split(" ");
         var date_split = split[0].split("-");
         var final = date_split[1] + "/" + date_split[2] + "/" + date_split[0] + " " + split[1];
         var parsed = new Date(final + " UTC").toString().split(" ");
-        e.value = parsed[3] + "-" + getMonthFromString(parsed[1]) + "-" + parsed[2] + "T" + parsed[4];
+        e.value = `${ parsed[3] }-${ getMonthFromString(parsed[1]) }-${ parsed[2] }T${ parsed[4] }`;
 
         function getMonthFromString(mon) {
             var str = (new Date(Date.parse(mon +" 1, 2012")).getMonth() + 1).toString();
@@ -35,11 +60,7 @@
         }
     });
 
-    document.getElementById('description').oninput = function() {
-        var product = converter.makeHtml(this.value);
-        document.getElementById("description-out").innerHTML = product;
-        document.getElementById("description").style.height = document.getElementById("description-out").offsetHeight + "px";
-    }
+    document.getElementById('description').addEventListener('event', update);
 
     document.getElementsByTagName("form")[0].onsubmit = function(event) {
         var formStart = this.querySelector("#start");

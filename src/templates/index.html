@@ -6,7 +6,9 @@
 {% if session["admin"] %}
     <div id="confirm" style="display: none;">
         <form method="post" style="margin-bottom: 1rem;" action="/admin/deleteannouncement">
-            <input class="btn btn-danger" type="submit" value="Are you sure you want to delete this announcement? Click here to confirm.">
+            <input class="btn btn-danger"
+                   type="submit"
+                   value="Are you sure you want to delete this announcement? Click here to confirm.">
             <input type="hidden" name="aid" value="">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         </form>
@@ -14,7 +16,7 @@
 {% endif %}
 <h1>Announcements</h1>
 {% for announcement in data %}
-    <div class="card post-card" style="max-height: 600px;">
+    <div class="card post-card">
         <div class="see-more-wrapper">
             <a href="#" class="see-more" style="margin-left: 8px;">See More</a>
         </div>
@@ -24,11 +26,19 @@
             <textarea style="display: none;">{{ announcement["description"] | safe }}</textarea>
         </div>
         {% if session["admin"] %}
-        <a href="/admin/editannouncement/{{ announcement["id"] }}" style="position: absolute; top: 12px; right: 36px;">
-            <img src="/assets/images/pencil.svg" onerror="this.src='/assets/images/pencil.png'" class="icon">
+        <a href="/admin/editannouncement/{{ announcement['id'] }}"
+           style="position: absolute; top: 12px; right: 36px;">
+            <img src="/assets/images/pencil.svg"
+                 onerror="this.src='/assets/images/pencil.png'"
+                 class="icon">
         </a>
-        <a aid="{{ announcement["id"] }}" href="#" onclick="deletemsg(this)" style="position: absolute; top: 12px; right: 16px;">
-            <img src="/assets/images/trash.svg" onerror="this.src='/assets/images/trash.png'" class="icon">
+        <a data-id="{{ announcement['id'] }}"
+           href="#"
+           onclick="deletemsg(this)"
+           style="position: absolute; top: 12px; right: 16px;">
+            <img src="/assets/images/trash.svg"
+                 onerror="this.src='/assets/images/trash.png'"
+                 class="icon">
         </a>
         {% endif %}
     </div>
@@ -38,7 +48,7 @@
 {% block script %}
 <script>
     function deletemsg(e) {
-        var id = e.getAttribute("aid");
+        var id = e.getAttribute("data-id");
         document.getElementById("confirm").style.display = "";
         document.querySelector("#confirm input[name='aid']").setAttribute("value", id);
     }

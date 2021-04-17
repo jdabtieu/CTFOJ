@@ -7,7 +7,9 @@
 {% if session["admin"] %}
     <div id="confirm" style="display: none;">
         <form method="post" style="margin-bottom: 1rem;" action="{{ request.path }}/publish">
-            <input class="btn btn-danger" type="submit" value="Are you sure you want to publish this problem? Click here to confirm.">
+            <input class="btn btn-danger"
+                   type="submit"
+                   value="Are you sure you want to publish this problem? Click here to confirm.">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         </form>
     </div>
@@ -19,7 +21,11 @@
         </div>
         {% if data["hints"] %}
             <div style="margin-top: 16px;">
-                <a class="btn btn-secondary" id="togglehint" onclick="document.getElementById('hint').classList.toggle('hidden')">Show/Hide Hints</a>
+                <a class="btn btn-secondary"
+                   id="togglehint"
+                   onclick="document.getElementById('hint').classList.toggle('hidden')">
+                    Show/Hide Hints
+                </a>
                 <div id="hint" class="card showdown hidden">
                     <textarea style="display: none;">{{ data["hints"] | safe }}</textarea>
                 </div>
@@ -28,7 +34,11 @@
     </div>
     <div style="flex: 1; padding: 4px;">
         <form autocomplete="off" method="post" style="margin-bottom: 0.5rem;">
-            <input class="form-control" type="text" id="flag" name="flag" placeholder="Flag" style="margin-bottom: 0.5rem;" required>
+            <input class="form-control"
+                   name="flag"
+                   placeholder="Flag"
+                   style="margin-bottom: 0.5rem;"
+                   required>
             <input class="btn btn-primary problem-submit-button" type="submit" value="Submit">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         </form>
@@ -38,11 +48,15 @@
             <b>Points:</b> {{ data["point_value"] }}<br>
             <a href="/contest/{{ request.path.split("/")[2] }}">Back to contest</a>
             {% if session["admin"] %}
-                <br><a href="/admin/submissions?contest_id={{ request.path.split("/")[2] }}&problem_id={{ request.path.split("/")[4] }}">View submissions</a>
+                <br><a href="/admin/submissions?contest_id={{ request.path.split('/')[2] }}&problem_id={{ request.path.split('/')[4] }}">
+                        View submissions
+                    </a>
                 <br><a href="{{ request.path }}/edit">Edit problem</a>
                 <br><a href="{{ request.path }}/download">Download problem</a>
                 {% if data["draft"] %}
-                    <br><a href="#" onclick="document.getElementById('confirm').style.display = ''">Publish problem</a>
+                    <br><a href="#" onclick="document.getElementById('confirm').style.display = ''">
+                            Publish problem
+                        </a>
                 {% endif %}
                 <br><a href="{{ request.path }}/export">Export problem</a>
             {% endif %}

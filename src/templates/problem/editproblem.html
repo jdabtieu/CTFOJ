@@ -5,16 +5,33 @@
 {% block main %}
 <h1>Edit {{ data["name"] }}</h1>
 <form autocomplete="off" method="post">
-    <input class="form-control mb-3" id="name" name="name" value="{{ data['name'] }}" placeholder="Name" required>
+    <input class="form-control mb-3"
+           name="name"
+           value="{{ data['name'] }}"
+           placeholder="Name"
+           required>
     <div style="position: relative;">
-        <textarea class="form-control mb-3 md-preview" id="description" name="description" rows="20" placeholder="Description" required>{{ data["description"] }}</textarea>
+        <textarea class="form-control mb-3 md-preview"
+                  id="description"
+                  name="description"
+                  rows="20"
+                  placeholder="Description"
+                  required>{{ data["description"] }}</textarea>
         <div id="description-out" class="md-preview"></div>
     </div>
     <div style="position: relative;">
-        <textarea class="form-control mb-3 md-preview" id="hints" name="hints" rows="20" placeholder="Hints">{{ data["hints"] if data["hints"] }}</textarea>
+        <textarea class="form-control mb-3 md-preview"
+                  id="hints"
+                  name="hints"
+                  rows="20"
+                  placeholder="Hints">{{ data["hints"] if data["hints"] }}</textarea>
         <div id="hints-out" class="md-preview"></div>
     </div>
-    <input class="form-control mb-3" id="category" name="category" value="{{ data['category'] }}" placeholder="Category" required>
+    <input class="form-control mb-3"
+           name="category"
+           value="{{ data['category'] }}"
+           placeholder="Category"
+           required>
     <div style="position: relative;">
         <input class="form-control mb-3" id="flag" name="flag" placeholder="New flag (optional)">
         <div style="position: absolute; right: 0; top: 0; width: initial;" class="form-control">
@@ -36,23 +53,23 @@
 {% endblock %}
 {% block script %}
 <script>
-    var product = converter.makeHtml(document.getElementById('description').value);
-    document.getElementById('description-out').innerHTML = product;
-    document.getElementById("description").style.height = document.getElementById("description-out").offsetHeight + "px";
-
-    product = converter.makeHtml(document.getElementById('hints').value);
-    document.getElementById('hints-out').innerHTML = product;
-    document.getElementById("hints").style.height = document.getElementById("hints-out").offsetHeight + "px";
-
-    document.getElementById('description').oninput = function() {
-        var product = converter.makeHtml(this.value);
-        document.getElementById("description-out").innerHTML = product;
-        document.getElementById("description").style.height = document.getElementById("description-out").offsetHeight + "px";
+    function updateDescription() {
+        var product = converter.makeHtml(document.getElementById('description').value);
+        var outputDiv = document.getElementById("description-out");
+        outputDiv.innerHTML = product;
+        document.getElementById("description").style.height = outputDiv.offsetHeight + "px";
     }
-    document.getElementById('hints').oninput = function() {
-        var product = converter.makeHtml(this.value);
-        document.getElementById("hints-out").innerHTML = product;
-        document.getElementById("hints").style.height = document.getElementById("hints-out").offsetHeight + "px";
+    updateDescription();
+
+    function updateHints() {
+        var product = converter.makeHtml(document.getElementById('hints').value);
+        var outputDiv = document.getElementById("hints-out");
+        outputDiv.innerHTML = product;
+        document.getElementById("hints").style.height = outputDiv.offsetHeight + "px";
     }
+    updateHints();
+
+    document.getElementById('description').addEventListener('input', updateDescription);
+    document.getElementById('hints').addEventListener('input', updateHints);
 </script>
 {% endblock %}

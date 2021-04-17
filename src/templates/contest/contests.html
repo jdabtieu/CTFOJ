@@ -12,18 +12,24 @@
         <div class="see-more-wrapper">
             <a href="#" class="see-more" style="margin-left: 8px;">See More</a>
         </div>
-        <h3><a href="/contest/{{ contest["id"] }}">{{ contest["name"] }}</a></h3>
+        <h3><a href="/contest/{{ contest['id'] }}">{{ contest["name"] }}</a></h3>
         <p style="margin-bottom: 0;">Start: <span class="dt">{{ contest["start"] }}</span></p>
         <p style="margin-bottom: 0;">End: <span class="dt">{{ contest["end"] }}</span></p>
         <div class="showdown">
             <textarea style="display: none;">{{ contest["description"] | safe }}</textarea>
         </div>
         {% if session["admin"] %}
-            <a href="/admin/editcontest/{{ contest["id"] }}" style="position: absolute; top: 12px; right: 36px;">
-                <img src="/assets/images/pencil.svg" onerror="this.src='/assets/images/pencil.png'" class="icon">
+            <a href="/admin/editcontest/{{ contest['id'] }}"
+               style="position: absolute; top: 12px; right: 36px;">
+                <img src="/assets/images/pencil.svg"
+                     onerror="this.src='/assets/images/pencil.png'"
+                     class="icon">
             </a>
-            <a href="/admin/deletecontest/{{ contest["id"] }}" style="position: absolute; top: 12px; right: 16px;">
-                <img src="/assets/images/trash.svg" onerror="this.src='/assets/images/trash.png'" class="icon">
+            <a href="/admin/deletecontest/{{ contest['id'] }}"
+               style="position: absolute; top: 12px; right: 16px;">
+                <img src="/assets/images/trash.svg"
+                     onerror="this.src='/assets/images/trash.png'"
+                     class="icon">
             </a>
         {% endif %}
     </div>
@@ -38,18 +44,24 @@
         <div class="see-more-wrapper">
             <a href="#" class="see-more" style="margin-left: 8px;">See More</a>
         </div>
-        <h3><a href="/contest/{{ contest["id"] }}">{{ contest["name"] }}</a></h3>
+        <h3><a href="/contest/{{ contest['id'] }}">{{ contest["name"] }}</a></h3>
         <p style="margin-bottom: 0;">Start: <span class="dt">{{ contest["start"] }}</span></p>
         <p style="margin-bottom: 0;">End: <span class="dt">{{ contest["end"] }}</span></p>
         <div class="showdown">
             <textarea style="display: none;">{{ contest["description"] | safe }}</textarea>
         </div>
         {% if session["admin"] %}
-            <a href="/admin/editcontest/{{ contest["id"] }}" style="position: absolute; top: 12px; right: 36px">
-                <img src="/assets/images/pencil.svg" onerror="this.src='/assets/images/pencil.png'" style="width: 16px;">
+            <a href="/admin/editcontest/{{ contest['id'] }}"
+               style="position: absolute; top: 12px; right: 36px">
+                <img src="/assets/images/pencil.svg"
+                     onerror="this.src='/assets/images/pencil.png'"
+                     style="width: 16px;">
             </a>
-            <a href="/admin/deletecontest/{{ contest["id"] }}" style="position: absolute; top: 12px; right: 16px">
-                <img src="/assets/images/trash.svg" onerror="this.src='/assets/images/trash.png'" style="width: 16px;">
+            <a href="/admin/deletecontest/{{ contest['id'] }}"
+               style="position: absolute; top: 12px; right: 16px">
+                <img src="/assets/images/trash.svg"
+                     onerror="this.src='/assets/images/trash.png'"
+                     style="width: 16px;">
             </a>
         {% endif %}
     </div>
@@ -64,18 +76,24 @@
         <div class="see-more-wrapper">
             <a href="#" class="see-more" style="margin-left: 8px;">See More</a>
         </div>
-        <h3><a href="/contest/{{ contest["id"] }}">{{ contest["name"] }}</a></h3>
+        <h3><a href="/contest/{{ contest['id'] }}">{{ contest["name"] }}</a></h3>
         <p style="margin-bottom: 0;">Start: <span class="dt">{{ contest["start"] }}</span></p>
         <p style="margin-bottom: 0;">End: <span class="dt">{{ contest["end"] }}</span></p>
         <div class="showdown">
             <textarea style="display: none;">{{ contest["description"] | safe }}</textarea>
         </div>
         {% if session["admin"] %}
-            <a href="/admin/editcontest/{{ contest["id"] }}" style="position: absolute; top: 12px; right: 36px">
-                <img src="/assets/images/pencil.svg" onerror="this.src='/assets/images/pencil.png'" style="width: 16px;">
+            <a href="/admin/editcontest/{{ contest['id'] }}"
+               style="position: absolute; top: 12px; right: 36px">
+                <img src="/assets/images/pencil.svg"
+                     onerror="this.src='/assets/images/pencil.png'"
+                     style="width: 16px;">
             </a>
-            <a href="/admin/deletecontest/{{ contest["id"] }}" style="position: absolute; top: 12px; right: 16px">
-                <img src="/assets/images/trash.svg" onerror="this.src='/assets/images/trash.png'" style="width: 16px;">
+            <a href="/admin/deletecontest/{{ contest['id'] }}"
+               style="position: absolute; top: 12px; right: 16px">
+                <img src="/assets/images/trash.svg"
+                     onerror="this.src='/assets/images/trash.png'"
+                     style="width: 16px;">
             </a>
         {% endif %}
     </div>

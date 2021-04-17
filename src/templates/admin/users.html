@@ -27,18 +27,31 @@
             {% for row in data %}
             <tr>
                 <td class="userid">{{ row["id"] }}</td>
-                <td style="{{ "color:red;" if row["banned"] }} {{ "font-weight:bold;" if row["admin"] }}" class="username" >{{ row["username"] }}</td>
+                <td class="username"
+                    style="{{ 'color:red;' if row['banned'] }}
+                           {{ 'font-weight:bold;' if row['admin'] }}">
+                    {{ row["username"] }}
+                </td>
                 <td>{{ row["email"] }}</td>
                 <td class="dt">{{ row["join_date"] }}</td>
                 <td>
                     <a href="#" onclick="ban(this)">
-                        <img src="/assets/images/restrict.svg" onerror="this.src='/assets/images/restrict.png'" class="svg-red icon" title="Ban/Unban user"></img>
+                        <img src="/assets/images/restrict.svg"
+                             onerror="this.src='/assets/images/restrict.png'"
+                             class="svg-red icon"
+                             title="Ban/Unban user">
                     </a>
                     <a href="#" onclick="resetpass(this)">
-                        <img src="/assets/images/key.svg" onerror="this.src='/assets/images/key.png'" class="icon" title="Reset password"></img>
+                        <img src="/assets/images/key.svg"
+                             onerror="this.src='/assets/images/key.png'"
+                             class="icon"
+                             title="Reset password">
                     </a>
                     <a href="#" onclick="admin(this)">
-                        <img src="/assets/images/arrow-up.svg" onerror="this.src='/assets/images/arrow-up.png'" class="svg-green icon" title="Grant/Revoke admin"></img>
+                        <img src="/assets/images/arrow-up.svg"
+                             onerror="this.src='/assets/images/arrow-up.png'"
+                             class="svg-green icon"
+                             title="Grant/Revoke admin">
                     </a>
                 </td>
             </tr>

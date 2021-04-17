@@ -3,6 +3,7 @@
     margin: 16px 0 16px 0;
     position: relative;
     overflow-y: hidden;
+    max-height: 600px;
 }
 
 .see-more-wrapper {
