@@ -8,17 +8,30 @@
     <input class="form-control mb-3" type="text" id="id" name="id" placeholder="ID" required>
     <input class="form-control mb-3" type="text" id="name" name="name" placeholder="Name" required>
     <div style="position: relative;">
-        <textarea class="form-control mb-3 md-preview" id="description" name="description" rows="20" placeholder="Description" required></textarea>
+        <textarea class="form-control mb-3 md-preview"
+                  id="description"
+                  name="description"
+                  rows="20"
+                  placeholder="Description"
+                  required></textarea>
         <div id="description-out" class="md-preview"></div>
     </div>
     <div style="position: relative;">
-        <textarea class="form-control mb-3 md-preview" id="hints" name="hints" rows="20" placeholder="Hints"></textarea>
+        <textarea class="form-control mb-3 md-preview"
+                  id="hints"
+                  name="hints"
+                  rows="20"
+                  placeholder="Hints"></textarea>
         <div id="hints-out" class="md-preview"></div>
     </div>
-    <input class="form-control mb-3" type="number" id="point_value" name="point_value" placeholder="Point Value" required>
-    <input class="form-control mb-3" type="text" id="category" name="category" placeholder="Category" required>
-    <input class="form-control mb-3" type="text" id="flag" name="flag" placeholder="Flag" required>
-    <input class="form-control mb-3" type="file" id="file" name="file" accept=".zip">
+    <input class="form-control mb-3"
+           type="number"
+           name="point_value"
+           placeholder="Point Value"
+           required>
+    <input class="form-control mb-3" type="text" name="category" placeholder="Category" required>
+    <input class="form-control mb-3" type="text" name="flag" placeholder="Flag" required>
+    <input class="form-control mb-3" type="file" name="file" accept=".zip">
     <div class="form-control mb-3" style="border: 0;">
         <input type="checkbox" id="draft" name="draft">
         <label for="draft">Draft?</label>
@@ -31,13 +44,15 @@
 <script>
     document.getElementById('description').oninput = function() {
         var product = converter.makeHtml(this.value);
-        document.getElementById("description-out").innerHTML = product;
-        document.getElementById("description").style.height = document.getElementById("description-out").offsetHeight + "px";
+        var outputDiv = document.getElementById("description-out");
+        outputDiv.innerHTML = product;
+        document.getElementById("description").style.height = outputDiv.offsetHeight + "px";
     }
     document.getElementById('hints').oninput = function() {
         var product = converter.makeHtml(this.value);
-        document.getElementById("hints-out").innerHTML = product;
-        document.getElementById("hints").style.height = document.getElementById("hints-out").offsetHeight + "px";
+        var outputDiv = document.getElementById("hints-out");
+        outputDiv.innerHTML = product;
+        document.getElementById("hints").style.height = outputDiv.offsetHeight + "px";
     }
 </script>
 {% endblock %}

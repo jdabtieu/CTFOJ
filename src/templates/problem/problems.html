@@ -37,16 +37,22 @@
             <tr>
                 <td>
                     {% if row["id"] in solved %}
-                        <img class="svg-green icon" src="/assets/images/check.svg" onerror="this.src='/assets/images/check.png'"></img>
+                        <img class="svg-green icon"
+                             src="/assets/images/check.svg"
+                             onerror="this.src='/assets/images/check.png'"></img>
                     {% else %}
-                        <img class="svg-red icon" src="/assets/images/times.svg" onerror="this.src='/assets/images/times.png'"></img>
+                        <img class="svg-red icon"
+                             src="/assets/images/times.svg"
+                             onerror="this.src='/assets/images/times.png'"></img>
                     {% endif %}
                 </td>
                 <td><a href="/problem/{{ row["id"] }}">{{ row["name"] }}</a></td>
                 <td>{{ row["category"] }}</td>
                 <td>{{ row["point_value"] }}</td>
                 {% if session.admin %}
-                    <td><a href="/admin/submissions?problem_id={{ row["id"] }}&correct=AC">{{ row["sols"] }}</a></td>
+                    <td><a href="/admin/submissions?problem_id={{ row["id"] }}&correct=AC">
+                        {{ row["sols"] }}
+                    </a></td>
                 {% else %}
                     <td>{{ row["sols"] }}</td>
                 {% endif %}

@@ -15,7 +15,9 @@
     <tbody>
         {% for row in data %}
         <tr>
-            <td><a href="{{ request.path[:-7] }}/problem/{{ row["problem_id"] }}">{{ row["name"] }}</a></td>
+            <td><a href="{{ request.path[:-7] }}/problem/{{ row["problem_id"] }}">
+                {{ row["name"] }}
+            </a></td>
             <td>{{ row["category"] }}</td>
             <td>{{ row["point_value"] }}</td>
         </tr>

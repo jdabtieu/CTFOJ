@@ -5,9 +5,18 @@
 {% block main %}
 <h1>Edit Announcement</h1>
 <form autocomplete="off" method="post" id="edit" name="edit">
-    <input class="form-control mb-3" type="text" id="name" name="name" placeholder="Name" value="{{ data["name"] }}" required>
+    <input class="form-control mb-3"
+           name="name"
+           placeholder="Name"
+           value="{{ data['name'] }}"
+           equired>
     <div style="position: relative;">
-        <textarea class="form-control mb-3 md-preview" id="description" name="description" rows="20" placeholder="Description" required>{{ data["description"] }}</textarea>
+        <textarea class="form-control mb-3 md-preview"
+                  id="description"
+                  name="description"
+                  rows="20"
+                  placeholder="Description"
+                  required>{{ data["description"] }}</textarea>
         <div id="description-out" class="md-preview"></div>
     </div>
     <input class="btn btn-primary" type="submit" id="submit" name="submit" value="Edit">
@@ -16,14 +25,14 @@
 {% endblock %}
 {% block script %}
 <script>
-    var product = converter.makeHtml(document.getElementById('description').value);
-    document.getElementById('description-out').innerHTML = product;
-    document.getElementById("description").style.height = document.getElementById("description-out").offsetHeight + "px";
-
-    document.getElementById('description').oninput = function() {
-        var product = converter.makeHtml(this.value);
-        document.getElementById("description-out").innerHTML = product;
-        document.getElementById("description").style.height = document.getElementById("description-out").offsetHeight + "px";
+    function update() {
+        var product = converter.makeHtml(document.getElementById('description').value);
+        var outputDiv = document.getElementById("description-out");
+        outputDiv.innerHTML = product;
+        document.getElementById("description").style.height = outputDiv.offsetHeight + "px";
     }
+
+    update();
+    document.getElementById('description').addEventListener('input', update);
 </script>
 {% endblock %}

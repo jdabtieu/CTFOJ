@@ -6,8 +6,15 @@
 <h1>Toggle 2FA</h1>
 <p>Please enter your current password to confirm this action.</p>
 <form method="post">
-    <input class="form-control mb-3" name="password" placeholder="Current Password" type="password" autocomplete="current-password" required>
-    <button class="btn btn-primary" type="submit">{{ 'Disable' if status else 'Enable' }} 2FA</button>
+    <input class="form-control mb-3"
+            name="password"
+            placeholder="Current Password"
+            type="password"
+            autocomplete="current-password"
+            required>
+    <button class="btn btn-primary" type="submit">
+        {{ 'Disable' if status else 'Enable' }} 2FA
+    </button>
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 </form>
 {% endblock %}

@@ -1,9 +1,8 @@
 if (typeof total_length !== 'undefined' && total_length > 0) {
     // get current & total pages
-    var currentPage, totalPages, displayedPages = 3;
+    var currentPage, totalPages = total_length, displayedPages = 3;
     var page = new URL(window.location.href).searchParams.get("page");
     currentPage = page ? parseInt(page) : 1;
-    totalPages = total_length;
 
     // calculate left and right bounds
     var paginationBegin, paginationEnd;
@@ -55,24 +54,29 @@ if (typeof total_length !== 'undefined' && total_length > 0) {
     // create the pagination tree
     var e = document.createElement("ul");
     e.classList.add("pagination");
-    e.innerHTML += `<li class="page-item first ${disableFirst}"><a href="#" class="page-link">First</a></li>`;
-    e.innerHTML += `<li class="page-item prev ${disableFirst}"><a href="#" class="page-link">Prev</a></li>`;
+    e.innerHTML +=
+        `<li class="page-item first ${disableFirst}"><a href="#" class="page-link">First</a></li>`;
+    e.innerHTML +=
+        `<li class="page-item prev ${disableFirst}"><a href="#" class="page-link">Prev</a></li>`;
     for (let i = paginationBegin; i < currentPage; i++) {
         e.innerHTML += `<li class="page-item"><a href="#" class="page-link">${i}</a></li>`;
     }
-    e.innerHTML += `<li class="page-item active"><a href="#" class="page-link">${currentPage}</a></li>`;
+    e.innerHTML +=
+        `<li class="page-item active"><a href="#" class="page-link">${currentPage}</a></li>`;
     for (let i = currentPage + 1; i <= paginationEnd; i++) {
         e.innerHTML += `<li class="page-item"><a href="#" class="page-link">${i}</a></li>`;
     }
-    e.innerHTML += `<li class="page-item next ${disableLast}"><a href="#" class="page-link">Next</a></li>`;
-    e.innerHTML += `<li class="page-item last ${disableLast}"><a href="#" class="page-link">Last</a></li>`;
+    e.innerHTML +=
+        `<li class="page-item next ${disableLast}"><a href="#" class="page-link">Next</a></li>`;
+    e.innerHTML +=
+        `<li class="page-item last ${disableLast}"><a href="#" class="page-link">Last</a></li>`;
 
     // and append the pagination tree to the DOM
     document.getElementById("pagination").append(e);
 
     // attach event listeners
     document.querySelectorAll(".page-item").forEach(e => {
-        if (!(e.classList.contains("active") || e.classList.contains("disabled"))) {
+        if (!e.classList.contains("active") && !e.classList.contains("disabled")) {
             e.addEventListener("click", function() {
                 switch (this.innerText) {
                 case "First":

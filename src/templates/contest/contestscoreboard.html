@@ -39,7 +39,10 @@
                 {% endif %}
                 {% if session["admin"] %}
                     <td><a href="#" onclick="dq(this, {{ data[i]['user_id'] }})">
-                        <img src="/assets/images/restrict.svg" onerror="this.src='/assets/images/restrict.png'" class="svg-red icon" title="Disqualify user"></img>
+                        <img src="/assets/images/restrict.svg"
+                             onerror="this.src='/assets/images/restrict.png'"
+                             class="svg-red icon"
+                             title="Disqualify user"></img>
                     </a></td>
                 {% endif %}
             </tr>

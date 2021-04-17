@@ -5,8 +5,13 @@
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <meta name="theme-color" content="#0d6efd">
 
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" crossorigin="anonymous">
-        <link href="/assets/css/github-markdown.min.css" rel="stylesheet" media="async" onload="this.media='all'">
+        <link rel="stylesheet"
+              href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css"
+              crossorigin="anonymous">
+        <link href="/assets/css/github-markdown.min.css"
+              rel="stylesheet"
+              media="async"
+              onload="this.media='all'">
         <link href="/assets/css/style.css" rel="stylesheet">
 
         <link href="/static/favicon.png" rel="icon">
@@ -18,7 +23,9 @@
         <nav class="navbar navbar-expand-md navbar-dark bg-primary">
             <div class="container-fluid">
                 <a class="navbar-brand" href="/">{{ CLUB_NAME }}</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#navbar" aria-controls="navbarText" aria-expanded="false"
+                        aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="navbar">
@@ -33,7 +40,9 @@
                         </ul>
                         <ul class="navbar-nav">
                             <div class="form-check form-switch nav-link">
-                                <input class="form-check-input dark-toggle" onclick="toggleDark()" type="checkbox">
+                                <input class="form-check-input dark-toggle"
+                                       onclick="toggleDark()"
+                                       type="checkbox">
                             </div>
                             <li class="nav-link white">Welcome, {{ session.username }}</li>
                             <li><a class="nav-link" href="/settings">Settings</a></li>
@@ -42,7 +51,9 @@
                     {% else %}
                         <ul class="navbar-nav ms-auto">
                             <div class="form-check form-switch nav-link">
-                                <input class="form-check-input dark-toggle" onclick="toggleDark()" type="checkbox">
+                                <input class="form-check-input dark-toggle"
+                                       onclick="toggleDark()"
+                                       type="checkbox">
                             </div>
                             <li><a class="nav-link" href="/register">Register</a></li>
                             <li><a class="nav-link" href="/login">Log In</a></li>
@@ -56,9 +67,13 @@
             {% with msg = get_flashed_messages(with_categories=True) %}
                 {% if msg %}
                     {% for category, message in msg %}
-                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        <div class="alert alert-{{ category }} alert-dismissible fade show"
+                             role="alert">
                             {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            <button type="button"
+                                    class="btn-close"
+                                    data-bs-dismiss="alert"
+                                    aria-label="Close"></button>
                         </div>
                     {% endfor %}
                 {% endif %}
@@ -67,7 +82,12 @@
         </main>
         <footer>
             <hr>
-            <p class="text-center">© 2020-2021, {{ CLUB_NAME }}. <a href="https://github.com/jdabtieu/CTFOJ">Source Code</a> - <a href="/terms">Terms of Service</a> - <a href="/privacy">Privacy Policy</a></p>
+            <p class="text-center">
+                &copy; 2020-2021, {{ CLUB_NAME }}.
+                <a href="https://github.com/jdabtieu/CTFOJ">Source Code</a> -
+                <a href="/terms">Terms of Service</a> -
+                <a href="/privacy">Privacy Policy</a>
+            </p>
         </footer>
 
         <script src="/assets/js/darkMode.js"></script>

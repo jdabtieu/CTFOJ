@@ -6,7 +6,10 @@
 <h1>Edit Editorial for {{ data["name"] }}</h1>
 <form autocomplete="off" method="post">
 	<div style="position: relative;">
-        <textarea class="form-control mb-3 md-preview" id="editorial" name="editorial" rows="20">{{ data["editorial"] if data["editorial"] else "" }}</textarea>
+        <textarea class="form-control mb-3 md-preview"
+                  id="editorial"
+                  name="editorial"
+                  rows="20">{{ data["editorial"] if data["editorial"] }}</textarea>
         <div id="editorial-out" class="md-preview"></div>
     </div>
     <input class="btn btn-primary" type="submit" id="submit" name="submit" value="Submit">
@@ -15,14 +18,14 @@
 {% endblock %}
 {% block script %}
 <script>
-    var product = converter.makeHtml(document.getElementById('editorial').value);
-    document.getElementById('editorial-out').innerHTML = product;
-    document.getElementById("editorial").style.height = document.getElementById("editorial-out").offsetHeight + "px";
-    
-    document.getElementById('editorial').oninput = function() {
-        var product = converter.makeHtml(this.value);
-        document.getElementById("editorial-out").innerHTML = product;
-        document.getElementById("editorial").style.height = document.getElementById("editorial-out").offsetHeight + "px";
+    function update() {
+        var product = converter.makeHtml(document.getElementById('editorial').value);
+        var outputDiv = document.getElementById("editorial-out");
+        outputDiv.innerHTML = product;
+        document.getElementById("editorial").style.height = outputDiv.offsetHeight + "px";
     }
+
+    update();
+    document.getElementById('editorial').addEventListener('input', update);
 </script>
 {% endblock %}
