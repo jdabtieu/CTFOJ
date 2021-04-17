@@ -123,14 +123,15 @@ def login():
     session.clear()
 
     if request.method == "GET":
-        return render_template("login.html", site_key=app.config['HCAPTCHA_SITE'])
+        return render_template("auth/login.html", site_key=app.config['HCAPTCHA_SITE'])
 
     # Reached using POST
 
     # Ensure username and password were submitted
     if not request.form.get("username") or not request.form.get("password"):
         flash('Username and password cannot be blank', 'danger')
-        return render_template("login.html", site_key=app.config['HCAPTCHA_SITE']), 400
+        return render_template("auth/login.html",
+                               site_key=app.config['HCAPTCHA_SITE']), 400
 
     # Ensure captcha is valid
     if app.config['USE_CAPTCHA']:
@@ -138,26 +139,29 @@ def login():
                              request.form.get('h-captcha-response'),
                              app.config['HCAPTCHA_SITE']):
             flash('CAPTCHA invalid', 'danger')
-            return render_template("login.html",
+            return render_template("auth/login.html",
                                    site_key=app.config['HCAPTCHA_SITE']), 400
 
     # Ensure username exists and password is correct
-    rows = db.execute("SELECT * FROM users WHERE username = :username",
+    rows = db.execute("SELECT * FROM users WHERE username=:username",
                       username=request.form.get("username"))
     if len(rows) != 1 or not check_password_hash(rows[0]["password"],
                                                  request.form.get("password")):
         flash('Incorrect username/password', 'danger')
-        return render_template("login.html", site_key=app.config['HCAPTCHA_SITE']), 401
+        return render_template("auth/login.html",
+                               site_key=app.config['HCAPTCHA_SITE']), 401
 
     # Ensure user is not banned
     if rows[0]["banned"]:
         flash('You are banned! Please message an admin to appeal the ban', 'danger')
-        return render_template("login.html", site_key=app.config['HCAPTCHA_SITE']), 403
+        return render_template("auth/login.html",
+                               site_key=app.config['HCAPTCHA_SITE']), 403
 
     # Ensure user has confirmed account
     if not rows[0]["verified"]:
         flash('You have not confirmed your account yet. Please check your email', 'danger')  # noqa
-        return render_template("login.html", site_key=app.config['HCAPTCHA_SITE']), 403
+        return render_template("auth/login.html",
+                               site_key=app.config['HCAPTCHA_SITE']), 403
 
     # implement 2fa verification via email
     if rows[0]["twofa"]:
@@ -172,7 +176,7 @@ def login():
 
         flash(('A login confirmation email has been sent to the email address you '
                'provided. Be sure to check your spam folder!'), 'success')
-        return render_template("login.html", site_key=app.config['HCAPTCHA_SITE'])
+        return render_template("auth/login.html", site_key=app.config['HCAPTCHA_SITE'])
 
     # Remember which user has logged in
     session["user_id"] = rows[0]["id"]
@@ -196,7 +200,7 @@ def logout():
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "GET":
-        return render_template("register.html", site_key=app.config['HCAPTCHA_SITE'])
+        return render_template("auth/register.html", site_key=app.config['HCAPTCHA_SITE'])
 
     # Reached using POST
 
@@ -208,15 +212,18 @@ def register():
     # Ensure username is valid
     if not username or not verify_text(username):
         flash('Invalid username', 'danger')
-        return render_template("register.html", site_key=app.config['HCAPTCHA_SITE']), 400
+        return render_template("auth/register.html",
+                               site_key=app.config['HCAPTCHA_SITE']), 400
 
     # Ensure password is not blank
     if not password or len(password) < 8:
         flash('Password must be at least 8 characters', 'danger')
-        return render_template("register.html", site_key=app.config['HCAPTCHA_SITE']), 400
+        return render_template("auth/register.html",
+                               site_key=app.config['HCAPTCHA_SITE']), 400
     if not confirmation or password != confirmation:
         flash('Passwords do not match', 'danger')
-        return render_template("register.html", site_key=app.config['HCAPTCHA_SITE']), 400
+        return render_template("auth/register.html",
+                               site_key=app.config['HCAPTCHA_SITE']), 400
 
     # Ensure captcha is valid
     if app.config['USE_CAPTCHA']:
@@ -224,19 +231,21 @@ def register():
                              request.form.get('h-captcha-response'),
                              app.config['HCAPTCHA_SITE']):
             flash('CAPTCHA invalid', 'danger')
-            return render_template("register.html",
+            return render_template("auth/register.html",
                                    site_key=app.config['HCAPTCHA_SITE']), 400
 
     # Ensure username and email do not already exist
     rows = db.execute("SELECT * FROM users WHERE username = :username", username=username)
     if len(rows) > 0:
         flash('Username already exists', 'danger')
-        return render_template("register.html", site_key=app.config['HCAPTCHA_SITE']), 409
+        return render_template("auth/register.html",
+                               site_key=app.config['HCAPTCHA_SITE']), 409
 
     rows = db.execute("SELECT * FROM users WHERE email = :email", email=email)
     if len(rows) > 0:
         flash('Email already exists', 'danger')
-        return render_template("register.html", site_key=app.config['HCAPTCHA_SITE']), 409
+        return render_template("auth/register.html",
+                               site_key=app.config['HCAPTCHA_SITE']), 409
 
     token = create_jwt({'email': email}, app.config['SECRET_KEY'])
     text = render_template('email/confirm_account_text.txt',
@@ -251,7 +260,7 @@ def register():
 
     flash(('An account creation confirmation email has been sent to the email address '
            'you provided. Be sure to check your spam folder!'), 'success')
-    return render_template("register.html", site_key=app.config['HCAPTCHA_SITE'])
+    return render_template("auth/register.html", site_key=app.config['HCAPTCHA_SITE'])
 
 
 @app.route('/confirmregister/<token>')
@@ -293,10 +302,12 @@ def confirm_login(token):
 
     if not token:
         flash('Invalid login verification link', 'danger')
-        return render_template("login.html", site_key=app.config['HCAPTCHA_SITE']), 400
+        return render_template("auth/login.html",
+                               site_key=app.config['HCAPTCHA_SITE']), 400
     if datetime.strptime(token["expiration"], "%Y-%m-%dT%H:%M:%S.%f") < datetime.utcnow():
         flash('Login verification link expired; Please re-login', 'danger')
-        return render_template("login.html", site_key=app.config['HCAPTCHA_SITE']), 401
+        return render_template("auth/login.html",
+                               site_key=app.config['HCAPTCHA_SITE']), 401
 
     # Log user in
     user = db.execute(
@@ -318,7 +329,7 @@ def settings():
 @login_required
 def changepassword():
     if request.method == "GET":
-        return render_template("changepassword.html")
+        return render_template("auth/changepassword.html")
 
     # Reached using POST
 
@@ -329,19 +340,19 @@ def changepassword():
     # Ensure passwords were submitted and they match
     if not old_password:
         flash('Password cannot be blank', 'danger')
-        return render_template("changepassword.html"), 400
+        return render_template("auth/changepassword.html"), 400
     if not new_password or len(new_password) < 8:
         flash('New password must be at least 8 characters', 'danger')
-        return render_template("changepassword.html"), 400
+        return render_template("auth/changepassword.html"), 400
     if not confirmation or new_password != confirmation:
         flash('Passwords do not match', 'danger')
-        return render_template("changepassword.html"), 400
+        return render_template("auth/changepassword.html"), 400
 
     # Ensure username exists and password is correct
     rows = db.execute("SELECT * FROM users WHERE id=:id", id=session["user_id"])
     if len(rows) != 1 or not check_password_hash(rows[0]["password"], old_password):
         flash('Incorrect password', 'danger')
-        return render_template("changepassword.html"), 401
+        return render_template("auth/changepassword.html"), 401
 
     db.execute("UPDATE users SET password=:new WHERE id=:id",
                new=generate_password_hash(new_password), id=session["user_id"])
@@ -381,7 +392,7 @@ def forgotpassword():
     session.clear()
 
     if request.method == "GET":
-        return render_template("forgotpassword.html",
+        return render_template("auth/forgotpassword.html",
                                site_key=app.config['HCAPTCHA_SITE'])
 
     # Reached via POST
@@ -389,7 +400,7 @@ def forgotpassword():
     email = request.form.get("email")
     if not email:
         flash('Email cannot be blank', 'danger')
-        return render_template("forgotpassword.html"), 400
+        return render_template("auth/forgotpassword.html"), 400
 
     # Ensure captcha is valid
     if app.config['USE_CAPTCHA']:
@@ -397,7 +408,7 @@ def forgotpassword():
                              request.form.get('h-captcha-response'),
                              app.config['HCAPTCHA_SITE']):
             flash('CAPTCHA invalid', 'danger')
-            return render_template("forgotpassword.html",
+            return render_template("auth/forgotpassword.html",
                                    site_key=app.config['HCAPTCHA_SITE']), 400
 
     rows = db.execute("SELECT * FROM users WHERE email = :email",
@@ -413,7 +424,7 @@ def forgotpassword():
 
     flash(('If there is an account associated with that email, a password reset email '
            'has been sent'), 'success')
-    return render_template("forgotpassword.html")
+    return render_template("auth/forgotpassword.html")
 
 
 @app.route('/resetpassword/<token>', methods=['GET', 'POST'])
@@ -430,17 +441,17 @@ def reset_password_user(token):
         return redirect('/forgotpassword')
 
     if request.method == "GET":
-        return render_template('resetpassword.html')
+        return render_template('auth/resetpassword.html')
 
     password = request.form.get("password")
     confirmation = request.form.get("confirmation")
 
     if not password or len(password) < 8:
         flash('New password must be at least 8 characters', 'danger')
-        return render_template("resetpassword.html"), 400
+        return render_template("auth/resetpassword.html"), 400
     if not confirmation or password != confirmation:
         flash('Passwords do not match', 'danger')
-        return render_template("resetpassword.html"), 400
+        return render_template("auth/resetpassword.html"), 400
 
     db.execute("UPDATE users SET password=:new WHERE id=:id",
                new=generate_password_hash(password), id=user_id)
@@ -536,16 +547,16 @@ def contest(contest_id):
 @admin_required
 def contest_notify(contest_id):
     if request.method == "GET":
-        return render_template('admin/contestnotify.html')
+        return render_template('contest/notify.html')
 
     subject = request.form.get("subject")
     if not subject:
         flash('Must provide subject', 'danger')
-        return render_template('admin/contestnotify.html'), 400
+        return render_template('contest/notify.html'), 400
     message = request.form.get("message")
     if not message:
         flash('Must provide message', 'danger')
-        return render_template('admin/contestnotify.html'), 400
+        return render_template('contest/notify.html'), 400
 
     data = db.execute(("SELECT email FROM contest_users JOIN users on user_id=users.id "
                        "WHERE contest_users.contest_id=:cid"),
@@ -577,27 +588,24 @@ def contest_drafts(contest_id):
 @login_required
 def contest_problem(contest_id, problem_id):
     # Ensure contest and problem exist
-    check = db.execute("SELECT * FROM contests WHERE id=:id", id=contest_id)
-    if len(check) != 1:
+    if not contest_exists(contest_id):
         return render_template("contest/contest_noexist.html"), 404
 
-    check = db.execute(
-        "SELECT * FROM contest_problems WHERE contest_id=:cid AND problem_id=:pid",
-        cid=contest_id, pid=problem_id)
+    check = db.execute(("SELECT * FROM contest_problems WHERE contest_id=:cid AND "
+                        "problem_id=:pid AND draft=0"),
+                       cid=contest_id, pid=problem_id)
+    if session["admin"]:
+        check = db.execute(("SELECT * FROM contest_problems WHERE contest_id=:cid AND "
+                            "problem_id=:pid"),
+                           cid=contest_id, pid=problem_id)
     if len(check) != 1:
         return render_template("contest/contest_problem_noexist.html"), 404
 
-    # check problem exists
-    check1 = db.execute(("SELECT * FROM contest_problems WHERE contest_id=:cid AND "
-                         "problem_id=:pid AND draft=0"),
-                        cid=contest_id, pid=problem_id)
-    if len(check1) != 1 and session["admin"] != 1:
-        return render_template("contest/contest_problem_noexist.html"), 404
-
+    # Get problem statement and hints
     check[0]["description"] = read_file(
-        'metadata/contests/' + contest_id + '/' + problem_id + '/description.md')
+        f'metadata/contests/{contest_id}/{problem_id}/description.md')
     check[0]["hints"] = read_file(
-        'metadata/contests/' + contest_id + '/' + problem_id + '/hints.md')
+        f'metadata/contests/{contest_id}/{problem_id}/hints.md')
 
     if request.method == "GET":
         return render_template("contest/contest_problem.html", data=check[0])
@@ -611,18 +619,19 @@ def contest_problem(contest_id, problem_id):
         flash('This contest has ended', 'danger')
         return render_template("contest/contest_problem.html", data=check[0]), 400
 
-    # Check if user is disqualified
-    user = db.execute("SELECT * FROM contest_users WHERE user_id=?", session["user_id"])
+    # Check if user is disqualified and in the contest
+    user = db.execute(
+        "SELECT * FROM contest_users WHERE user_id=:uid AND contest_id=:cid",
+        uid=session["user_id"], cid=contest_id)
     if len(user) > 0 and user[0]["points"] == -999999:
         flash('You are disqualified from this contest', 'danger')
         return render_template("contest/contest_problem.html", data=check[0])
+    if len(user) == 0:
+        db.execute("INSERT INTO contest_users(contest_id, user_id) VALUES (:cid, :uid)",
+                   cid=contest_id, uid=session["user_id"])
 
     flag = request.form.get("flag")
-    if not flag:
-        flash('Cannot submit an empty flag', 'danger')
-        return render_template("contest/contest_problem.html", data=check[0]), 400
-
-    if not verify_flag(flag):
+    if not flag or not verify_flag(flag):
         flash('Invalid flag', 'danger')
         return render_template("contest/contest_problem.html", data=check[0]), 400
 
@@ -644,15 +653,6 @@ def contest_problem(contest_id, problem_id):
     check1 = db.execute(("SELECT * FROM contest_solved WHERE contest_id=:cid "
                          "AND user_id=:uid AND problem_id=:pid"),
                         cid=contest_id, uid=session["user_id"], pid=problem_id)
-
-    # check if user is in the contest
-    check2 = db.execute(
-        "SELECT * FROM contest_users WHERE contest_id=:cid AND user_id=:uid",
-        cid=contest_id, uid=session["user_id"])
-    if len(check2) == 0:
-        db.execute("INSERT INTO contest_users(contest_id, user_id) VALUES (:cid, :uid)",
-                   cid=contest_id, uid=session["user_id"])
-
     if len(check1) == 0:
         db.execute(("INSERT INTO contest_solved(contest_id, user_id, problem_id) "
                     "VALUES(:cid, :uid, :pid)"),
@@ -674,8 +674,7 @@ def contest_problem(contest_id, problem_id):
 @admin_required
 def publish_contest_problem(contest_id, problem_id):
     # Ensure contest and problem exist
-    check = db.execute("SELECT * FROM contests WHERE id=:id", id=contest_id)
-    if len(check) != 1:
+    if not contest_exists(contest_id):
         return render_template("contest/contest_noexist.html"), 404
 
     check = db.execute(
@@ -697,8 +696,7 @@ def publish_contest_problem(contest_id, problem_id):
 @admin_required
 def edit_contest_problem(contest_id, problem_id):
     # Ensure contest exists
-    data = db.execute("SELECT * FROM contests WHERE id=:cid", cid=contest_id)
-    if len(data) != 1:
+    if not contest_exists(contest_id):
         return render_template("contest/contest_noexist.html"), 404
 
     # Ensure problem exists
@@ -708,13 +706,14 @@ def edit_contest_problem(contest_id, problem_id):
     if len(data) != 1:
         return render_template("contest/contest_problem_noexist.html"), 404
 
+    # Get problem statement and hints
     data[0]["description"] = read_file(
-        'metadata/contests/' + contest_id + '/' + problem_id + '/description.md')
+        f'metadata/contests/{contest_id}/{problem_id}/description.md')
     data[0]["hints"] = read_file(
-        'metadata/contests/' + contest_id + '/' + problem_id + '/hints.md')
+        f'metadata/contests/{contest_id}/{problem_id}/hints.md')
 
     if request.method == "GET":
-        return render_template('problem/editproblem.html', data=data[0])
+        return render_template('problem/edit_problem.html', data=data[0])
 
     # Reached via POST
 
@@ -728,12 +727,12 @@ def edit_contest_problem(contest_id, problem_id):
     if (not new_name or not new_description or not new_category
             or (not new_points and data[0]["score_users"] == -1)):
         flash('You have not entered all required fields', 'danger')
-        return render_template('problem/editproblem.html', data=data[0]), 400
+        return render_template('problem/edit_problem.html', data=data[0]), 400
 
     if new_flag:
         if not verify_flag(new_flag):
             flash('Invalid flag', 'danger')
-            return render_template('problem/editproblem.html', data=data[0]), 400
+            return render_template('problem/edit_problem.html', data=data[0]), 400
         if request.form.get("rejudge"):
             db.execute(("UPDATE contest_users SET points=points-:points WHERE user_id IN "
                         "(SELECT user_id FROM contest_solved WHERE "
@@ -816,7 +815,7 @@ def contest_scoreboard(contest_id):
          "JOIN users on user_id=users.id WHERE contest_users.contest_id=:cid "
          "ORDER BY points DESC, lastAC ASC"),
         cid=contest_id)
-    return render_template("contest/contestscoreboard.html",
+    return render_template("contest/scoreboard.html",
                            title=contest_info[0]["name"], data=data)
 
 
@@ -824,8 +823,7 @@ def contest_scoreboard(contest_id):
 @admin_required
 def contest_dq(contest_id):
     # Ensure contest exists
-    contest_info = db.execute("SELECT * FROM contests WHERE id=:cid", cid=contest_id)
-    if len(contest_info) != 1:
+    if not contest_exists(contest_id):
         return render_template("contest/contest_noexist.html"), 404
 
     user_id = request.form.get("user_id")
@@ -856,7 +854,7 @@ def contest_add_problem(contest_id):
         return redirect('/contest/' + contest_id)
 
     if request.method == "GET":
-        return render_template("contest/createproblem.html")
+        return render_template("contest/create_problem.html")
 
     # Reached via POST
 
@@ -870,17 +868,17 @@ def contest_add_problem(contest_id):
 
     if not problem_id or not name or not description or not category or not flag:
         flash('You have not entered all required fields', 'danger')
-        return render_template("contest/createproblem.html"), 400
+        return render_template("contest/create_problem.html"), 400
 
     # Check if problem ID is valid
     if not verify_text(problem_id):
         flash('Invalid problem ID', 'danger')
-        return render_template("contest/createproblem.html"), 400
+        return render_template("contest/create_problem.html"), 400
 
     # Check if flag is valid
     if not verify_flag(flag):
         flash('Invalid flag', 'danger')
-        return render_template("contest/createproblem.html"), 400
+        return render_template("contest/create_problem.html"), 400
 
     description = description.replace('\r', '')
 
@@ -890,7 +888,7 @@ def contest_add_problem(contest_id):
                               cid=contest_id, pid=problem_id, name=name)
     if len(problem_info) != 0:
         flash('A problem with this name or ID already exists', 'danger')
-        return render_template("contest/createproblem.html"), 409
+        return render_template("contest/create_problem.html"), 409
 
     # Check if file exists & upload if it does
     file = request.files["file"]
@@ -910,7 +908,7 @@ def contest_add_problem(contest_id):
         users_decay = request.form.get("users_point_value")
         if not min_points or not max_points or not users_decay:
             flash('You have not entered all required fields', 'danger')
-            return render_template("contest/createproblem.html"), 400
+            return render_template("contest/create_problem.html"), 400
 
         # Modify problems table
         db.execute(("INSERT INTO contest_problems VALUES(:cid, :pid, :name, :pv, "
@@ -922,7 +920,7 @@ def contest_add_problem(contest_id):
         point_value = request.form.get("point_value")
         if not point_value:
             flash('You have not entered all required fields', 'danger')
-            return render_template("contest/createproblem.html"), 400
+            return render_template("contest/create_problem.html"), 400
 
         # Modify problems table
         db.execute(("INSERT INTO contest_problems(contest_id, problem_id, name, "
@@ -959,9 +957,7 @@ def export_contest_problem(contest_id, problem_id):
         end = datetime.strptime(data1[0]["end"], "%Y-%m-%d %H:%M:%S")
         if datetime.utcnow() < end:
             flash("Are you sure? The contest hasn't ended yet", 'warning')
-            return render_template('contest/exportproblem.html', data=data[0])
-
-        return render_template('contest/exportproblem.html', data=data[0])
+        return render_template('contest/export_problem.html', data=data[0])
 
     # Reached via POST
 
@@ -970,25 +966,19 @@ def export_contest_problem(contest_id, problem_id):
     check = db.execute("SELECT * FROM problems WHERE id=:id", id=new_id)
     if len(check) != 0:
         flash('This problem has already been exported', 'danger')
-        return render_template('contest/exportproblem.html', data=data[0])
+        return render_template('contest/export_problem.html', data=data[0])
 
     new_name = data1[0]["name"] + " - " + data[0]["name"]
 
     # Insert into problems databases
-    db.execute("BEGIN")
     db.execute(("INSERT INTO problems(id, name, point_value, category, flag) "
                 "VALUES(:id, :name, :pv, :cat, :flag)"),
                id=new_id, name=new_name, pv=data[0]["point_value"],
                cat=data[0]["category"], flag=data[0]["flag"])
 
-    solved = db.execute(("SELECT user_id, problem_id FROM contest_solved WHERE "
-                         "contest_id=:cid AND problem_id=:pid"),
-                        cid=contest_id, pid=problem_id)
-    for row in solved:
-        db.execute("INSERT INTO problem_solved(user_id, problem_id) VALUES(:uid, :pid)",
-                   uid=row['user_id'], pid=row['problem_id'])
-
-    db.execute("COMMIT")
+    db.execute("INSERT INTO problem_solved(user_id, problem_id) SELECT user_id, :new_id "
+               "FROM contest_solved WHERE contest_id=:cid AND problem_id=:pid",
+               new_id=new_id, cid=contest_id, pid=problem_id)
 
     os.makedirs('metadata/problems/' + new_id)
     shutil.copy('metadata/contests/' + contest_id + '/' + problem_id + '/description.md',
@@ -1174,7 +1164,7 @@ def editproblem(problem_id):
         'metadata/problems/' + problem_id + '/hints.md')
 
     if request.method == "GET":
-        return render_template('problem/editproblem.html', data=data[0])
+        return render_template('problem/edit_problem.html', data=data[0])
 
     # Reached via POST
 
@@ -1187,12 +1177,12 @@ def editproblem(problem_id):
 
     if not new_name or not new_description or not new_category or not new_points:
         flash('You have not entered all required fields', 'danger')
-        return render_template('problem/editproblem.html', data=data[0]), 400
+        return render_template('problem/edit_problem.html', data=data[0]), 400
 
     if new_flag:
         if not verify_flag(new_flag):
             flash('Invalid flag', 'danger')
-            return render_template('problem/editproblem.html', data=data[0]), 400
+            return render_template('problem/edit_problem.html', data=data[0]), 400
         if request.form.get("rejudge"):
             db.execute("UPDATE submissions SET correct=0 WHERE problem_id=:pid",
                        pid=problem_id)
@@ -1230,7 +1220,7 @@ def problem_editeditorial(problem_id):
     data[0]['editorial'] = read_file('metadata/problems/' + problem_id + '/editorial.md')
 
     if request.method == "GET":
-        return render_template('problem/editeditorial.html', data=data[0])
+        return render_template('problem/edit_editorial.html', data=data[0])
 
     # Reached via POST
 
@@ -1335,7 +1325,7 @@ def admin_users():
 @admin_required
 def admin_createcontest():
     if request.method == "GET":
-        return render_template("admin/createcontest.html")
+        return render_template("contest/create.html")
 
     # Reached using POST
 
@@ -1344,7 +1334,7 @@ def admin_createcontest():
     # Ensure contest ID is valid
     if not contest_id or not verify_text(contest_id) or contest_id == "None":
         flash('Invalid contest ID', 'danger')
-        return render_template("admin/createcontest.html"), 400
+        return render_template("contest/create.html"), 400
 
     contest_name = request.form.get("contest_name")
 
@@ -1353,7 +1343,7 @@ def admin_createcontest():
                        cid=contest_id, contest_name=contest_name)
     if len(check) != 0:
         flash('A contest with that name or ID already exists', 'danger')
-        return render_template("admin/createcontest.html"), 409
+        return render_template("contest/create.html"), 409
 
     start = request.form.get("start")
     end = request.form.get("end")
@@ -1363,13 +1353,13 @@ def admin_createcontest():
     check_end = datetime.strptime(end, "%Y-%m-%dT%H:%M:%S.%fZ")
     if check_end < check_start:
         flash('Contest cannot end before it starts!', 'danger')
-        return render_template("admin/createcontest.html"), 400
+        return render_template("contest/create.html"), 400
 
     description = request.form.get("description").replace('\r', '')
     scoreboard_visible = bool(request.form.get("scoreboard_visible"))
     if not description:
         flash('Description cannot be empty', 'danger')
-        return render_template("admin/createcontest.html"), 400
+        return render_template("contest/create.html"), 400
 
     db.execute(
         ("INSERT INTO contests (id, name, start, end, scoreboard_visible) "
@@ -1388,7 +1378,7 @@ def admin_createcontest():
 @admin_required
 def createproblem():
     if request.method == "GET":
-        return render_template("admin/createproblem.html")
+        return render_template("problem/create.html")
 
     # Reached via POST
 
@@ -1404,17 +1394,17 @@ def createproblem():
     if (not problem_id or not name or not description or not point_value
             or not category or not flag):
         flash('You have not entered all required fields', 'danger')
-        return render_template("admin/createproblem.html"), 400
+        return render_template("problem/create.html"), 400
 
     # Check if problem ID is valid
     if not verify_text(problem_id):
         flash('Invalid problem ID', 'danger')
-        return render_template("admin/createproblem.html"), 400
+        return render_template("problem/create.html"), 400
 
     # Check if flag is valid
     if not verify_flag(flag):
         flash('Invalid flag', 'danger')
-        return render_template("admin/createproblem.html"), 400
+        return render_template("problem/create.html"), 400
 
     description = description.replace('\r', '')
     if not hints:
@@ -1425,7 +1415,7 @@ def createproblem():
                               problem_id=problem_id, name=name)
     if len(problem_info) != 0:
         flash('A problem with this name or ID already exists', 'danger')
-        return render_template("admin/createproblem.html"), 409
+        return render_template("problem/create.html"), 409
 
     # Check if file exists & upload if it does
     file = request.files["file"]
@@ -1586,8 +1576,7 @@ def delete_announcement():
 @admin_required
 def delete_contest(contest_id):
     # Ensure contest exists
-    check = db.execute("SELECT * FROM contests WHERE id=:cid", cid=contest_id)
-    if len(check) == 0:
+    if not contest_exists(contest_id):
         return render_template("contest/contest_noexist.html")
 
     if request.method == "GET":
@@ -1658,7 +1647,7 @@ def editcontest(contest_id):
         'metadata/contests/' + contest_id + '/description.md')
 
     if request.method == "GET":
-        return render_template('admin/editcontest.html', data=data[0])
+        return render_template('contest/edit.html', data=data[0])
 
     # Reached via POST
     new_name = request.form.get("name")
@@ -1668,23 +1657,23 @@ def editcontest(contest_id):
 
     if not new_name:
         flash('Name cannot be empty', 'danger')
-        return render_template('admin/editcontest.html', data=data[0]), 400
+        return render_template('contest/edit.html', data=data[0]), 400
     if not new_description:
         flash('Description cannot be empty', 'danger')
-        return render_template('admin/editcontest.html', data=data[0]), 400
+        return render_template('contest/edit.html', data=data[0]), 400
 
     # Ensure start and end dates are valid
     check_start = datetime.strptime(start, "%Y-%m-%dT%H:%M:%S.%fZ")
     check_end = datetime.strptime(end, "%Y-%m-%dT%H:%M:%S.%fZ")
     if check_end < check_start:
         flash('Contest cannot end before it starts!', 'danger')
-        return render_template("admin/editcontest.html"), 400
+        return render_template("contest/edit.html"), 400
 
     db.execute(("UPDATE contests SET name=:name, start=datetime(:start), "
                 "end=datetime(:end) WHERE id=:cid"),
                name=new_name, start=start, end=end, cid=contest_id)
 
-    write_file('metadata/contests/' + contest_id + '/description.md', new_description)
+    write_file(f'metadata/contests/{contest_id}/description.md', new_description)
 
     flash('Contest successfully edited', 'success')
     return redirect("/contests")

@@ -160,3 +160,11 @@ def update_dyn_score(contest_id, problem_id, update_curr_user=True):
                 "contest_id=:cid AND problem_id=:pid)"),
                point_change=point_diff, cid=contest_id, pid=problem_id)
     db.execute("COMMIT")
+
+
+def contest_exists(contest_id):
+    from application import db
+    """
+    Checks if the contest with contest_id exists
+    """
+    return len(db.execute("SELECT * FROM contests WHERE id=:id", id=contest_id)) == 1
