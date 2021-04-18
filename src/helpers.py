@@ -8,6 +8,7 @@ from functools import wraps
 
 from flask import redirect, request, session, flash, Markup
 from flask_mail import Message
+from werkzeug.security import check_password_hash
 
 
 def login_required(f):
@@ -88,6 +89,7 @@ def check_captcha(secret, response, sitekey):
         'sitekey': sitekey
     })
     if not captcha.json()['success']:
+        flash('CAPTCHA invalid', 'danger')
         return False
     return True
 
@@ -168,3 +170,38 @@ def contest_exists(contest_id):
     Checks if the contest with contest_id exists
     """
     return len(db.execute("SELECT * FROM contests WHERE id=:id", id=contest_id)) == 1
+
+
+def login_chk(rows):
+    """
+    Determines if the user is allowed to login
+    Used by login() in application.py
+    rows is a result of a db query for the user
+    """
+    # Check if username and password match db entry
+    if len(rows) != 1 or not check_password_hash(rows[0]["password"],
+                                                 request.form.get("password")):
+        flash('Incorrect username/password', 'danger')
+        return 401
+
+    # Check if user is banned
+    if rows[0]["banned"]:
+        flash('You are banned! Please message an admin to appeal the ban', 'danger')
+        return 403
+
+    # Check if user's account is confirmed
+    if not rows[0]["verified"]:
+        flash('You have not confirmed your account yet. Please check your email', 'danger')  # noqa
+        return 403
+
+    return 0
+
+
+def contest_ended(info):
+    """
+    Determine if the contest from db query info has ended
+    Returns whether the contest is over or not
+    info should be an array (len 1) of a dict representing the contest data from the db
+    """
+    end = datetime.strptime(info[0]["end"], "%Y-%m-%d %H:%M:%S")
+    return datetime.utcnow() > end

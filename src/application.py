@@ -138,30 +138,16 @@ def login():
         if not check_captcha(app.config['HCAPTCHA_SECRET'],
                              request.form.get('h-captcha-response'),
                              app.config['HCAPTCHA_SITE']):
-            flash('CAPTCHA invalid', 'danger')
             return render_template("auth/login.html",
                                    site_key=app.config['HCAPTCHA_SITE']), 400
 
-    # Ensure username exists and password is correct
+    # Ensure user is allowed to log in
     rows = db.execute("SELECT * FROM users WHERE username=:username",
                       username=request.form.get("username"))
-    if len(rows) != 1 or not check_password_hash(rows[0]["password"],
-                                                 request.form.get("password")):
-        flash('Incorrect username/password', 'danger')
+    code = login_chk(rows)
+    if code != 0:
         return render_template("auth/login.html",
-                               site_key=app.config['HCAPTCHA_SITE']), 401
-
-    # Ensure user is not banned
-    if rows[0]["banned"]:
-        flash('You are banned! Please message an admin to appeal the ban', 'danger')
-        return render_template("auth/login.html",
-                               site_key=app.config['HCAPTCHA_SITE']), 403
-
-    # Ensure user has confirmed account
-    if not rows[0]["verified"]:
-        flash('You have not confirmed your account yet. Please check your email', 'danger')  # noqa
-        return render_template("auth/login.html",
-                               site_key=app.config['HCAPTCHA_SITE']), 403
+                               site_key=app.config['HCAPTCHA_SITE']), code
 
     # implement 2fa verification via email
     if rows[0]["twofa"]:
@@ -230,7 +216,6 @@ def register():
         if not check_captcha(app.config['HCAPTCHA_SECRET'],
                              request.form.get('h-captcha-response'),
                              app.config['HCAPTCHA_SITE']):
-            flash('CAPTCHA invalid', 'danger')
             return render_template("auth/register.html",
                                    site_key=app.config['HCAPTCHA_SITE']), 400
 
@@ -407,7 +392,6 @@ def forgotpassword():
         if not check_captcha(app.config['HCAPTCHA_SECRET'],
                              request.form.get('h-captcha-response'),
                              app.config['HCAPTCHA_SITE']):
-            flash('CAPTCHA invalid', 'danger')
             return render_template("auth/forgotpassword.html",
                                    site_key=app.config['HCAPTCHA_SITE']), 400
 
@@ -613,9 +597,7 @@ def contest_problem(contest_id, problem_id):
     # Reached via POST
 
     # Ensure contest hasn't ended
-    end = db.execute("SELECT end FROM contests WHERE id=:id", id=contest_id)
-    end = datetime.strptime(end[0]["end"], "%Y-%m-%d %H:%M:%S")
-    if datetime.utcnow() > end:
+    if contest_ended(db.execute("SELECT end FROM contests WHERE id=:id", id=contest_id)):
         flash('This contest has ended', 'danger')
         return render_template("contest/contest_problem.html", data=check[0]), 400
 
@@ -848,8 +830,7 @@ def contest_add_problem(contest_id):
         return render_template("contest/contest_noexist.html"), 404
 
     # Ensure contest hasn't ended
-    end = datetime.strptime(contest_info[0]["end"], "%Y-%m-%d %H:%M:%S")
-    if datetime.utcnow() > end:
+    if contest_ended(contest_info):
         flash('This contest has already ended', 'danger')
         return redirect('/contest/' + contest_id)
 
@@ -954,8 +935,7 @@ def export_contest_problem(contest_id, problem_id):
         return render_template("contest/contest_problem_noexist.html"), 404
 
     if request.method == "GET":
-        end = datetime.strptime(data1[0]["end"], "%Y-%m-%d %H:%M:%S")
-        if datetime.utcnow() < end:
+        if not contest_ended(data1):
             flash("Are you sure? The contest hasn't ended yet", 'warning')
         return render_template('contest/export_problem.html', data=data[0])
 
