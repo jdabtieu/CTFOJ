@@ -617,19 +617,16 @@ def contest_problem(contest_id, problem_id):
         flash('Invalid flag', 'danger')
         return render_template("contest/contest_problem.html", data=check[0]), 400
 
-    # Check if flag is correct
-    if flag != check[0]["flag"]:
-        db.execute(
-            ("INSERT INTO submissions(date, user_id, problem_id, contest_id, correct, "
-             "submitted) VALUES(datetime('now'), :uid, :pid, :cid, 0, :flag)"),
-            uid=session["user_id"], pid=problem_id, cid=contest_id, flag=flag)
-        flash('Your flag is incorrect', 'danger')
-        return render_template("contest/contest_problem.html", data=check[0])
-
     db.execute(
         ("INSERT INTO submissions(date, user_id, problem_id, contest_id, correct, "
-         "submitted) VALUES(datetime('now'), :uid, :pid, :cid, 1, :flag)"),
-        uid=session["user_id"], pid=problem_id, cid=contest_id, flag=flag)
+         "submitted) VALUES(datetime('now'), :uid, :pid, :cid, :correct, :flag)"),
+        uid=session["user_id"], pid=problem_id, cid=contest_id,
+        correct=(flag == check[0]["flag"]), flag=flag)
+
+    # Check if flag is correct
+    if flag != check[0]["flag"]:
+        flash('Your flag is incorrect', 'danger')
+        return render_template("contest/contest_problem.html", data=check[0])
 
     # Check if user has already found this flag
     check1 = db.execute(("SELECT * FROM contest_solved WHERE contest_id=:cid "
@@ -735,16 +732,14 @@ def edit_contest_problem(contest_id, problem_id):
                         "WHERE contest_id=:cid AND problem_id=:pid AND correct=1"),
                        cid=contest_id, pid=problem_id)
             if data[0]["score_users"] == -1:  # Instructions for static scoring
-                db.execute(("UPDATE contest_users SET points=points+:points WHERE "
-                            "user_id IN (SELECT user_id FROM contest_solved WHERE "
-                            "contest_id=:cid AND problem_id=:pid)"),
-                           points=data[0]["point_value"], cid=contest_id, pid=problem_id)
+                old_points = data[0]["point_value"]
             else:  # Instructions for dynamic scoring
-                db.execute(("UPDATE contest_users SET points=points+:points WHERE "
-                            "user_id IN (SELECT user_id FROM contest_solved WHERE "
-                            "contest_id=:cid AND problem_id=:pid)"),
-                           points=data[0]["score_max"], cid=contest_id, pid=problem_id)
+                old_points = data[0]["score_max"]
                 update_dyn_score(contest_id, problem_id, update_curr_user=False)
+            db.execute(("UPDATE contest_users SET points=points+:points WHERE user_id IN "
+                        "(SELECT user_id FROM contest_solved WHERE contest_id=:cid AND "
+                        "problem_id=:pid)"),
+                       points=old_points, cid=contest_id, pid=problem_id)
     else:
         new_flag = data[0]["flag"]
 
@@ -752,26 +747,24 @@ def edit_contest_problem(contest_id, problem_id):
     if not new_hint:
         new_hint = ""
 
-    if data[0]["score_users"] == -1:  # Only allow editing score for statically scored
-        old_points = data[0]["point_value"]
-        if old_points != new_points:
-            point_change = int(new_points) - old_points
-            db.execute(("UPDATE contest_users SET points=points+:point_change WHERE "
-                        "contest_id=:cid AND user_id IN (SELECT user_id FROM "
-                        "contest_solved WHERE contest_id=:cid AND problem_id=:pid)"),
-                       point_change=point_change, cid=contest_id, pid=problem_id)
-    else:  # Forcefully prevent score to be edited for dynamic score problems
-        data = db.execute(
-            "SELECT * FROM contest_problems WHERE contest_id=:cid AND problem_id=:pid",
-            cid=contest_id, pid=problem_id)
-        new_points = data[0]["point_value"]
+    # Only edit score for statically scored problems whose value has changed
+    if data[0]["score_users"] == -1 and data[0]["point_value"] != new_points:
+        point_change = int(new_points) - data[0]["point_value"]
+        db.execute(("UPDATE contest_users SET points=points+:point_change WHERE "
+                    "contest_id=:cid AND user_id IN (SELECT user_id FROM contest_solved "
+                    "WHERE contest_id=:cid AND problem_id=:pid)"),
+                   point_change=point_change, cid=contest_id, pid=problem_id)
+        db.execute(("UPDATE contest_problems SET point_value=:pv WHERE contest_id=:cid "
+                    "AND problem_id=:pid"),
+                   pv=int(new_points), cid=contest_id, pid=problem_id)
 
-    db.execute(("UPDATE contest_problems SET name=:name, category=:category, "
-                "point_value=:pv, flag=:flag WHERE contest_id=:cid AND problem_id=:pid"),
-               name=new_name, category=new_category, pv=new_points,
-               flag=new_flag, cid=contest_id, pid=problem_id)
+    db.execute(("UPDATE contest_problems SET name=:name, category=:category, flag=:flag "
+                "WHERE contest_id=:cid AND problem_id=:pid"),
+               name=new_name, category=new_category, flag=new_flag, cid=contest_id,
+               pid=problem_id)
 
-    write_file(f'metadata/contests/{contest_id}/{problem_id}/description.md', new_description)  # noqa
+    write_file(
+        f'metadata/contests/{contest_id}/{problem_id}/description.md', new_description)
     write_file(f'metadata/contests/{contest_id}/{problem_id}/hints.md', new_hint)
 
     flash('Problem successfully edited', 'success')
@@ -861,8 +854,6 @@ def contest_add_problem(contest_id):
         flash('Invalid flag', 'danger')
         return render_template("contest/create_problem.html"), 400
 
-    description = description.replace('\r', '')
-
     # Ensure problem does not already exist
     problem_info = db.execute(("SELECT * FROM contest_problems WHERE contest_id=:cid AND "
                                "(problem_id=:pid OR name=:name)"),
@@ -870,6 +861,8 @@ def contest_add_problem(contest_id):
     if len(problem_info) != 0:
         flash('A problem with this name or ID already exists', 'danger')
         return render_template("contest/create_problem.html"), 409
+
+    description = description.replace('\r', '')
 
     # Check if file exists & upload if it does
     file = request.files["file"]
