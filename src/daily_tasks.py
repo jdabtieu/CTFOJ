@@ -19,9 +19,4 @@ with open('secret_key.txt', 'w') as file:
 if os.path.exists('logs/application.log'):
     timestamp = datetime.date.strftime(datetime.datetime.now(), "%d-%m-%Y")
     shutil.copy2("logs/application.log", f"logs/{timestamp}-application.log")
-    try:
-        open("logs/application.log", "w").close()
-    except Exception as e:
-        sys.stderr.write(str(e))
-        sys.stderr.write(('Could not remove old application log. '
-                          'Log will be appended at next program start.'))
+    open("logs/application.log", "w").close()
