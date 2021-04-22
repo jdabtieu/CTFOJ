@@ -16,6 +16,7 @@
 /secret_key.txt
 /static/favicon.png
 /maintenance_mode
+/templates/unauth_index.html
 
 # Logs
 /logs/

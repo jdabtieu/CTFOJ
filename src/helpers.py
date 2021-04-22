@@ -205,3 +205,42 @@ def contest_ended(info):
     """
     end = datetime.strptime(info[0]["end"], "%Y-%m-%d %H:%M:%S")
     return datetime.utcnow() > end
+
+
+def rejudge_contest_problem(contest_id, problem_id, new_flag):
+    from application import db
+    """
+    Rejudges a contest problem
+    """
+    data = db.execute(
+        "SELECT * FROM contest_problems WHERE contest_id=:cid AND problem_id=:pid",
+        cid=contest_id, pid=problem_id)[0]
+
+    # Reset all previously correct submissions
+    db.execute(("UPDATE contest_users SET points=points-:points WHERE user_id IN (SELECT "
+                "user_id FROM contest_solved WHERE contest_id=:cid AND problem_id=:pid)"),
+               points=data["point_value"], cid=contest_id, pid=problem_id)
+    db.execute(
+        "UPDATE submissions SET correct=0 WHERE contest_id=:cid AND problem_id=:pid",
+        cid=contest_id, pid=problem_id)
+    db.execute("DELETE FROM contest_solved WHERE contest_id=:cid AND problem_id=:pid",
+               cid=contest_id, pid=problem_id)
+    if data["score_users"] >= 0:  # Reset dynamic scoring
+        update_dyn_score(contest_id, problem_id, update_curr_user=False)
+
+    # Set all new correct submissions
+    db.execute(("UPDATE submissions SET correct=1 WHERE contest_id=:cid AND "
+                "problem_id=:pid AND submitted=:flag"),
+               cid=contest_id, pid=problem_id, flag=new_flag)
+    db.execute(("INSERT INTO contest_solved (user_id, contest_id, problem_id) "
+                "SELECT DISTINCT user_id, contest_id, problem_id FROM submissions WHERE "
+                "contest_id=:cid AND problem_id=:pid AND correct=1"),
+               cid=contest_id, pid=problem_id)
+    if data["score_users"] == -1:  # Instructions for static scoring
+        old_points = data["point_value"]
+    else:  # Instructions for dynamic scoring
+        old_points = data["score_max"]
+        update_dyn_score(contest_id, problem_id, update_curr_user=False)
+    db.execute(("UPDATE contest_users SET points=points+:points WHERE user_id IN (SELECT "
+                "user_id FROM contest_solved WHERE contest_id=:cid AND problem_id=:pid)"),
+               points=old_points, cid=contest_id, pid=problem_id)

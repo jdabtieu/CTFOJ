@@ -75,8 +75,10 @@ def check_for_maintenance():
 
 
 @app.route("/")
-@login_required
 def index():
+    if not app.config["USE_HOMEPAGE"] and (not session or 'username' not in session):
+        return redirect("/login")
+
     page = request.args.get("page")
     if not page:
         page = "1"
@@ -92,7 +94,10 @@ def index():
         data[i]["description"] = read_file(
             'metadata/announcements/' + str(aid) + '.md')
 
-    return render_template("index.html", data=data, length=-(-length // 10))
+    if not session or 'username' not in session:
+        return render_template("unauth_index.html", data=data, length=-(-length // 10))
+    else:
+        return render_template("index.html", data=data, length=-(-length // 10))
 
 
 @app.route("/assets/<path:filename>")
@@ -713,33 +718,7 @@ def edit_contest_problem(contest_id, problem_id):
             flash('Invalid flag', 'danger')
             return render_template('problem/edit_problem.html', data=data[0]), 400
         if request.form.get("rejudge"):
-            db.execute(("UPDATE contest_users SET points=points-:points WHERE user_id IN "
-                        "(SELECT user_id FROM contest_solved WHERE "
-                        "contest_id=:cid AND problem_id=:pid)"),
-                       points=data[0]["point_value"], cid=contest_id, pid=problem_id)
-            db.execute(("UPDATE submissions SET correct=0 WHERE "
-                        "contest_id=:cid AND problem_id=:pid"),
-                       cid=contest_id, pid=problem_id)
-            db.execute(("DELETE FROM contest_solved WHERE contest_id=:cid AND "
-                        "problem_id=:pid"), cid=contest_id, pid=problem_id)
-            if data[0]["score_users"] >= 0:  # Reset dynamic scoring
-                update_dyn_score(contest_id, problem_id, update_curr_user=False)
-            db.execute(("UPDATE submissions SET correct=1 WHERE contest_id=:cid AND "
-                        "problem_id=:pid AND submitted=:flag"),
-                       cid=contest_id, pid=problem_id, flag=new_flag)
-            db.execute(("INSERT INTO contest_solved (user_id, contest_id, problem_id) "
-                        "SELECT DISTINCT user_id, contest_id, problem_id FROM submissions "  # noqa
-                        "WHERE contest_id=:cid AND problem_id=:pid AND correct=1"),
-                       cid=contest_id, pid=problem_id)
-            if data[0]["score_users"] == -1:  # Instructions for static scoring
-                old_points = data[0]["point_value"]
-            else:  # Instructions for dynamic scoring
-                old_points = data[0]["score_max"]
-                update_dyn_score(contest_id, problem_id, update_curr_user=False)
-            db.execute(("UPDATE contest_users SET points=points+:points WHERE user_id IN "
-                        "(SELECT user_id FROM contest_solved WHERE contest_id=:cid AND "
-                        "problem_id=:pid)"),
-                       points=old_points, cid=contest_id, pid=problem_id)
+            rejudge_contest_problem(contest_id, problem_id, new_flag)
     else:
         new_flag = data[0]["flag"]
 
@@ -864,16 +843,6 @@ def contest_add_problem(contest_id):
 
     description = description.replace('\r', '')
 
-    # Check if file exists & upload if it does
-    file = request.files["file"]
-    if file.filename:
-        if not os.path.exists("dl/" + contest_id):
-            os.makedirs("dl/" + contest_id)
-        filename = problem_id + ".zip"
-        filepath = "dl/" + contest_id + "/"
-        file.save(filepath + filename)
-        description += f'\n\n[{filename}](/{filepath + filename})'
-
     # Check for static vs dynamic scoring
     score_type = request.form.get("score_type")
     if score_type == "dynamic":
@@ -902,6 +871,16 @@ def contest_add_problem(contest_id):
                     "VALUES(:cid, :pid, :name, :pv, :category, :flag, :draft)"),
                    cid=contest_id, pid=problem_id, name=name, pv=point_value,
                    category=category, flag=flag, draft=draft)
+
+    # Check if file exists & upload if it does
+    file = request.files["file"]
+    if file.filename:
+        if not os.path.exists("dl/" + contest_id):
+            os.makedirs("dl/" + contest_id)
+        filename = problem_id + ".zip"
+        filepath = "dl/" + contest_id + "/"
+        file.save(filepath + filename)
+        description += f'\n\n[{filename}](/{filepath + filename})'
 
     os.makedirs(f'metadata/contests/{contest_id}/{problem_id}')
     write_file(f'metadata/contests/{contest_id}/{problem_id}/description.md', description)
