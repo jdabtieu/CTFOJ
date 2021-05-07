@@ -1,0 +1,11 @@
+{% extends "layout.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block main %}
+<div class="card home1" id="home-container">
+    <div id="home">
+        {{ content | safe }}
+    </div>
+</div>
+{% endblock %}

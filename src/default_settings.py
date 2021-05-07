@@ -12,6 +12,7 @@ except Exception as e:
         file.write(secret)
         secret_key = file.readline().strip()
         SECRET_KEY = secret_key
+TEMPLATES_AUTO_RELOAD = True
 SESSION_PERMANENT = False
 SESSION_TYPE = "filesystem"
 MAIL_SERVER = "smtp.gmail.com"  # configured to work with gmail

@@ -4,7 +4,7 @@ document.querySelectorAll(".see-more").forEach(e => {
     } else {
         e.addEventListener("click", event => {
             event.preventDefault();
-            e.parentElement.parentElement.style.maxHeight = "";
+            e.parentElement.parentElement.style.maxHeight = "none";
             e.parentElement.remove();
         });
     }

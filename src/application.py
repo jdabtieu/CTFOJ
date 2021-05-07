@@ -95,7 +95,10 @@ def index():
             'metadata/announcements/' + str(aid) + '.md')
 
     if not session or 'username' not in session:
-        return render_template("unauth_index.html", data=data, length=-(-length // 10))
+        template = read_file('templates/unauth_index.html')
+        template_type = template[0]
+        template_content = template[1:]
+        return render_template(f"home_fragment/home{template_type}.html", content=template_content, data=data, length=-(-length // 10))
     else:
         return render_template("index.html", data=data, length=-(-length // 10))
 
@@ -1704,3 +1707,59 @@ def security_policies(response):
     response.headers['X-Frame-Options'] = 'SAMEORIGIN'
     response.headers['X-XSS-Protection'] = '1; mode=block'
     return response
+
+
+@app.route("/admin/edithomepage", methods=["GET", "POST"])
+@admin_required
+def edit_homepage():
+    if request.method == "GET":
+        return render_template("admin/edithomepage.html")
+
+    # Reached via POST
+
+    layout_method = request.form.get("method")
+    content = request.form.get("content")
+
+    if not layout_method or not content:
+        flash('You have not entered all required fields', 'danger')
+        return render_template("admin/edithomepage.html"), 400
+    if layout_method not in ["1", "2"]:
+        flash('Invalid layout method', 'danger')
+        return render_template("admin/edithomepage.html"), 400
+
+    content = content.replace('\r', '')
+    content = layout_method + "\n" + content
+
+    # WARNING: NOT SANITIZED YET
+    # TODO: Sanitize HTML
+
+    write_file("templates/unauth_index.html", content)
+    flash("You have successfully edited the homepage!", "success")
+    return redirect("/admin/previewhomepage")
+
+
+@app.route("/admin/previewhomepage")
+@admin_required
+def preview_homepage():
+    page = request.args.get("page")
+    if not page:
+        page = "1"
+    page = (int(page) - 1) * 10
+
+    data = db.execute(
+        "SELECT * FROM announcements ORDER BY id DESC LIMIT 10 OFFSET ?", page)
+    length = len(db.execute("SELECT * FROM announcements"))
+
+    for i in range(len(data)):
+        aid = data[i]["id"]
+
+        data[i]["description"] = read_file(
+            'metadata/announcements/' + str(aid) + '.md')
+
+    template = read_file('templates/unauth_index.html')
+    template_type = template[0]
+    template_content = template[1:]
+    return render_template(f"home_fragment/home{template_type}.html",
+                           content=template_content,
+                           data=data,
+                           length=-(-length // 10))

@@ -1,0 +1,30 @@
+{% extends "layout.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block main %}
+<div class="card home2" id="home-container">
+    <div id="home">
+        {{ content | safe }}
+    </div>
+</div>
+<h2>Announcements</h2>
+{% for announcement in data %}
+    <div class="card post-card">
+        <div class="see-more-wrapper">
+            <a href="#" class="see-more" style="margin-left: 8px;">See More</a>
+        </div>
+        <h3>{{ announcement["name"] }}</h3>
+        <p>Posted <span class="dt">{{ announcement["date"] }}</span></p>
+        <div class="showdown">
+            <textarea style="display: none;">{{ announcement["description"] | safe }}</textarea>
+        </div>
+    </div>
+{% endfor %}
+<div id="pagination"></div>
+{% endblock %}
+{% block script %}
+<script>
+    var total_length = {{ length }};
+</script>
+{% endblock %}
