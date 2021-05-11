@@ -43,7 +43,7 @@
         {% endif %}
     </div>
 {% endfor %}
-<div id="pagination"></div>
+<div id="pagination" data-pages="{{ length }}"></div>
 {% endblock %}
 {% block script %}
 <script>
@@ -52,7 +52,5 @@
         document.getElementById("confirm").style.display = "";
         document.querySelector("#confirm input[name='aid']").setAttribute("value", id);
     }
-
-    var total_length = {{ length }};
 </script>
 {% endblock %}

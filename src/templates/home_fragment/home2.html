@@ -21,10 +21,5 @@
         </div>
     </div>
 {% endfor %}
-<div id="pagination"></div>
-{% endblock %}
-{% block script %}
-<script>
-    var total_length = {{ length }};
-</script>
+<div id="pagination" data-pages="{{ length }}"></div>
 {% endblock %}

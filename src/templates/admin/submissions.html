@@ -4,7 +4,7 @@
 
 {% block main %}
 <h1>Submissions</h1>
-<div id="pagination"></div>
+<div id="pagination" data-pages="{{ length }}"></div>
 <div class="flex">
     <div style="flex: 3; overflow-x: auto;">
         <table class="table table-hover table-full-width">
@@ -104,6 +104,5 @@
     if (queryStrings.get("correct") != null) {
         document.querySelector("#correct").value = queryStrings.get("correct");
     }
-    var total_length = {{ length }};
 </script>
 {% endblock %}

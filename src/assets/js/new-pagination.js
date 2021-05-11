@@ -1,8 +1,12 @@
-if (typeof total_length !== 'undefined' && total_length > 0) {
+const paginationDiv = document.querySelector("#pagination");
+
+if (paginationDiv != null) {
     // get current & total pages
-    var currentPage, totalPages = total_length, displayedPages = 3;
-    var page = new URL(window.location.href).searchParams.get("page");
-    currentPage = page ? parseInt(page) : 1;
+    var currentPage = new URL(window.location.href).searchParams.get("page");
+    var totalPages = paginationDiv.getAttribute("data-pages");
+    const displayedPages = 3;
+    currentPage = currentPage ? parseInt(currentPage) : 1;
+    totalPages = Math.max(1, totalPages);
 
     // calculate left and right bounds
     var paginationBegin, paginationEnd;
@@ -72,7 +76,7 @@ if (typeof total_length !== 'undefined' && total_length > 0) {
         `<li class="page-item last ${disableLast}"><a href="#" class="page-link">Last</a></li>`;
 
     // and append the pagination tree to the DOM
-    document.getElementById("pagination").append(e);
+    paginationDiv.append(e);
 
     // attach event listeners
     document.querySelectorAll(".page-item").forEach(e => {

@@ -4,7 +4,7 @@
 
 {% block main %}
 <h1>Problems</h1>
-<div id="pagination" style="display: inline-block; min-height: 42px"></div>
+<div id="pagination" style="display: inline-block; min-height: 42px" data-pages="{{ length }}"></div>
 <div id="category-selector-container">
     <label for="category-selector">Category</label>
     <select class="form-control form-select"
@@ -61,7 +61,6 @@
         </tbody>
     </table>
 </div>
-<script>var total_length = {{ length }};</script>
 <script>
     function selectCategory(value) {
         var kvp = document.location.search.substr(1).split('&');

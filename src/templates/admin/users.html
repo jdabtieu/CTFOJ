@@ -4,7 +4,7 @@
 
 {% block main %}
 <h1>Users</h1>
-<div id="pagination"></div>
+<div id="pagination" data-pages="{{ length }}"></div>
 <div id="confirm" style="display: none;">
     <form method="post" style="margin-bottom: 1rem;">
         <input class="btn btn-danger" type="submit">
@@ -89,7 +89,5 @@
         var msg = `Are you sure you want to grant/revoke admin to ${username}? Click here to confirm.`;
         createForm(msg, "/admin/makeadmin", user_id);
     }
-
-    var total_length = {{ length }}
 </script>
 {% endblock %}
