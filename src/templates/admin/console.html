@@ -4,28 +4,56 @@
 
 {% block main %}
 <h1>Admin Console</h1>
-<a class="btn btn-primary" href="/admin/submissions" role="button">Submissions</a>
-<br>
-<br>
-<a class="btn btn-primary" href="/admin/users" role="button">Users</a>
-<br>
-<br>
-<a class="btn btn-primary" href="/admin/createannouncement" role="button">Create Announcement</a>
-<br>
-<br>
-<a class="btn btn-primary" href="/admin/createcontest" role="button">Create Contest</a>
-<br>
-<br>
-<a class="btn btn-primary" href="/admin/createproblem" role="button">Create Problem</a>
-<br>
-<br>
-<a class="btn btn-primary" href="/problems/draft" role="button">Draft Problems</a>
-<br>
-<br>
-<a class="btn btn-primary" href="/admin/edithomepage" role="button">Edit Homepage</a>
-<br>
-<br>
-<a class="btn btn-primary" href="/admin/previewhomepage" role="button">Preview Homepage</a>
+<div class="row">
+    <div class="col-sm-6 admin-card">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">User Management</h5>
+                <p class="card-text">Manage users and their submissions.</p>
+                <a class="btn btn-primary" href="/admin/submissions" role="button">Submissions</a>
+                <br>
+                <br>
+                <a class="btn btn-primary" href="/admin/users" role="button">Users</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 admin-card">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Create Announcements & Contests</h5>
+                <p class="card-text">Create and post new announcements and contests.</p>
+                <a class="btn btn-primary" href="/admin/createannouncement" role="button">Create Announcement</a>
+                <br>
+                <br>
+                <a class="btn btn-primary" href="/admin/createcontest" role="button">Create Contest</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 admin-card">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Manage Problems</h5>
+                <p class="card-text">Create problems and view draft problems.</p>
+                <a class="btn btn-primary" href="/admin/createproblem" role="button">Create Problem</a>
+                <br>
+                <br>
+                <a class="btn btn-primary" href="/problems/draft" role="button">Draft Problems</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 admin-card">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Manage Homepage</h5>
+                <p class="card-text">Edit and preview your homepage, if enabled in site settings.</p>
+                <a class="btn btn-primary" href="/admin/edithomepage" role="button">Edit Homepage</a>
+                <br>
+                <br>
+                <a class="btn btn-primary" href="/admin/previewhomepage" role="button">Preview Homepage</a>
+            </div>
+        </div>
+    </div>
+</div>
 <hr>
 <p>
     The only thing maintenance mode should be used for is to make significant changes to the
@@ -36,9 +64,9 @@
 </p>
 <form action="/admin/maintenance" method="POST">
     {% if maintenance_mode %}
-        <input type="submit" class="btn btn-primary" value="Disable Maintenance Mode">
+        <input type="submit" class="btn btn-danger" value="Disable Maintenance Mode">
     {% else %}
-        <input type="submit" class="btn btn-primary" value="Enable Maintenance Mode">
+        <input type="submit" class="btn btn-danger" value="Enable Maintenance Mode">
     {% endif %}
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 </form>

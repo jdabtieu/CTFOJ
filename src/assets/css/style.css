@@ -115,6 +115,11 @@
     right: 4px;
 }
 
+/****************** ADMIN PAGE LAYOUT **********************/
+.admin-card {
+    padding: calc(var(--bs-gutter-x)/ 2)
+}
+
 /****************** MD LIVE PREVIEW **************************/
 textarea.md-preview {
     min-height: 400px;
@@ -127,12 +132,11 @@ div.md-preview {
     width: 50%;
 }
 
-/****************** GENERAL DISPLAY **************************/
+/****************** MISC DISPLAY FIXES ***********************/
 .table-full-width {
     min-width: 450px;
 }
 
-/****************** MISC DISPLAY FIXES ***********************/
 .card {
     padding: 16px;
 }
