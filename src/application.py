@@ -1712,8 +1712,9 @@ def security_policies(response):
 @app.route("/admin/edithomepage", methods=["GET", "POST"])
 @admin_required
 def edit_homepage():
+    old_homepage = read_file("templates/unauth_index.html")[2:]
     if request.method == "GET":
-        return render_template("admin/edithomepage.html")
+        return render_template("admin/edithomepage.html", old=old_homepage)
 
     # Reached via POST
 
@@ -1722,10 +1723,10 @@ def edit_homepage():
 
     if not layout_method or not content:
         flash('You have not entered all required fields', 'danger')
-        return render_template("admin/edithomepage.html"), 400
+        return render_template("admin/edithomepage.html", old=old_homepage), 400
     if layout_method not in ["1", "2"]:
         flash('Invalid layout method', 'danger')
-        return render_template("admin/edithomepage.html"), 400
+        return render_template("admin/edithomepage.html", old=content), 400
 
     content = content.replace('\r', '')
     content = layout_method + "\n" + content

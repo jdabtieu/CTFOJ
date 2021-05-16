@@ -26,12 +26,24 @@
 #home {
     position: relative;
     padding: 16px;
+    width: 100%;
 }
 
 #home-container.home1 #home {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
+}
+
+.homepage-layout-img {
+    border: solid black 3px;
+    max-width: calc(100% - 6px);
+    margin: 3px;
+}
+
+#edithome-textarea {
+    font-family: ui-monospace, "Cascadia Mono", "Segoe UI Mono", "Ubuntu Mono", "Roboto Mono", Menlo, Monaco, Consolas, monospace;
+    font-size: 14px;
 }
 
 /****************** PROBLEM PAGE LAYOUT **********************/

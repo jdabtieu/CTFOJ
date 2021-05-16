@@ -1,0 +1,52 @@
+{% extends "layout.html" %}
+
+{% block title %}Edit Homepage{% endblock %}
+
+{% block main %}
+<h1>Edit Homepage</h1>
+<form method="post">
+    <div class="mb-3 form-control flex">
+        <div style="flex: 1; min-width: 0">
+            <div>
+                <input id="method1" type="radio" name="method" value="1" checked required>
+                <label for="method1">Layout 1
+                    <img src="/assets/images/home-1.jpg" class="homepage-layout-img">
+                </label>
+            </div>
+        </div>
+        <div style="flex: 1; min-width: 0">
+            <div>
+                <input id="method2" type="radio" name="method" value="2" required>
+                <label for="method2">Layout 2
+                    <img src="/assets/images/home-2.jpg" class="homepage-layout-img">
+                </label>
+            </div>
+        </div>
+    </div>
+    <p>For text centering, add <code>class="text-center"</code> to the element to be centered.</p>
+    <div style="position: relative;">
+        <textarea class="form-control mb-3 md-preview"
+                  id="edithome-textarea"
+                  name="content"
+                  rows="20"
+                  placeholder="Content (Markdown not supported)"
+                  required>{{ old }}</textarea>
+        <div id="preview" class="md-preview">
+            <div class="card" id="home-container" class="home1">
+                <div id="home"></div>
+            </div>
+        </div>
+    </div>
+    <input class="btn btn-primary" type="submit" value="Save">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+</form>
+{% endblock %}
+{% block script %}
+<script>
+    function update() {
+        document.getElementById("home").innerHTML = document.querySelector("textarea").value;
+    }
+    document.querySelector("textarea").addEventListener("input", update);
+    update();
+</script>
+{% endblock %}
