@@ -27,6 +27,6 @@ sqlite3 database.db << EOF
 UPDATE 'users' SET email='$ADMIN_EMAIL' WHERE id=1;
 EOF
 nano settings.py
-echo "Running application..."
+echo "Running application as debug..."
 export FLASK_APP=application.py
 flask run
