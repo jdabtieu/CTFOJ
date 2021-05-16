@@ -41,11 +41,6 @@
     margin: 3px;
 }
 
-#edithome-textarea {
-    font-family: ui-monospace, "Cascadia Mono", "Segoe UI Mono", "Ubuntu Mono", "Roboto Mono", Menlo, Monaco, Consolas, monospace;
-    font-size: 14px;
-}
-
 /****************** PROBLEM PAGE LAYOUT **********************/
 .flag-submit {
     width: 90%;
@@ -133,6 +128,11 @@ div.md-preview {
 }
 
 /****************** MISC DISPLAY FIXES ***********************/
+.font-mono {
+    font-family: ui-monospace, "Cascadia Mono", "Segoe UI Mono", "Ubuntu Mono", "Roboto Mono", Menlo, Monaco, Consolas, monospace;
+    font-size: 14px;
+}
+
 .table-full-width {
     min-width: 450px;
 }
