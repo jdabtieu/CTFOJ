@@ -5,7 +5,14 @@
 {% block main %}
 <div class="card home1" id="home-container">
     <div id="home">
-        {{ content | safe }}
+        <textarea class="hidden">{{ content | safe }}</textarea>
     </div>
 </div>
+{% endblock %}
+{% block script %}
+<script>
+    const homeDiv = document.getElementById("home");
+    homeDiv.innerHTML = DOMPurify.sanitize(
+        homeDiv.querySelector("textarea").value, { ADD_ATTR: ['target'] });
+</script>
 {% endblock %}

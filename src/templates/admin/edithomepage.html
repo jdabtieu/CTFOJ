@@ -23,12 +23,16 @@
             </div>
         </div>
     </div>
-    <p>For text centering, add <code>class="text-center"</code> to the element to be centered.</p>
+    <h4>Formatting Notes</h4>
+    <ul>
+        <li>For text centering, add <code>class="text-center"</code> to the element to be centered.</li>
+        <li>HTML and CSS are supported but Markdown is not supported.</li>
+        <li>All JavaScript is sanitized; make sure the output looks and functions correctly</li>
+    </ul>
     <div style="position: relative;">
         <textarea class="form-control mb-3 md-preview font-mono"
                   name="content"
                   rows="20"
-                  placeholder="Content (Markdown not supported)"
                   required>{{ old }}</textarea>
         <div id="preview" class="md-preview">
             <div class="card" id="home-container" class="home1">
@@ -43,7 +47,8 @@
 {% block script %}
 <script>
     function update() {
-        document.getElementById("home").innerHTML = document.querySelector("textarea").value;
+        document.getElementById("home").innerHTML = DOMPurify.sanitize(
+            document.querySelector("textarea").value, { ADD_ATTR: ['target'] });
     }
     document.querySelector("textarea").addEventListener("input", update);
     update();

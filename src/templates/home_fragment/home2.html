@@ -5,7 +5,7 @@
 {% block main %}
 <div class="card home2" id="home-container">
     <div id="home">
-        {{ content | safe }}
+        <textarea class="hidden">{{ content | safe }}</textarea>
     </div>
 </div>
 <h2>Announcements</h2>
@@ -17,9 +17,16 @@
         <h3>{{ announcement["name"] }}</h3>
         <p>Posted <span class="dt">{{ announcement["date"] }}</span></p>
         <div class="showdown">
-            <textarea style="display: none;">{{ announcement["description"] | safe }}</textarea>
+            <textarea class="hidden">{{ announcement["description"] | safe }}</textarea>
         </div>
     </div>
 {% endfor %}
 <div id="pagination" data-pages="{{ length }}"></div>
+{% endblock %}
+{% block script %}
+<script>
+    const homeDiv = document.getElementById("home");
+    homeDiv.innerHTML = DOMPurify.sanitize(
+        homeDiv.querySelector("textarea").value, { ADD_ATTR: ['target'] });
+</script>
 {% endblock %}
