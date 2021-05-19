@@ -946,6 +946,21 @@ def export_contest_problem(contest_id, problem_id):
     return redirect("/problem/" + new_id)
 
 
+@app.route('/contest/<contest_id>/problem/<problem_id>/download')
+@admin_required
+def download_contest_problem(contest_id, problem_id):
+    temp_zipfile = BytesIO()
+    zf = zipfile.ZipFile(temp_zipfile, 'w', zipfile.ZIP_DEFLATED)
+    for file in os.listdir(f'metadata/contests/{contest_id}/{problem_id}'):
+        zf.write(f'metadata/contests/{contest_id}/{problem_id}/' + file, file)
+    if os.path.exists(f'dl/{contest_id}/{problem_id}.zip'):
+        zf.write(f'dl/{contest_id}/{problem_id}.zip', f'{problem_id}.zip')
+    zf.close()
+    temp_zipfile.seek(0)
+    return send_file(temp_zipfile, mimetype='zip',
+                     attachment_filename=f'{problem_id}.zip', as_attachment=True)
+
+
 @app.route('/problems')
 @login_required
 def problems():
@@ -1207,6 +1222,21 @@ def delete_problem(problem_id):
 
     flash('Problem successfully deleted', 'success')
     return redirect("/problems")
+
+
+@app.route('/problem/<problem_id>/download')
+@admin_required
+def download_problem(problem_id):
+    temp_zipfile = BytesIO()
+    zf = zipfile.ZipFile(temp_zipfile, 'w', zipfile.ZIP_DEFLATED)
+    for file in os.listdir(f'metadata/problems/{problem_id}'):
+        zf.write(f'metadata/problems/{problem_id}/' + file, file)
+    if os.path.exists(f'dl/{problem_id}.zip'):
+        zf.write(f'dl/{problem_id}.zip', f'{problem_id}.zip')
+    zf.close()
+    temp_zipfile.seek(0)
+    return send_file(temp_zipfile, mimetype='zip',
+                     attachment_filename=f'{problem_id}.zip', as_attachment=True)
 
 
 @app.route("/admin/console")
@@ -1634,36 +1664,6 @@ def editcontest(contest_id):
     return redirect("/contests")
 
 
-@app.route('/problem/<problem_id>/download')
-@admin_required
-def download_problem(problem_id):
-    temp_zipfile = BytesIO()
-    zf = zipfile.ZipFile(temp_zipfile, 'w', zipfile.ZIP_DEFLATED)
-    for file in os.listdir(f'metadata/problems/{problem_id}'):
-        zf.write(f'metadata/problems/{problem_id}/' + file, file)
-    if os.path.exists(f'dl/{problem_id}.zip'):
-        zf.write(f'dl/{problem_id}.zip', f'{problem_id}.zip')
-    zf.close()
-    temp_zipfile.seek(0)
-    return send_file(temp_zipfile, mimetype='zip',
-                     attachment_filename=f'{problem_id}.zip', as_attachment=True)
-
-
-@app.route('/contest/<contest_id>/problem/<problem_id>/download')
-@admin_required
-def download_contest_problem(contest_id, problem_id):
-    temp_zipfile = BytesIO()
-    zf = zipfile.ZipFile(temp_zipfile, 'w', zipfile.ZIP_DEFLATED)
-    for file in os.listdir(f'metadata/contests/{contest_id}/{problem_id}'):
-        zf.write(f'metadata/contests/{contest_id}/{problem_id}/' + file, file)
-    if os.path.exists(f'dl/{contest_id}/{problem_id}.zip'):
-        zf.write(f'dl/{contest_id}/{problem_id}.zip', f'{problem_id}.zip')
-    zf.close()
-    temp_zipfile.seek(0)
-    return send_file(temp_zipfile, mimetype='zip',
-                     attachment_filename=f'{problem_id}.zip', as_attachment=True)
-
-
 @app.route("/admin/maintenance", methods=["POST"])
 @admin_required
 def maintenance():
@@ -1677,37 +1677,6 @@ def maintenance():
         flash("Enabled maintenance mode", "success")
 
     return redirect('/admin/console')
-
-
-# Error handling
-def errorhandler(e):
-    if not isinstance(e, HTTPException):
-        e = InternalServerError()
-    if e.code == 404:
-        return render_template("error/404.html"), 404
-    if e.code == 500:
-        return render_template("error/500.html"), 500
-    return render_template("error/generic.html", e=e), e.code
-
-
-for code in default_exceptions:
-    app.errorhandler(code)(errorhandler)
-
-
-@app.route("/teapot")
-def teapot():
-    return render_template("error/418.html"), 418
-
-
-# Security headers
-@app.after_request
-def security_policies(response):
-    response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
-    response.headers['X-Content-Type-Options'] = 'nosniff'
-    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
-    response.headers['X-XSS-Protection'] = '1; mode=block'
-    return response
-
 
 @app.route("/admin/edithomepage", methods=["GET", "POST"])
 @admin_required
@@ -1764,3 +1733,33 @@ def preview_homepage():
                            content=template_content,
                            data=data,
                            length=-(-length // 10))
+
+
+# Error handling
+def errorhandler(e):
+    if not isinstance(e, HTTPException):
+        e = InternalServerError()
+    if e.code == 404:
+        return render_template("error/404.html"), 404
+    if e.code == 500:
+        return render_template("error/500.html"), 500
+    return render_template("error/generic.html", e=e), e.code
+
+
+for code in default_exceptions:
+    app.errorhandler(code)(errorhandler)
+
+
+@app.route("/teapot")
+def teapot():
+    return render_template("error/418.html"), 418
+
+
+# Security headers
+@app.after_request
+def security_policies(response):
+    response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+    response.headers['X-XSS-Protection'] = '1; mode=block'
+    return response
