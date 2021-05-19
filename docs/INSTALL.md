@@ -1,5 +1,6 @@
 # Installation
-Prerequisites: Python 3, SQLite 3<br>
+Prerequisites: Python 3, SQLite 3
+
 Although CTFOJ can run on Linux, Windows, and MacOS, it is recommended to run it on a modern Linux distribution.
 
 It is recommended to create a venv (virtual environment) first.
@@ -9,6 +10,9 @@ The setup process involves 3 main steps:
 1. Install dependencies
 2. Create database
 3. Configure application
+
+# Options
+You can either follow the steps below, or run the INSTALL.sh script provided and skip to the step "Logging in for the first time" at the bottom of this page.
 
 &nbsp;
 1.
@@ -36,13 +40,19 @@ INSERT INTO 'users' VALUES(1, 'admin', 'pbkdf2:sha256:150000$XoLKRd3I$2dbdacb6a3
 3.
 ```bash
 $ mkdir logs dl metadata metadata/contests metadata/problems metadata/announcements
+$ chmod +x daily_tasks.py
 $ python3 daily_tasks.py
 $ cp default_settings.py settings.py
 $ nano settings.py
 ```
 In settings.py, you should add your email credentials as indicated by default_settings.py. Additionally, you may change the other email settings if you use a SMTP provider other than Gmail. Next, you should choose whether to use a CAPTCHA or not, and add your hCaptcha site and secret keys if you are using a CAPTCHA. Finally, you should add a custom name for your club and change any other settings that you wish to change.
 
-Next, you should set up cron to run daily_tasks.py every day. Make sure daily_tasks.py is executable by running `chmod +x daily_tasks.py`. Then, run `crontab -e` and paste the following into the file: `0 0 * * * cd PATH_TO_INSTALL && ./daily_tasks.py`, making sure you replace `PATH_TO_INSTALL` with the installation path.
+4. Now you should change the admin email manually so that you can reset your password in the future through the web app.
+```sql
+$ sqlite3 database.db
+sqlite3>
+UPDATE 'users' SET email='YOUR EMAIL HERE' WHERE id=1;
+```
 
 # Running in Debug Mode
 ```
@@ -56,12 +66,6 @@ Do not expose the app to the web using debug mode. You should run the app throug
 # Logging in for the first time
 An admin account has been created in step 2. You can log in to it using the credentials `admin:CTFOJadmin`. Make sure you change your password immediately after logging in. Enabling 2FA is also recommended for the admin account. You can change your password and enable 2FA through the settings page.
 
-You should also change the admin email manually so that you can reset your password in the future through the web app.
-```sql
-$ sqlite3 database.db
-sqlite3>
-UPDATE 'users' SET email='YOUR EMAIL HERE' WHERE id=1;
-```
 Furthermore, when regular users log in for the first time, they will be directed to a helloworld problem. You should create a helloworld problem as a welcome/landing page. This problem must have an id of 'helloworld', without the single quotes. You can do this on the 'Create Problem' page in the admin toolbar, once logged in. Markdown is supported. See below for an example helloworld problem:
 ```
 **Welcome to CTF Club!** In each problem, you must find a flag hidden somewhere on the problem page.
@@ -71,3 +75,5 @@ The flag for this problem is: `CTF{your_first_ctf_flag}`
 
 # Optional Steps
 You may optionally replace the default favicon.png file in the static folder with another icon of your choice (must be named favicon.png
+
+You should also set up cron to run daily_tasks.py every day. Run `crontab -e` and paste the following into the file: `0 0 * * * cd PATH_TO_INSTALL && ./daily_tasks.py`, making sure you replace `PATH_TO_INSTALL` with the installation path.
