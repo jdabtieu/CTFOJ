@@ -98,7 +98,10 @@ def index():
         template = read_file('templates/unauth_index.html')
         template_type = template[0]
         template_content = template[1:]
-        return render_template(f"home_fragment/home{template_type}.html", content=template_content, data=data, length=-(-length // 10))
+        return render_template(f"home_fragment/home{template_type}.html",
+                               content=template_content,
+                               data=data,
+                               length=-(-length // 10))
     else:
         return render_template("index.html", data=data, length=-(-length // 10))
 
@@ -1677,6 +1680,7 @@ def maintenance():
         flash("Enabled maintenance mode", "success")
 
     return redirect('/admin/console')
+
 
 @app.route("/admin/edithomepage", methods=["GET", "POST"])
 @admin_required

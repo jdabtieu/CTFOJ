@@ -4,7 +4,6 @@ import datetime
 import os
 import secrets
 import shutil
-import sys
 
 # Backup database if exists
 if os.path.exists('database.db'):
