@@ -37,6 +37,9 @@ def test_contest(client, database):
     assert result.status_code == 200
     assert b'Testing Contest' in result.data
 
+    result = client.get('/admin/editcontest/noexist', follow_redirects=True)
+    assert b'does not exist' in result.data
+
     result = client.get('/contest/testingcontest/scoreboard')
     assert result.status_code == 200
     assert b'Rank' in result.data

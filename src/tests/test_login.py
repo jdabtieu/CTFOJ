@@ -78,3 +78,8 @@ def test_login(client, database):
     }, follow_redirects=True)
     assert result.status_code == 403
     assert b'not confirmed' in result.data
+
+    result = client.get('/contests', follow_redirects=True)
+    assert result.status_code == 200
+    assert result.request.path == '/login'
+    assert b'/contests' in result.data
