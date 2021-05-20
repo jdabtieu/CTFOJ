@@ -18,6 +18,8 @@ CTFOJ is a open-source online judge to host capture-the-flag problems and contes
     - Mass notify users through email
 - Create announcements
     - Announce anything you want, to all users of the site
+- Custom homepage
+    - Add your own customized content to a homepage displayed to all anonymous users
 - Markdown support in problems, hints, editorials, contests, and announcements
 - User management
     - Remotely reset passwords
