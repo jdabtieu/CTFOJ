@@ -5,7 +5,7 @@
 {% block main %}
 <h1>Submissions</h1>
 <div id="pagination" data-pages="{{ length }}"></div>
-<div class="flex">
+<div class="flex-desktop">
     <div style="flex: 3; overflow-x: auto;">
         <table class="table table-hover table-full-width">
             <thead class="table-dark">
@@ -35,7 +35,7 @@
             </tbody>
         </table>
     </div>
-    <div style="flex: 1; margin-left: 8px;" id="submission-search-right">
+    <div style="flex: 1; margin-left: 8px;">
         <div class="card">
             <h3>Filter Submissions</h3>
             <form>
@@ -60,32 +60,6 @@
                 <input class="btn btn-primary" type="submit" value="Filter!">
             </form>
         </div>
-    </div>
-</div>
-<div id="submission-search-bottom">
-    <div class="card">
-        <h3>Filter Submissions</h3>
-        <form>
-            <input class="form-control mb-3"
-                   id="username"
-                   name="username"
-                   placeholder="Filter by username">
-            <input class="form-control mb-3"
-                   id="problem_id"
-                   name="problem_id"
-                   placeholder="Filter by problem ID">
-            <input class="form-control mb-3"
-                   id="contest_id"
-                   name="contest_id"
-                   placeholder="Filter by contest ID">
-            <select class="form-control form-select mb-3" id="correct" name="correct">
-                <option value="" selected hidden>Filter by status</option>
-                <option value="">All</option>
-                <option value="AC">AC</option>
-                <option value="WA">WA</option>
-            </select>
-            <input class="btn btn-primary" type="submit" value="Filter!">
-        </form>
     </div>
 </div>
 {% endblock %}

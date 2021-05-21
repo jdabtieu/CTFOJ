@@ -70,21 +70,6 @@
     }
 }
 
-
-
-/****************** SUBMISSIONS PAGE LAYOUT ******************/
-@media screen and (min-width: 991px) {
-    #submission-search-bottom {
-        display: none;
-    }
-}
-
-@media screen and (max-width: 990px) {
-    #submission-search-right {
-        display: none;
-    }
-}
-
 /****************** CONTEST PAGE LAYOUT **********************/
 #contest-description-container, #contest-description-container-keep-open {
      position: fixed;
@@ -143,6 +128,12 @@ div.md-preview {
 
 .flex {
     display: flex;
+}
+
+@media screen and (min-width: 991px) {
+    .flex-desktop {
+        display: flex;
+    }
 }
 
 .icon {
