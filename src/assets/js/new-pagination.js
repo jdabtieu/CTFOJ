@@ -8,6 +8,10 @@ if (paginationDiv != null) {
     currentPage = currentPage ? parseInt(currentPage) : 1;
     totalPages = Math.max(1, totalPages);
 
+    if (currentPage < 0 || currentPage > totalPages) {
+        throw "Current page must be between 1 and the total pages";
+    }
+
     // calculate left and right bounds
     var paginationBegin, paginationEnd;
     if (2 * displayedPages + 1 > totalPages) {
