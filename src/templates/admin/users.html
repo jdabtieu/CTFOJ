@@ -70,21 +70,21 @@
     }
 
     function ban(e) {
-        var username = e.parentElement.parentElement.querySelector(".username").innerHTML;
+        var username = e.parentElement.parentElement.querySelector(".username").innerHTML.trim();
         var user_id = e.parentElement.parentElement.querySelector(".userid").innerHTML;
         var msg = `Are you sure you want to ban/unban ${username}? Click here to confirm.`;
         createForm(msg, "/admin/ban", user_id);
     }
 
     function resetpass(e) {
-        var username = e.parentElement.parentElement.querySelector(".username").innerHTML;
+        var username = e.parentElement.parentElement.querySelector(".username").innerHTML.trim();
         var user_id = e.parentElement.parentElement.querySelector(".userid").innerHTML;
         var msg = `Are you sure you want to reset ${username}'s password? Click here to confirm.`;
         createForm(msg, "/admin/resetpass", user_id);
     }
 
     function admin(e) {
-        var username = e.parentElement.parentElement.querySelector(".username").innerHTML;
+        var username = e.parentElement.parentElement.querySelector(".username").innerHTML.trim();
         var user_id = e.parentElement.parentElement.querySelector(".userid").innerHTML;
         var msg = `Are you sure you want to grant/revoke admin to ${username}? Click here to confirm.`;
         createForm(msg, "/admin/makeadmin", user_id);
