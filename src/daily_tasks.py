@@ -20,8 +20,10 @@ if os.path.exists('metadata'):
 
 # backup directory structure
 cmd = None
-if sys.platform.startswith("win"):
+if sys.platform == "win32":
     cmd = "tree /A"
+elif sys.platform == "darwin":
+    cmd = "find * -print | sed -e 's;[^/]*/;|____;g;s;____|; |;g'"
 else:
     cmd = "tree"
 result = subprocess.check_output(cmd, shell=True).decode()
