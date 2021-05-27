@@ -5,6 +5,7 @@ import os
 import secrets
 import shutil
 import subprocess
+import sys
 
 # Backup database if exists
 if os.path.exists('database.db'):
@@ -18,7 +19,12 @@ if os.path.exists('metadata'):
     shutil.copytree('metadata/', 'metadata.bak/')
 
 # backup directory structure
-result = subprocess.check_output("tree", shell=True).decode()
+cmd = None
+if sys.platform.startswith("win"):
+    cmd = "tree /A"
+else:
+    cmd = "tree"
+result = subprocess.check_output(cmd, shell=True).decode()
 with open("structure.bak", "w") as file:
     file.write(result)
 
