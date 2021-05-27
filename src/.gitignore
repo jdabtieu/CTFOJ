@@ -1,6 +1,7 @@
 # Problem files
 /dl/
 /metadata/
+/metadata.bak/
 
 # Database
 /database.db
@@ -29,3 +30,6 @@ coverage.xml
 /database_test.db
 /database_test.db-journal
 test_upload.txt
+
+# Directory structure
+structure.bak
