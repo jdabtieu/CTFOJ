@@ -928,10 +928,16 @@ def export_contest_problem(contest_id, problem_id):
 
     new_name = data1[0]["name"] + " - " + data[0]["name"]
 
+    # change points value
+    if request.form.get("point_value"):
+        new_points = request.form.get("point_value")
+    else:
+        new_points = data[0]["point_value"]
+
     # Insert into problems databases
     db.execute(("INSERT INTO problems(id, name, point_value, category, flag) "
                 "VALUES(:id, :name, :pv, :cat, :flag)"),
-               id=new_id, name=new_name, pv=data[0]["point_value"],
+               id=new_id, name=new_name, pv=new_points,
                cat=data[0]["category"], flag=data[0]["flag"])
 
     db.execute("INSERT INTO problem_solved(user_id, problem_id) SELECT user_id, :new_id "
