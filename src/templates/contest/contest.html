@@ -46,10 +46,12 @@
                     {% if row["solved"] %}
                         <img class="svg-green icon"
                              src="/assets/images/check.svg"
+                             alt="Solved"
                              onerror="this.src='/assets/images/check.png'">
                     {% else %}
                         <img class="svg-red icon"
                              src="/assets/images/times.svg"
+                             alt="Unsolved"
                              onerror="this.src='/assets/images/times.png'">
                     {% endif %}
                 </td>

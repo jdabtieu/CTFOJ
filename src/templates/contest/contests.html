@@ -23,12 +23,14 @@
                style="position: absolute; top: 12px; right: 36px;">
                 <img src="/assets/images/pencil.svg"
                      onerror="this.src='/assets/images/pencil.png'"
+                     alt="Edit contest"
                      class="icon">
             </a>
             <a href="/admin/deletecontest/{{ contest['id'] }}"
                style="position: absolute; top: 12px; right: 16px;">
                 <img src="/assets/images/trash.svg"
                      onerror="this.src='/assets/images/trash.png'"
+                     alt="Delete contest"
                      class="icon">
             </a>
         {% endif %}
@@ -52,16 +54,18 @@
         </div>
         {% if session["admin"] %}
             <a href="/admin/editcontest/{{ contest['id'] }}"
-               style="position: absolute; top: 12px; right: 36px">
+               style="position: absolute; top: 12px; right: 36px;">
                 <img src="/assets/images/pencil.svg"
                      onerror="this.src='/assets/images/pencil.png'"
-                     style="width: 16px;">
+                     alt="Edit contest"
+                     class="icon">
             </a>
             <a href="/admin/deletecontest/{{ contest['id'] }}"
-               style="position: absolute; top: 12px; right: 16px">
+               style="position: absolute; top: 12px; right: 16px;">
                 <img src="/assets/images/trash.svg"
                      onerror="this.src='/assets/images/trash.png'"
-                     style="width: 16px;">
+                     alt="Delete contest"
+                     class="icon">
             </a>
         {% endif %}
     </div>
@@ -84,16 +88,18 @@
         </div>
         {% if session["admin"] %}
             <a href="/admin/editcontest/{{ contest['id'] }}"
-               style="position: absolute; top: 12px; right: 36px">
+               style="position: absolute; top: 12px; right: 36px;">
                 <img src="/assets/images/pencil.svg"
                      onerror="this.src='/assets/images/pencil.png'"
-                     style="width: 16px;">
+                     alt="Edit contest"
+                     class="icon">
             </a>
             <a href="/admin/deletecontest/{{ contest['id'] }}"
-               style="position: absolute; top: 12px; right: 16px">
+               style="position: absolute; top: 12px; right: 16px;">
                 <img src="/assets/images/trash.svg"
                      onerror="this.src='/assets/images/trash.png'"
-                     style="width: 16px;">
+                     alt="Delete contest"
+                     class="icon">
             </a>
         {% endif %}
     </div>
