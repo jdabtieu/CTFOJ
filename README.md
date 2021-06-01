@@ -31,7 +31,7 @@ CTFOJ is a open-source online judge to host capture-the-flag problems and contes
 - \+ many more
 
 
-## Installation
+## Installation and Quickstart
 See [INSTALL.md](docs/INSTALL.md).
 
 ## Support

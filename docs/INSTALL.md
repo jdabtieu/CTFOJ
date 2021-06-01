@@ -56,11 +56,8 @@ UPDATE 'users' SET email='YOUR EMAIL HERE' WHERE id=1;
 
 # Running in Debug Mode
 ```
-$ export FLASK_APP=application.py
-$ flask run
+$ python application.py
 ```
-If you do not want to export the FLASK_APP every time you reset your terminal, you can create a symbolic link from app.py to application.py.
-
 Do not expose the app to the web using debug mode. You should run the app through nginx, Apache, or a similar service.
 
 # Logging in for the first time
