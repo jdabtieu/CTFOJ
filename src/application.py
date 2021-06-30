@@ -515,21 +515,27 @@ def contest(contest_id):
 
     data = []
     info = db.execute(
-        ("SELECT contest_problems.*, COUNT(contest_solved.user_id) AS solves "
-         "FROM contest_problems LEFT JOIN contest_solved ON "
-         "contest_problems.problem_id=contest_solved.problem_id WHERE "
-         "contest_problems.contest_id=:cid AND draft=0 GROUP BY "
-         "contest_problems.problem_id ORDER BY problem_id ASC, category ASC"),
+        ("SELECT * FROM contest_problems WHERE contest_id=:cid AND draft=0 "
+         "GROUP BY problem_id ORDER BY problem_id ASC, category ASC;"),
         cid=contest_id)
 
+    solve_count = dict()
+    for row in db.execute(("SELECT problem_id, COUNT(user_id) AS solves "
+                           "FROM contest_solved WHERE contest_id=:cid "
+                           "GROUP BY problem_id"), cid=contest_id):
+        if row["problem_id"] is None:
+            continue
+        solve_count[row["problem_id"]] = row["solves"]
+
     for row in info:
+        problem_id = row["problem_id"]
         keys = {
             "name": row["name"],
             "category": row["category"],
-            "problem_id": row["problem_id"],
-            "solved": 1 if row["problem_id"] in solved_data else 0,
+            "problem_id": problem_id,
+            "solved": 1 if problem_id in solved_data else 0,
             "point_value": row["point_value"],
-            "sols": row["solves"],
+            "sols": solve_count[problem_id] if problem_id in solve_count else 0,
             "dynamic": 0 if row["score_users"] == -1 else 1,
         }
         data.append(keys)
