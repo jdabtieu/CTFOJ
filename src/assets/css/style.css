@@ -97,7 +97,15 @@
 
 /****************** ADMIN PAGE LAYOUT **********************/
 .admin-card {
-    padding: calc(var(--bs-gutter-x)/ 2)
+    padding: calc(var(--bs-gutter-x)/ 2);
+}
+
+.admin-card:hover {
+    filter: drop-shadow(6px 6px 4px #dfdfdf);
+}
+
+.dark .admin-card:hover {
+    filter: drop-shadow(6px 6px 4px #444444);
 }
 
 /****************** MD LIVE PREVIEW **************************/
@@ -187,6 +195,38 @@ body {
 
 .svg-green {
     filter: invert(57%) sepia(58%) saturate(3606%) hue-rotate(83deg) brightness(118%) contrast(125%);
+}
+
+.bg-ld-green {
+    background-color: #eeffee!important;
+}
+
+.bg-ld-red {
+    background-color: #ffeeee!important;
+}
+
+.bg-ld-purple {
+    background-color: #eeeeff!important;
+}
+
+.bg-ld-blue {
+    background-color: #ddeeff!important;
+}
+
+.dark .bg-ld-green {
+    background-color: #2f3f2f!important;
+}
+
+.dark .bg-ld-red {
+    background-color: #3f2f2f!important;
+}
+
+.dark .bg-ld-purple {
+    background-color: #2f2f3f!important;
+}
+
+.dark .bg-ld-blue {
+    background-color: #1f2f3f!important;
 }
 
 /****************** DARK MODE ********************************/
