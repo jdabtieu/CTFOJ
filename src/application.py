@@ -1115,18 +1115,10 @@ def problem_editorial(problem_id):
     if len(data) == 0:
         return render_template("problem/problem_noexist.html"), 404
 
-    check = db.execute("SELECT * FROM problems WHERE id=:problem_id AND draft=0",
-                       problem_id=problem_id)
-
-    if len(check) != 1 and session["admin"] != 1:
+    if data[0]["draft"] == 1 and session["admin"] != 1:
         return render_template("problem/problem_noexist.html"), 404
 
-    # Ensure editorial exists
-    editorial = read_file('metadata/problems/' + problem_id + '/editorial.md')
-    if not editorial:
-        return render_template("problem/problem_noeditorial.html"), 404
-
-    return render_template('problem/problemeditorial.html', data=data[0], ed=editorial)
+    return render_template('problem/problemeditorial.html', data=data[0])
 
 
 @app.route('/problem/<problem_id>/edit', methods=["GET", "POST"])

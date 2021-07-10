@@ -4,7 +4,20 @@
 
 {% block main %}
 <h1><a href="{{ request.path[:-10] }}">{{ data["name"] }}</a> Editorial</h1>
-<div class="showdown">
-    <textarea style="display: none;">{{ ed | safe }}</textarea>
-</div>
+<div id="editorial"></div>
+{% endblock %}
+{% block script %}
+<script>
+    const problem_id = "{{ request.path.split('/')[2] }}";
+    fetch("/api/problem/editorial/" + problem_id).then(b => b.text())
+        .then(b => {
+                if (b.length > 0) {
+                    document.getElementById("editorial").innerHTML = b;
+                } else {
+                    document.getElementById("editorial").innerHTML =
+                        `This problem does not have an editorial.
+                         <a href="/problem/${problem_id}">Back to problem</a>`
+                }
+            });
+</script>
 {% endblock %}
