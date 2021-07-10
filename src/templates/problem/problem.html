@@ -14,21 +14,15 @@
 {% endif %}
 <div class="flex">
     <div style="flex: 3; padding: 4px; word-break: break-word;">
-        <div id="description" class="showdown">
-            <textarea style="display: none;">{{ data["description"] | safe }}</textarea>
+        <div id="description"></div>
+        <div id="hint-container">
+            <a class="btn btn-secondary"
+               id="togglehint"
+               onclick="document.getElementById('hint').classList.toggle('hidden')">
+                Show/Hide Hints
+            </a>
+            <div id="hint" class="card hidden"></div>
         </div>
-        {% if data["hints"] %}
-            <div style="margin-top: 16px;">
-                <a class="btn btn-secondary"
-                   id="togglehint"
-                   onclick="document.getElementById('hint').classList.toggle('hidden')">
-                    Show/Hide Hints
-                </a>
-                <div id="hint" class="card showdown hidden">
-                    <textarea style="display: none;">{{ data["hints"] | safe }}</textarea>
-                </div>
-            </div>
-        {% endif %}
     </div>
     <div style="flex: 1; padding: 4px;">
         <form autocomplete="off" method="post" style="margin-bottom: 0.5rem;">
@@ -41,12 +35,12 @@
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         </form>
 
-        <p>
+        <div>
             <b>Category:</b> {{ data["category"] }}<br>
             <b>Points:</b> {{ data["point_value"] }}
-            {% if data["editorial"] %}
+            <div id="editorial-container">
                 <br><a href="{{ request.path }}/editorial">View editorial</a>
-            {% endif %}
+            </div>
             {% if session["admin"] %}
                 <br><a href="/admin/submissions?problem_id={{ request.path.split('/')[2] }}">
                         View submissions
@@ -59,12 +53,32 @@
                     <br><a href="#" onclick="publishmsg()">Publish draft</a>
                 {% endif %}
             {% endif %}
-        </p>
+        </div>
     </div>
 </div>
 {% endblock %}
+{% block script %}
+<script>
+    const problem_id = "{{ request.path.split('/')[2] }}";
+    fetch("/api/problem/description/" + problem_id).then(b => b.text())
+                                                   .then(b => document.getElementById("description")
+                                                                      .innerHTML = convertMD(b));
+    fetch("/api/problem/hints/" + problem_id).then(b => b.text())
+        .then(b => {
+                if (b.length > 0) {
+                    document.getElementById("hint-container").style.display = "block";
+                    document.getElementById("hint").innerHTML = convertMD(b);
+                }
+            });
+
+    fetch("/api/problem/editorial/" + problem_id).then(b => b.text())
+        .then(b => {
+                if (b.length > 0) {
+                    document.getElementById("editorial-container").style.display = "inline";
+                }
+            });
+</script>
 {% if session["admin"] %}
-    {% block script %}
     <script>
         function deletemsg() {
             document.getElementById("confirm").style.display = "";
@@ -74,7 +88,7 @@
                     .setAttribute("value", "Are you sure you want to delete this problem? " +
                                            "Click here to confirm.");
         }
-        
+
         function publishmsg() {
             document.getElementById("confirm").style.display = "";
             document.querySelector("#confirm form")
@@ -84,5 +98,5 @@
                                            "Click here to confirm.");
         }
     </script>
-    {% endblock %}
 {% endif %}
+{% endblock %}

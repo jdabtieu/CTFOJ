@@ -18,8 +18,11 @@ from werkzeug.exceptions import HTTPException, InternalServerError, default_exce
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from helpers import *  # noqa
+from api import api
 
 app = Flask(__name__)
+app.register_blueprint(api, url_prefix="/api")
+
 try:
     app.config.from_object('settings')
 except Exception as e:
@@ -76,6 +79,7 @@ def check_for_maintenance():
 
 @app.route("/")
 def index():
+    # Redirect to login page if homepage setting disabled
     if not app.config["USE_HOMEPAGE"] and (not session or 'username' not in session):
         return redirect("/login")
 
@@ -1049,14 +1053,6 @@ def problem(problem_id):
 
     if len(check) != 1 and session["admin"] != 1:
         return render_template("problem/problem_noexist.html"), 404
-
-    # Retrieve problem description and hints
-    data[0]["description"] = read_file(
-        'metadata/problems/' + problem_id + '/description.md')
-    data[0]["hints"] = read_file(
-        'metadata/problems/' + problem_id + '/hints.md')
-    data[0]["editorial"] = read_file(
-        'metadata/problems/' + problem_id + '/editorial.md')
 
     if request.method == "GET":
         return render_template('problem/problem.html', data=data[0])
