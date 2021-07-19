@@ -2,6 +2,10 @@
 
 {% block title %}{{ data["name"] }} Editorial{% endblock %}
 
+{% block preload %}
+<link rel="preload" href="/api/problem/editorial/{{ request.path.split('/')[2] }}" as="fetch" crossorigin="anonymous">
+{% endblock %}
+
 {% block main %}
 <h1><a href="{{ request.path[:-10] }}">{{ data["name"] }}</a> Editorial</h1>
 <div id="editorial"></div>

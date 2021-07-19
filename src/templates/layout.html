@@ -13,10 +13,11 @@
               media="async"
               onload="this.media='all'">
         <link href="/assets/css/style.css" rel="stylesheet">
-
         <link href="/static/favicon.png" rel="icon">
 
         <title>{% block title %}{% endblock %} | {{ CLUB_NAME }}</title>
+
+        {% block preload %}{% endblock %}
 
     </head>
     <body>
