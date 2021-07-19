@@ -38,9 +38,9 @@
         <div>
             <b>Category:</b> {{ data["category"] }}<br>
             <b>Points:</b> {{ data["point_value"] }}
-            <div id="editorial-container">
+            {% if data["editorial"] %}
                 <br><a href="{{ request.path }}/editorial">View editorial</a>
-            </div>
+            {% endif %}
             {% if session["admin"] %}
                 <br><a href="/admin/submissions?problem_id={{ request.path.split('/')[2] }}">
                         View submissions
@@ -68,13 +68,6 @@
                 if (b.length > 0) {
                     document.getElementById("hint-container").style.display = "block";
                     document.getElementById("hint").innerHTML = convertMD(b);
-                }
-            });
-
-    fetch("/api/problem/editorial/" + problem_id).then(b => b.text())
-        .then(b => {
-                if (b.length > 0) {
-                    document.getElementById("editorial-container").style.display = "inline";
                 }
             });
 </script>

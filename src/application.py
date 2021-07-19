@@ -1045,14 +1045,10 @@ def problem(problem_id):
                       problem_id=problem_id)
 
     # Ensure problem exists
-    if len(data) != 1:
+    if len(data) != 1 or (data[0]["draft"] == 1 and session["admin"] != 1):
         return render_template("problem/problem_noexist.html"), 404
 
-    check = db.execute("SELECT * FROM problems WHERE id=:problem_id AND draft=0",
-                       problem_id=problem_id)
-
-    if len(check) != 1 and session["admin"] != 1:
-        return render_template("problem/problem_noexist.html"), 404
+    data[0]["editorial"] = read_file(f"metadata/problems/{problem_id}/editorial.md")
 
     if request.method == "GET":
         return render_template('problem/problem.html', data=data[0])
