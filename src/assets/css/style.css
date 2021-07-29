@@ -70,6 +70,11 @@
     }
 }
 
+#problem-description {
+    overflow: hidden;
+    position: relative;
+}
+
 /****************** CONTEST PAGE LAYOUT **********************/
 #contest-description-container, #contest-description-container-keep-open {
      position: fixed;

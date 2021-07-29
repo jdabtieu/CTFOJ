@@ -18,8 +18,8 @@
     </div>
 {% endif %}
 <div class="flex">
-    <div style="flex: 3; padding: 4px; word-break: break-word;">
-        <div id="description"></div>
+    <div style="flex: 3; padding: 4px; word-break: break-word; min-width: 0px;">
+        <div id="problem-description"></div>
         <div id="hint-container">
             <a class="btn btn-secondary"
                id="togglehint"
@@ -66,8 +66,12 @@
 <script>
     const problem_id = "{{ request.path.split('/')[2] }}";
     fetch("/api/problem/description/" + problem_id).then(b => b.text())
-                                                   .then(b => document.getElementById("description")
-                                                                      .innerHTML = convertMD(b));
+                                                   .then(b => {
+        let shadow = document.getElementById("problem-description").attachShadow({mode: "open"});
+        let content = document.createElement("div");
+        content.innerHTML = convertMD(b);
+        shadow.appendChild(content);
+    });
     fetch("/api/problem/hints/" + problem_id).then(b => b.text())
         .then(b => {
                 if (b.length > 0) {
