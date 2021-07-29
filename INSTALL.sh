@@ -1,6 +1,10 @@
 #!/bin/bash
+
+python3 -m venv .
+. bin/activate
 cd src
 echo "Installing dependencies..."
+pip3 install wheel
 pip3 install -r requirements.txt
 echo "Creating database..."
 sqlite3 database.db << EOF
@@ -27,6 +31,7 @@ sqlite3 database.db << EOF
 UPDATE 'users' SET email='$ADMIN_EMAIL' WHERE id=1;
 EOF
 nano settings.py
-echo "Running application as debug..."
-export FLASK_APP=application.py
-flask run
+echo "Success! CTFOJ is now set up."
+echo "Running application as debug... You may exit anytime by hitting Ctrl+C"
+python3 application.py
+deactivate
