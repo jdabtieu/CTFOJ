@@ -741,10 +741,10 @@ def edit_contest_problem(contest_id, problem_id):
     # Only edit score for statically scored problems whose value has changed
     if data[0]["score_users"] == -1 and data[0]["point_value"] != new_points:
         point_change = int(new_points) - data[0]["point_value"]
-        db.execute(("UPDATE contest_users SET points=points+:point_change WHERE "
-                    "contest_id=:cid AND user_id IN (SELECT user_id FROM contest_solved "
-                    "WHERE contest_id=:cid AND problem_id=:pid)"),
-                   point_change=point_change, cid=contest_id, pid=problem_id)
+        db.execute(("UPDATE contest_users SET points=? WHERE contest_id=? AND user_id "
+                    "IN (SELECT user_id FROM contest_solved WHERE contest_id=? AND "
+                    "problem_id=?)"),
+                   point_change, contest_id, contest_id, problem_id)
         db.execute(("UPDATE contest_problems SET point_value=:pv WHERE contest_id=:cid "
                     "AND problem_id=:pid"),
                    pv=int(new_points), cid=contest_id, pid=problem_id)
