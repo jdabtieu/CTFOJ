@@ -8,8 +8,8 @@ Please refer to the chart below for versions with security support
 | ----------- | ------------------ |
 | Prereleases | :x:                |
 | Betas       | :x:                |
-| 2.4.2       | :white_check_mark: |
-| < 2.4.2     | :x:                |
+| 2.4.3       | :white_check_mark: |
+| < 2.4.3     | :x:                |
 
 As you can tell, it is strongly recommended to always be on the latest stable version. It is strongly recommended to run the application on a modern Linux distribution (kernel >=4.19).
 
