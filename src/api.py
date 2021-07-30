@@ -59,3 +59,12 @@ def contest_problem_hint(contest_id, problem_id):
         return make_response(("Problem not found", 404))
     return send_from_directory(f"metadata/contests/{contest_id}/{problem_id}",
                                "hints.md")
+
+
+@api.route("/contest/<contest_id>")
+@api_login_required
+def contest_description(contest_id):
+    from application import db
+    if len(db.execute("SELECT * FROM contests WHERE id=:cid", cid=contest_id)) == 0:
+        return make_response(("Contest not found", 404))
+    return send_from_directory(f"metadata/contests/{contest_id}", "description.md")

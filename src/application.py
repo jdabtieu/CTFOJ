@@ -469,15 +469,6 @@ def contests():
          "start <= datetime('now') ORDER BY end DESC"))
     future = db.execute(
         "SELECT * FROM contests WHERE start > datetime('now') ORDER BY start DESC")
-    for contest in past:
-        cid = contest["id"]
-        contest["description"] = read_file('metadata/contests/' + cid + '/description.md')
-    for contest in current:
-        cid = contest["id"]
-        contest["description"] = read_file('metadata/contests/' + cid + '/description.md')
-    for contest in future:
-        cid = contest["id"]
-        contest["description"] = read_file('metadata/contests/' + cid + '/description.md')
     return render_template("contest/contests.html",
                            past=past, current=current, future=future)
 
@@ -695,12 +686,6 @@ def edit_contest_problem(contest_id, problem_id):
         cid=contest_id, pid=problem_id)
     if len(data) != 1:
         return render_template("contest/contest_problem_noexist.html"), 404
-
-    # Get problem statement and hints
-    data[0]["description"] = read_file(
-        f'metadata/contests/{contest_id}/{problem_id}/description.md')
-    data[0]["hints"] = read_file(
-        f'metadata/contests/{contest_id}/{problem_id}/hints.md')
 
     if request.method == "GET":
         return render_template('problem/edit_problem.html', data=data[0])
@@ -1116,11 +1101,6 @@ def editproblem(problem_id):
     # Ensure problem exists
     if len(data) == 0:
         return render_template("problem/problem_noexist.html"), 404
-
-    data[0]['description'] = read_file(
-        'metadata/problems/' + problem_id + '/description.md')
-    data[0]['hints'] = read_file(
-        'metadata/problems/' + problem_id + '/hints.md')
 
     if request.method == "GET":
         return render_template('problem/edit_problem.html', data=data[0])
@@ -1617,9 +1597,6 @@ def editcontest(contest_id):
         flash('That contest does not exist', 'danger')
         return redirect("/contests")
 
-    data[0]["description"] = read_file(
-        'metadata/contests/' + contest_id + '/description.md')
-
     if request.method == "GET":
         return render_template('contest/edit.html', data=data[0])
 
@@ -1689,9 +1666,6 @@ def edit_homepage():
 
     content = content.replace('\r', '')
     content = layout_method + "\n" + content
-
-    # WARNING: NOT SANITIZED YET
-    # TODO: Sanitize HTML
 
     write_file("templates/unauth_index.html", content)
     flash("You have successfully edited the homepage!", "success")

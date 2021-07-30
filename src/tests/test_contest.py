@@ -37,6 +37,16 @@ def test_contest(client, database):
     assert result.status_code == 200
     assert b'Testing Contest' in result.data
 
+    result = client.get('/api/contest/testingcontest')
+    assert result.status_code == 200
+    assert b'testing contest description' == result.data
+
+    result = client.get('/api/contest/nonexistent')
+    assert result.status_code == 404
+
+    result = client.get('/contests')
+    assert result.status_code == 200
+
     result = client.get('/admin/editcontest/noexist', follow_redirects=True)
     assert b'does not exist' in result.data
 
