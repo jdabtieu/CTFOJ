@@ -2,6 +2,11 @@
 
 {% block title %}{{ data["name"] }}{% endblock %}
 
+{% block preload %}
+<link rel="preload" href="/api/contest/{{ request.path.split('/')[2] }}/problem/description/{{ request.path.split('/')[4] }}" as="fetch" crossorigin="anonymous">
+<link rel="preload" href="/api/contest/{{ request.path.split('/')[2] }}/problem/hints/{{ request.path.split('/')[4] }}" as="fetch" crossorigin="anonymous">
+{% endblock %}
+
 {% block main %}
 <h1>{{ data["name"] }}</h1>
 {% if session["admin"] %}
@@ -16,21 +21,15 @@
 {% endif %}
 <div class="flex">
     <div style="flex: 3; padding: 4px; word-break: break-word; min-width: 0px;">
-        <div id=description class="showdown">
-            <textarea style="display: none;">{{ data["description"] | safe }}</textarea>
+        <div id="problem-description" class="hidden"></div>
+        <div id="hint-container">
+            <a class="btn btn-secondary"
+               id="togglehint"
+               onclick="document.getElementById('hint').classList.toggle('hidden')">
+                Show/Hide Hints
+            </a>
+            <div id="hint" class="card hidden"></div>
         </div>
-        {% if data["hints"] %}
-            <div style="margin-top: 16px;">
-                <a class="btn btn-secondary"
-                   id="togglehint"
-                   onclick="document.getElementById('hint').classList.toggle('hidden')">
-                    Show/Hide Hints
-                </a>
-                <div id="hint" class="card showdown hidden">
-                    <textarea style="display: none;">{{ data["hints"] | safe }}</textarea>
-                </div>
-            </div>
-        {% endif %}
     </div>
     <div style="flex: 1; padding: 4px;">
         <form autocomplete="off" method="post" style="margin-bottom: 0.5rem;">
@@ -63,4 +62,19 @@
         </p>
     </div>
 </div>
+{% endblock %}
+{% block script %}
+<script>
+    const contest_id = "{{ request.path.split('/')[2] }}";
+    const problem_id = "{{ request.path.split('/')[4] }}";
+    fetch(`/api/contest/${contest_id}/problem/description/${problem_id}`).then(b => b.text())
+        .then(b => inject(document.getElementById("problem-description"), b, true));
+    fetch(`/api/contest/${contest_id}/problem/hints/${problem_id}`).then(b => b.text())
+        .then(b => {
+                if (b.length > 0) {
+                    document.getElementById("hint-container").style.display = "block";
+                    inject(document.getElementById("hint"), b, false);
+                }
+            });
+</script>
 {% endblock %}

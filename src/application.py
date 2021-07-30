@@ -597,20 +597,10 @@ def contest_problem(contest_id, problem_id):
         return render_template("contest/contest_noexist.html"), 404
 
     check = db.execute(("SELECT * FROM contest_problems WHERE contest_id=:cid AND "
-                        "problem_id=:pid AND draft=0"),
+                        "problem_id=:pid"),
                        cid=contest_id, pid=problem_id)
-    if session["admin"]:
-        check = db.execute(("SELECT * FROM contest_problems WHERE contest_id=:cid AND "
-                            "problem_id=:pid"),
-                           cid=contest_id, pid=problem_id)
-    if len(check) != 1:
+    if len(check) != 1 or (check[0]["draft"] and not session["admin"]):
         return render_template("contest/contest_problem_noexist.html"), 404
-
-    # Get problem statement and hints
-    check[0]["description"] = read_file(
-        f'metadata/contests/{contest_id}/{problem_id}/description.md')
-    check[0]["hints"] = read_file(
-        f'metadata/contests/{contest_id}/{problem_id}/hints.md')
 
     if request.method == "GET":
         return render_template("contest/contest_problem.html", data=check[0])
