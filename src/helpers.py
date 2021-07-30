@@ -156,10 +156,11 @@ def update_dyn_score(contest_id, problem_id, update_curr_user=True):
                    cid=contest_id, points=old_points, uid=session["user_id"])
 
     # Update points of all users who previously solved the problem
-    db.execute(("UPDATE contest_users SET points=points + ? WHERE contest_id=? AND "
-                "user_id IN (SELECT user_id FROM contest_solved WHERE "
-                "contest_id=? AND problem_id=?)"),
-               point_diff, contest_id, contest_id, problem_id)
+    db.execute(("UPDATE contest_users SET points=points+:point_change "
+                "WHERE contest_id=:cid AND user_id IN "
+                "(SELECT user_id FROM contest_solved WHERE "
+                "contest_id=:cid AND problem_id=:pid)"),
+               point_change=point_diff, cid=contest_id, pid=problem_id)
     db.execute("COMMIT")
 
 
