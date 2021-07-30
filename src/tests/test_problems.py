@@ -59,11 +59,11 @@ def test_problem(client, database):
                 follow_redirects=True)
     result = client.get('/problem/helloworldtesting')
     assert result.status_code == 200
-    # assert b'a short fun problem' in result                                               Fix this later
+    # assert b'a short fun problem' in result                                               # TODO Replace with API test
 
     result = client.get('/problem/helloworldtesting/editorial')
     assert result.status_code == 200
-    # assert b'sample editorial' in result.data                                             Fix this later
+    # assert b'sample editorial' in result.data                                             # TODO Replace with API test
 
     # test if normal users can submit to the problem
     result = client.post('/problem/helloworldtesting',
