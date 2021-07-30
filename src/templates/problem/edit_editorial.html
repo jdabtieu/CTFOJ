@@ -2,14 +2,17 @@
 
 {% block title %}Edit Editorial for {{ data["name"] }}{% endblock %}
 
+{% block preload %}
+<link rel="preload" href="/api/problem/editorial/{{ request.path.split('/')[2] }}" as="fetch" crossorigin="anonymous">
+{% endblock %}
+
 {% block main %}
 <h1>Edit Editorial for {{ data["name"] }}</h1>
 <form autocomplete="off" method="post">
-	<div style="position: relative;">
+	<div style="display: flex;">
         <textarea class="form-control mb-3 md-preview"
                   id="editorial"
-                  name="editorial"
-                  rows="20">{{ data["editorial"] if data["editorial"] }}</textarea>
+                  name="editorial"></textarea>
         <div id="editorial-out" class="md-preview"></div>
     </div>
     <input class="btn btn-primary" type="submit" id="submit" name="submit" value="Submit">
@@ -18,14 +21,21 @@
 {% endblock %}
 {% block script %}
 <script>
-    function update() {
-        var product = converter.makeHtml(document.getElementById('editorial').value);
-        var outputDiv = document.getElementById("editorial-out");
-        outputDiv.innerHTML = product;
-        document.getElementById("editorial").style.height = outputDiv.offsetHeight + "px";
-    }
+    const problem_id = "{{ request.path.split('/')[2] }}";
+    const editorial_box = document.getElementById("editorial");
+    const outputDiv = document.getElementById("editorial-out");
+    outputDiv.attachShadow({mode: "open"});
 
-    update();
-    document.getElementById('editorial').addEventListener('input', update);
+    function update() {
+        injectEditor(outputDiv, editorial_box.value);
+        editorial_box.style.height = outputDiv.offsetHeight + "px";
+    }
+    editorial_box.addEventListener('input', update);
+
+    fetch("/api/problem/editorial/" + problem_id).then(b => b.text())
+        .then(b => {
+            editorial_box.value = b;
+            update();
+        });
 </script>
 {% endblock %}
