@@ -42,13 +42,17 @@ def test_problem(client, database):
     result = client.post('/problem/helloworldtesting/edit', data={
         'name': 'hello world 2',
         'description': 'a short fun problem 2',
-        'hint': 'try looking at the title 2',
+        'hints': 'try looking at the title 2',
         'point_value': 2,
         'category': 'web',
         'flag': 'ctf{hello}'
     })
     assert result.status_code == 302
     client.get('/logout')
+
+    # make sure api_login_required is working properly
+    result = client.get('/api/problem/description/helloworldtesting')
+    assert result.status_code == 401
 
     # test if normal users can view the problem
     database.execute(
@@ -59,11 +63,21 @@ def test_problem(client, database):
                 follow_redirects=True)
     result = client.get('/problem/helloworldtesting')
     assert result.status_code == 200
-    # assert b'a short fun problem' in result                                               # TODO Replace with API test
+
+    result = client.get('/api/problem/description/helloworldtesting')
+    assert result.status_code == 200
+    assert b'a short fun problem 2' == result.data
+
+    result = client.get('/api/problem/hints/helloworldtesting')
+    assert result.status_code == 200
+    assert b'try looking at the title 2' == result.data
 
     result = client.get('/problem/helloworldtesting/editorial')
     assert result.status_code == 200
-    # assert b'sample editorial' in result.data                                             # TODO Replace with API test
+
+    result = client.get('/api/problem/editorial/helloworldtesting')
+    assert result.status_code == 200
+    assert b'sample editorial' == result.data
 
     # test if normal users can submit to the problem
     result = client.post('/problem/helloworldtesting',
