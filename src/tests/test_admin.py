@@ -84,6 +84,10 @@ def test_admin(client, database):
     assert result.status_code == 200
     assert b'successfully edited' in result.data
 
+    result = client.get('/api/announcement/1')
+    assert result.status_code == 200
+    assert b'new testing announcement' == result.data
+
     result = client.post('/admin/deleteannouncement',
                          data={'aid': 1}, follow_redirects=True)
     assert result.status_code == 200
