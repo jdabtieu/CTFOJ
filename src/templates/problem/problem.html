@@ -66,23 +66,12 @@
 <script>
     const problem_id = "{{ request.path.split('/')[2] }}";
     fetch("/api/problem/description/" + problem_id).then(b => b.text())
-                                                   .then(b => {
-        let shadow = document.getElementById("problem-description").attachShadow({mode: "open"});
-        let content = document.createElement("div");
-        content.innerHTML = convertMD(b);
-        shadow.appendChild(content);
-        content.querySelectorAll("*").forEach(e => {
-            if (window.getComputedStyle(e).position === "fixed") {
-                e.style.setProperty("position", "unset", "important");
-            }
-        });
-        document.getElementById("problem-description").classList.remove("hidden");
-    });
+        .then(b => inject(document.getElementById("problem-description"), b, true));
     fetch("/api/problem/hints/" + problem_id).then(b => b.text())
         .then(b => {
                 if (b.length > 0) {
                     document.getElementById("hint-container").style.display = "block";
-                    document.getElementById("hint").innerHTML = convertMD(b);
+                    inject(document.getElementById("hint"), b, false);
                 }
             });
 </script>
