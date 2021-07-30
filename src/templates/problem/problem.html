@@ -19,7 +19,7 @@
 {% endif %}
 <div class="flex">
     <div style="flex: 3; padding: 4px; word-break: break-word; min-width: 0px;">
-        <div id="problem-description"></div>
+        <div id="problem-description" class="hidden"></div>
         <div id="hint-container">
             <a class="btn btn-secondary"
                id="togglehint"
@@ -71,6 +71,12 @@
         let content = document.createElement("div");
         content.innerHTML = convertMD(b);
         shadow.appendChild(content);
+        content.querySelectorAll("*").forEach(e => {
+            if (window.getComputedStyle(e).position === "fixed") {
+                e.style.setProperty("position", "unset", "important");
+            }
+        });
+        document.getElementById("problem-description").classList.remove("hidden");
     });
     fetch("/api/problem/hints/" + problem_id).then(b => b.text())
         .then(b => {
