@@ -10,21 +10,24 @@
 </div>
 <h2>Announcements</h2>
 {% for announcement in data %}
+    <link rel="preload" href="/api/announcement/{{ announcement['id'] }}" as="fetch" crossorigin="anonymous">
     <div class="card post-card">
         <div class="see-more-wrapper">
             <a href="#" class="see-more" style="margin-left: 8px;">See More</a>
         </div>
         <h3>{{ announcement["name"] }}</h3>
-        <p>Posted <span class="dt">{{ announcement["date"] }}</span></p>
-        <div class="showdown">
-            <textarea class="hidden">{{ announcement["description"] | safe }}</textarea>
-        </div>
+        <p style="margin: 0;">Posted <span class="dt">{{ announcement["date"] }}</span></p>
+        <div id="announcement-{{ announcement['id'] }}" class="hidden smarkdown"></div>
     </div>
 {% endfor %}
 <div id="pagination" data-pages="{{ length }}"></div>
 {% endblock %}
 {% block script %}
 <script>
+    {% for announcement in data %}
+        fetch("/api/announcement/{{ announcement['id'] }}").then(b => b.text())
+            .then(b => inject(document.getElementById("announcement-{{ announcement['id'] }}"), b, true));
+    {% endfor %}
     const homeDiv = document.getElementById("home");
     homeDiv.innerHTML = DOMPurify.sanitize(
         homeDiv.querySelector("textarea").value, { ADD_ATTR: ['target'] });

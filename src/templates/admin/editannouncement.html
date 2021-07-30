@@ -2,6 +2,10 @@
 
 {% block title %}Edit Announcement{% endblock %}
 
+{% block preload %}
+<link rel="preload" href="/api/announcement/{{ request.path.split('/')[3] }}" as="fetch" crossorigin="anonymous">
+{% endblock %}
+
 {% block main %}
 <h1>Edit Announcement</h1>
 <form autocomplete="off" method="post" id="edit" name="edit">
@@ -10,13 +14,13 @@
            placeholder="Name"
            value="{{ data['name'] }}"
            equired>
-    <div style="position: relative;">
+    <div style="display: flex;">
         <textarea class="form-control mb-3 md-preview"
                   id="description"
                   name="description"
                   rows="20"
                   placeholder="Description"
-                  required>{{ data["description"] }}</textarea>
+                  required></textarea>
         <div id="description-out" class="md-preview"></div>
     </div>
     <input class="btn btn-primary" type="submit" id="submit" name="submit" value="Edit">
@@ -25,14 +29,21 @@
 {% endblock %}
 {% block script %}
 <script>
-    function update() {
-        var product = converter.makeHtml(document.getElementById('description').value);
-        var outputDiv = document.getElementById("description-out");
-        outputDiv.innerHTML = product;
-        document.getElementById("description").style.height = outputDiv.offsetHeight + "px";
-    }
+    const announcement_id = "{{ request.path.split('/')[3] }}";
+    const description = document.getElementById("description");
+    const outputDiv = document.getElementById("description-out");
+    outputDiv.attachShadow({mode: "open"});
 
-    update();
-    document.getElementById('description').addEventListener('input', update);
+    function update() {
+        injectEditor(outputDiv, description.value);
+        description.style.height = outputDiv.offsetHeight + "px";
+    }
+    description.addEventListener('input', update);
+
+    fetch("/api/announcement/" + announcement_id).then(b => b.text())
+        .then(b => {
+            description.value = b;
+            update();
+        });
 </script>
 {% endblock %}

@@ -68,3 +68,17 @@ def contest_description(contest_id):
     if len(db.execute("SELECT * FROM contests WHERE id=:cid", cid=contest_id)) == 0:
         return make_response(("Contest not found", 404))
     return send_from_directory(f"metadata/contests/{contest_id}", "description.md")
+
+
+@api.route("/announcement/<announcement_id>")
+def announcement(announcement_id):
+    from application import app
+    if not session or 'username' not in session:  # not logged in
+        if (not app.config["USE_HOMEPAGE"] or 
+                (read_file('templates/unauth_index.html')[0] != '2')):
+            return make_response(("Unauthorized", 401))
+    from application import db
+    if len(db.execute(
+            "SELECT * FROM announcements WHERE id=:aid", aid=announcement_id)) == 0:
+        return make_response(("Announcement not found", 404))
+    return send_from_directory("metadata/announcements", f"{announcement_id}.md")

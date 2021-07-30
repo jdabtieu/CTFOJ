@@ -92,12 +92,6 @@ def index():
         "SELECT * FROM announcements ORDER BY id DESC LIMIT 10 OFFSET ?", page)
     length = len(db.execute("SELECT * FROM announcements"))
 
-    for i in range(len(data)):
-        aid = data[i]["id"]
-
-        data[i]["description"] = read_file(
-            'metadata/announcements/' + str(aid) + '.md')
-
     if not session or 'username' not in session:
         template = read_file('templates/unauth_index.html')
         template_type = template[0]
@@ -1683,12 +1677,6 @@ def preview_homepage():
     data = db.execute(
         "SELECT * FROM announcements ORDER BY id DESC LIMIT 10 OFFSET ?", page)
     length = len(db.execute("SELECT * FROM announcements"))
-
-    for i in range(len(data)):
-        aid = data[i]["id"]
-
-        data[i]["description"] = read_file(
-            'metadata/announcements/' + str(aid) + '.md')
 
     template = read_file('templates/unauth_index.html')
     template_type = template[0]

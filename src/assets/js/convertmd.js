@@ -28,8 +28,3 @@ function inject(targetDiv, content, unhide) {
 function injectEditor(targetDiv, content) {
     _inject(targetDiv.shadowRoot, content);
 }
-
-// Deprecated in favor of API + inject function
-for (element of document.getElementsByClassName('showdown')) {
-    element.innerHTML = convertMD(element.getElementsByTagName('textarea')[0].value);
-}
