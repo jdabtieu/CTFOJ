@@ -2,6 +2,11 @@
 
 {% block title %}Edit {{ data["name"] }}{% endblock %}
 
+{% block preload %}
+<link rel="preload" href="/api/problem/description/{{ request.path.split('/')[2] }}" as="fetch" crossorigin="anonymous">
+<link rel="preload" href="/api/problem/hints/{{ request.path.split('/')[2] }}" as="fetch" crossorigin="anonymous">
+{% endblock %}
+
 {% block main %}
 <h1>Edit {{ data["name"] }}</h1>
 <form autocomplete="off" method="post">
@@ -10,21 +15,21 @@
            value="{{ data['name'] }}"
            placeholder="Name"
            required>
-    <div style="position: relative;">
+    <div style="display: flex;">
         <textarea class="form-control mb-3 md-preview"
                   id="description"
                   name="description"
                   rows="20"
                   placeholder="Description"
-                  required>{{ data["description"] }}</textarea>
+                  required></textarea>
         <div id="description-out" class="md-preview"></div>
     </div>
-    <div style="position: relative;">
+    <div style="display: flex;">
         <textarea class="form-control mb-3 md-preview"
                   id="hints"
                   name="hints"
                   rows="20"
-                  placeholder="Hints">{{ data["hints"] if data["hints"] }}</textarea>
+                  placeholder="Hints"></textarea>
         <div id="hints-out" class="md-preview"></div>
     </div>
     <input class="form-control mb-3"
@@ -53,23 +58,36 @@
 {% endblock %}
 {% block script %}
 <script>
+    const problem_id = "{{ request.path.split('/')[2] }}";
+    document.getElementById("description-out").attachShadow({mode: "open"});
+    document.getElementById("hints-out").attachShadow({mode: "open"});
+
     function updateDescription() {
-        var product = converter.makeHtml(document.getElementById('description').value);
-        var outputDiv = document.getElementById("description-out");
-        outputDiv.innerHTML = product;
-        document.getElementById("description").style.height = outputDiv.offsetHeight + "px";
+        const description = document.getElementById("description");
+        const outputDiv = document.getElementById("description-out");
+        injectEditor(outputDiv, description.value);
+        description.style.height = outputDiv.offsetHeight + "px";
     }
-    updateDescription();
+    document.getElementById("description").addEventListener('input', updateDescription);
 
     function updateHints() {
-        var product = converter.makeHtml(document.getElementById('hints').value);
-        var outputDiv = document.getElementById("hints-out");
-        outputDiv.innerHTML = product;
-        document.getElementById("hints").style.height = outputDiv.offsetHeight + "px";
+        const hints = document.getElementById("hints");
+        const outputDiv = document.getElementById("hints-out");
+        injectEditor(outputDiv, hints.value);
+        hints.style.height = outputDiv.offsetHeight + "px";
     }
-    updateHints();
+    document.getElementById("hints").addEventListener('input', updateHints);
 
-    document.getElementById('description').addEventListener('input', updateDescription);
-    document.getElementById('hints').addEventListener('input', updateHints);
+    fetch("/api/problem/description/" + problem_id).then(b => b.text())
+        .then(b => {
+            document.getElementById("description").value = b;
+            updateDescription();
+        });
+
+    fetch("/api/problem/hints/" + problem_id).then(b => b.text())
+        .then(b => {
+            document.getElementById("hints").value = b;
+            updateHints();
+        });
 </script>
 {% endblock %}
