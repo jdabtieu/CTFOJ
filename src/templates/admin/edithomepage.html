@@ -2,6 +2,10 @@
 
 {% block title %}Edit Homepage{% endblock %}
 
+{% block preload %}
+<link rel="preload" href="/api/homepage" as="fetch" crossorigin="anonymous">
+{% endblock %}
+
 {% block main %}
 <h1>Edit Homepage</h1>
 <form method="post">
@@ -26,14 +30,15 @@
     <h4>Formatting Notes</h4>
     <ul>
         <li>For text centering, add <code>class="text-center"</code> to the element to be centered.</li>
-        <li>HTML and CSS are supported but Markdown is not supported.</li>
-        <li>All JavaScript is sanitized; make sure the output looks and functions correctly</li>
+        <li>HTML, Markdown, and CSS are supported.</li>
+        <li>All JavaScript is removed; make sure the preview looks and functions correctly.</li>
     </ul>
-    <div style="position: relative;">
+    <div style="display: flex;">
         <textarea class="form-control mb-3 md-preview font-mono"
                   name="content"
+                  id="content"
                   rows="20"
-                  required>{{ old }}</textarea>
+                  required></textarea>
         <div id="preview" class="md-preview">
             <div class="card" id="home-container" class="home1">
                 <div id="home"></div>
@@ -46,11 +51,20 @@
 {% endblock %}
 {% block script %}
 <script>
+    const content = document.getElementById("content");
+    const outputDiv = document.getElementById("home");
+    outputDiv.attachShadow({mode: "open"});
+
     function update() {
-        document.getElementById("home").innerHTML = DOMPurify.sanitize(
-            document.querySelector("textarea").value, { ADD_ATTR: ['target'] });
+        injectEditor(outputDiv, content.value);
+        content.style.height = outputDiv.offsetHeight + "px";
     }
-    document.querySelector("textarea").addEventListener("input", update);
-    update();
+    content.addEventListener("input", update);
+
+    fetch("/api/homepage").then(b => b.text())
+        .then(b => {
+            content.value = b;
+            update();
+        });
 </script>
 {% endblock %}

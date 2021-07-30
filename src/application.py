@@ -95,9 +95,7 @@ def index():
     if not session or 'username' not in session:
         template = read_file('templates/unauth_index.html')
         template_type = template[0]
-        template_content = template[1:]
         return render_template(f"home_fragment/home{template_type}.html",
-                               content=template_content,
                                data=data,
                                length=-(-length // 10))
     else:
@@ -1642,26 +1640,22 @@ def maintenance():
 @app.route("/admin/edithomepage", methods=["GET", "POST"])
 @admin_required
 def edit_homepage():
-    old_homepage = read_file("templates/unauth_index.html")[2:]
     if request.method == "GET":
-        return render_template("admin/edithomepage.html", old=old_homepage)
+        return render_template("admin/edithomepage.html")
 
     # Reached via POST
 
     layout_method = request.form.get("method")
     content = request.form.get("content")
 
-    if not layout_method or not content:
+    if not content:
         flash('You have not entered all required fields', 'danger')
-        return render_template("admin/edithomepage.html", old=old_homepage), 400
-    if layout_method not in ["1", "2"]:
-        flash('Invalid layout method', 'danger')
-        return render_template("admin/edithomepage.html", old=content), 400
+        return render_template("admin/edithomepage.html"), 400
+    if not layout_method or layout_method not in ["1", "2"]:
+        layout_method = "1"
 
-    content = content.replace('\r', '')
-    content = layout_method + "\n" + content
+    content = layout_method + "\n" + content.replace('\r', '')
 
-    write_file("templates/unauth_index.html", content)
     flash("You have successfully edited the homepage!", "success")
     return redirect("/admin/previewhomepage")
 
@@ -1680,9 +1674,7 @@ def preview_homepage():
 
     template = read_file('templates/unauth_index.html')
     template_type = template[0]
-    template_content = template[1:]
     return render_template(f"home_fragment/home{template_type}.html",
-                           content=template_content,
                            data=data,
                            length=-(-length // 10))
 

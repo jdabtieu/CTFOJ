@@ -108,7 +108,7 @@ def test_contest(client, database):
     result = client.get('/contest/testingcontest/problem/helloworldtesting')
     assert result.status_code == 200
 
-    result = client.get('/api/contest/testingcontest/problem/description/helloworldtesting')
+    result = client.get('/api/contest/testingcontest/problem/description/helloworldtesting')  # noqa E501
     assert result.status_code == 200
     assert b'a short fun problem 2' == result.data
 

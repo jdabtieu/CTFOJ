@@ -2,11 +2,13 @@
 
 {% block title %}Home{% endblock %}
 
+{% block preload %}
+<link rel="preload" href="/api/homepage" as="fetch" crossorigin="anonymous">
+{% endblock %}
+
 {% block main %}
 <div class="card home2" id="home-container">
-    <div id="home">
-        <textarea class="hidden">{{ content | safe }}</textarea>
-    </div>
+    <div id="home" class="hidden"></div>
 </div>
 <h2>Announcements</h2>
 {% for announcement in data %}
@@ -28,8 +30,8 @@
         fetch("/api/announcement/{{ announcement['id'] }}").then(b => b.text())
             .then(b => inject(document.getElementById("announcement-{{ announcement['id'] }}"), b, true));
     {% endfor %}
+
     const homeDiv = document.getElementById("home");
-    homeDiv.innerHTML = DOMPurify.sanitize(
-        homeDiv.querySelector("textarea").value, { ADD_ATTR: ['target'] });
+    fetch("/api/homepage").then(b => b.text()).then(b => inject(homeDiv, b, true));
 </script>
 {% endblock %}
