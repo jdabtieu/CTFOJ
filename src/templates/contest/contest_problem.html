@@ -42,7 +42,7 @@
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         </form>
 
-        <p>
+        <div>
             <b>Category:</b> {{ data["category"] }}<br>
             <b>Points:</b> {{ data["point_value"] }}<br>
             <a href="/contest/{{ request.path.split("/")[2] }}">Back to contest</a>
@@ -59,7 +59,7 @@
                 {% endif %}
                 <br><a href="{{ request.path }}/export">Export problem</a>
             {% endif %}
-        </p>
+        </div>
     </div>
 </div>
 {% endblock %}
