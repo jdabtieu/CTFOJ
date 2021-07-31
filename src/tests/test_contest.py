@@ -112,6 +112,13 @@ def test_contest(client, database):
     assert result.status_code == 200
     assert b'a short fun problem 2' == result.data
 
+    result = client.get('/api/contest/testingcontest/problem/hints/helloworldtesting')
+    assert result.status_code == 200
+    assert b'try looking at the title 2' == result.data
+
+    result = client.get('/api/contest/testingcontest/problem/hints/boo')
+    assert result.status_code == 404
+
     result = client.post('/contest/testingcontest/problem/helloworldtesting', data={
         'flag': 'ctf{hello}'
     }, follow_redirects=True)
