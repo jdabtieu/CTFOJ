@@ -6,7 +6,7 @@ For updating instructions, click [here](#updating).
 Although CTFOJ can run on Linux, Windows, and MacOS, it is recommended to run it on a modern Linux distribution such as Ubuntu 20.04 LTS.
 
 # Installation Instructions
-It is recommended to use the provided INSTALL.sh script if you are running a Linux-based system. If you wish to install manually, or are using another operating system, please keep reading. If you use the INSTALL.sh script, skip to [Logging in for the first time](#step-6---logging-in-for-the-first-time)
+It is recommended to use the provided INSTALL.sh script if you are running a Linux-based system, MacOS, WSL, msys2, or Git Bash. If you wish to install manually, or are using another operating system, please keep reading. If you use the INSTALL.sh script, skip to [Logging in for the first time](#step-6---logging-in-for-the-first-time)
 
 ## Manual Installation
 ### Step 1 - Setting up the environment
