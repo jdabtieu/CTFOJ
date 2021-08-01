@@ -95,7 +95,7 @@ def index():
             'metadata/announcements/' + str(aid) + '.md')
 
     if not session or 'username' not in session:
-        template = read_file('templates/unauth_index.html')
+        template = read_file(app.config['HOMEPAGE_FILE'])
         template_type = template[0]
         template_content = template[1:]
         return render_template(f"home_fragment/home{template_type}.html",
@@ -1697,7 +1697,7 @@ def maintenance():
 @app.route("/admin/edithomepage", methods=["GET", "POST"])
 @admin_required
 def edit_homepage():
-    old_homepage = read_file("templates/unauth_index.html")[2:]
+    old_homepage = read_file(app.config['HOMEPAGE_FILE'])[2:]
     if request.method == "GET":
         return render_template("admin/edithomepage.html", old=old_homepage)
 
@@ -1719,7 +1719,7 @@ def edit_homepage():
     # WARNING: NOT SANITIZED YET
     # TODO: Sanitize HTML
 
-    write_file("templates/unauth_index.html", content)
+    write_file(app.config['HOMEPAGE_FILE'], content)
     flash("You have successfully edited the homepage!", "success")
     return redirect("/admin/previewhomepage")
 
@@ -1742,7 +1742,7 @@ def preview_homepage():
         data[i]["description"] = read_file(
             'metadata/announcements/' + str(aid) + '.md')
 
-    template = read_file('templates/unauth_index.html')
+    template = read_file(app.config['HOMEPAGE_FILE'])
     template_type = template[0]
     template_content = template[1:]
     return render_template(f"home_fragment/home{template_type}.html",

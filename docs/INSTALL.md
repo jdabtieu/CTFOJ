@@ -55,7 +55,7 @@ $ python3 daily_tasks.py
 $ cp default_settings.py settings.py
 $ nano settings.py
 ```
-In settings.py, you should add your email credentials as indicated by default_settings.py. Additionally, you may change the other email settings if you use a SMTP provider other than Gmail. Next, you should choose whether to use a CAPTCHA or not, and add your hCaptcha site and secret keys if you are using a CAPTCHA. Finally, you should add a custom name for your club and change any other settings that you wish to change.
+In settings.py, you should add your email credentials as indicated by default_settings.py. Additionally, you may change the other email settings if you use a SMTP provider other than Gmail. Next, you should choose whether to use a CAPTCHA or not, and add your hCaptcha site and secret keys if you are using a CAPTCHA. After that, you should add a custom name for your club and change any other settings that you wish to change. Finally, you should choose whether to enable a homepage. If you decide to do so, make sure to specify the location of the homepage.
 
 Then, you should change the admin email manually so that you can reset your password in the future through the CTFOJ app.
 ```sql

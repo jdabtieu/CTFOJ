@@ -36,3 +36,4 @@ HCAPTCHA_SITE = 'site_key'
 CLUB_NAME = "your club name"
 LOGGING_FILE_LOCATION = 'logs/application.log'
 USE_HOMEPAGE = False
+HOMEPAGE_FILE = "templates/unauth_index.html"
