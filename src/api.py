@@ -94,4 +94,4 @@ def homepage():
     from application import app
     if not app.config["USE_HOMEPAGE"] and not session["admin"]:
         return make_response(("Unauthorized", 403))
-    return read_file('templates/unauth_index.html')[2:]
+    return read_file(app.config['HOMEPAGE_FILE'])[2:]
