@@ -7,7 +7,7 @@
 <form autocomplete="off" method="post" id="create" name="create">
     <input class="form-control mb-3" name="contest_id" placeholder="Contest ID" required>
     <input class="form-control mb-3" name="contest_name" placeholder="Contest Name" required>
-    <div style="position: relative;">
+    <div style="display: flex;">
         <textarea class="form-control mb-3 md-preview"
                   id="description"
                   name="description"
@@ -44,11 +44,11 @@
         })
     })
 
-    document.getElementById('description').oninput = function() {
-        var product = converter.makeHtml(this.value);
-        var outputDiv = document.getElementById("description-out");
-        outputDiv.innerHTML = product;
-        document.getElementById("description").style.height = outputDiv.offsetHeight + "px";
+    document.getElementById("description-out").attachShadow({mode: "open"});
+    document.getElementById("description").oninput = function() {
+        const outputDiv = document.getElementById("description-out");
+        injectEditor(outputDiv, this.value);
+        this.style.height = outputDiv.offsetHeight + "px";
     }
 
     document.getElementById('create').addEventListener('submit', function(event) {

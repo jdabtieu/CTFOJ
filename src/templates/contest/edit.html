@@ -2,6 +2,10 @@
 
 {% block title %}Edit Contest{% endblock %}
 
+{% block preload %}
+<link rel="preload" href="/api/contest/{{ request.path.split('/')[3] }}" as="fetch" crossorigin="anonymous">
+{% endblock %}
+
 {% block main %}
 <h1>Edit Contest</h1>
 <form autocomplete="off" method="post" id="edit" name="edit">
@@ -10,13 +14,13 @@
            placeholder="Name"
            value="{{ data['name'] }}"
            required>
-    <div style="position: relative;">
+    <div style="display: flex;">
         <textarea class="form-control mb-3 md-preview"
                   id="description"
                   name="description"
                   rows="20"
                   placeholder="Description"
-                  required>{{ data["description"] }}</textarea>
+                  required></textarea>
         <div id="description-out" class="md-preview"></div>
     </div>
     <input class="form-control mb-3 dtl"
@@ -39,13 +43,15 @@
 {% endblock %}
 {% block script %}
 <script>
+    const contest_id = "{{ request.path.split('/')[3] }}";
+    const description = document.getElementById("description");
+    const outputDiv = document.getElementById("description-out");
+    outputDiv.attachShadow({mode: "open"});
     function update() {
-        var product = converter.makeHtml(document.getElementById('description').value);
-        var outputDiv = document.getElementById("description-out");
-        outputDiv.innerHTML = product;
-        document.getElementById("description").style.height = outputDiv.offsetHeight + "px";
+        injectEditor(outputDiv, description.value);
+        description.style.height = outputDiv.offsetHeight + "px";
     }
-    update();
+    description.addEventListener('input', update);
 
     document.querySelectorAll(".dtl").forEach(function (e) {
         var split = e.getAttribute("value").split(" ");
@@ -60,8 +66,6 @@
         }
     });
 
-    document.getElementById("description").addEventListener("input", update);
-
     document.getElementsByTagName("form")[0].onsubmit = function(event) {
         var formStart = this.querySelector("#start");
         var start = new Date(formStart.value).toISOString();
@@ -73,5 +77,11 @@
         formEnd.setAttribute("type", "text");
         formEnd.value = end;
     }
+
+    fetch("/api/contest/" + contest_id).then(b => b.text())
+        .then(b => {
+            description.value = b;
+            update();
+        });
 </script>
 {% endblock %}

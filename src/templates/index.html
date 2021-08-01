@@ -16,15 +16,14 @@
 {% endif %}
 <h1>Announcements</h1>
 {% for announcement in data %}
+    <link rel="preload" href="/api/announcement/{{ announcement['id'] }}" as="fetch" crossorigin="anonymous">
     <div class="card post-card">
         <div class="see-more-wrapper">
             <a href="#" class="see-more" style="margin-left: 8px;">See More</a>
         </div>
         <h3>{{ announcement["name"] }}</h3>
-        <p>Posted <span class="dt">{{ announcement["date"] }}</span></p>
-        <div class="showdown">
-            <textarea style="display: none;">{{ announcement["description"] | safe }}</textarea>
-        </div>
+        <p style="margin: 0;">Posted <span class="dt">{{ announcement["date"] }}</span></p>
+        <div id="announcement-{{ announcement['id'] }}" class="hidden smarkdown"></div>
         {% if session["admin"] %}
         <a href="/admin/editannouncement/{{ announcement['id'] }}"
            style="position: absolute; top: 12px; right: 36px;">
@@ -49,6 +48,10 @@
 {% endblock %}
 {% block script %}
 <script>
+    {% for announcement in data %}
+        fetch("/api/announcement/{{ announcement['id'] }}").then(b => b.text())
+            .then(b => inject(document.getElementById("announcement-{{ announcement['id'] }}"), b, true));
+    {% endfor %}
     function deletemsg(e) {
         var id = e.getAttribute("data-id");
         document.getElementById("confirm").style.display = "";

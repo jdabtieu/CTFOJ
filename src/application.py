@@ -18,8 +18,11 @@ from werkzeug.exceptions import HTTPException, InternalServerError, default_exce
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from helpers import *  # noqa
+from api import api
 
 app = Flask(__name__)
+app.register_blueprint(api, url_prefix="/api")
+
 try:
     app.config.from_object('settings')
 except Exception as e:
@@ -76,6 +79,7 @@ def check_for_maintenance():
 
 @app.route("/")
 def index():
+    # Redirect to login page if homepage setting disabled
     if not app.config["USE_HOMEPAGE"] and (not session or 'username' not in session):
         return redirect("/login")
 
@@ -88,18 +92,10 @@ def index():
         "SELECT * FROM announcements ORDER BY id DESC LIMIT 10 OFFSET ?", page)
     length = len(db.execute("SELECT * FROM announcements"))
 
-    for i in range(len(data)):
-        aid = data[i]["id"]
-
-        data[i]["description"] = read_file(
-            'metadata/announcements/' + str(aid) + '.md')
-
     if not session or 'username' not in session:
         template = read_file(app.config['HOMEPAGE_FILE'])
         template_type = template[0]
-        template_content = template[1:]
         return render_template(f"home_fragment/home{template_type}.html",
-                               content=template_content,
                                data=data,
                                length=-(-length // 10))
     else:
@@ -465,15 +461,6 @@ def contests():
          "start <= datetime('now') ORDER BY end DESC"))
     future = db.execute(
         "SELECT * FROM contests WHERE start > datetime('now') ORDER BY start DESC")
-    for contest in past:
-        cid = contest["id"]
-        contest["description"] = read_file('metadata/contests/' + cid + '/description.md')
-    for contest in current:
-        cid = contest["id"]
-        contest["description"] = read_file('metadata/contests/' + cid + '/description.md')
-    for contest in future:
-        cid = contest["id"]
-        contest["description"] = read_file('metadata/contests/' + cid + '/description.md')
     return render_template("contest/contests.html",
                            past=past, current=current, future=future)
 
@@ -593,20 +580,10 @@ def contest_problem(contest_id, problem_id):
         return render_template("contest/contest_noexist.html"), 404
 
     check = db.execute(("SELECT * FROM contest_problems WHERE contest_id=:cid AND "
-                        "problem_id=:pid AND draft=0"),
+                        "problem_id=:pid"),
                        cid=contest_id, pid=problem_id)
-    if session["admin"]:
-        check = db.execute(("SELECT * FROM contest_problems WHERE contest_id=:cid AND "
-                            "problem_id=:pid"),
-                           cid=contest_id, pid=problem_id)
-    if len(check) != 1:
+    if len(check) != 1 or (check[0]["draft"] and not session["admin"]):
         return render_template("contest/contest_problem_noexist.html"), 404
-
-    # Get problem statement and hints
-    check[0]["description"] = read_file(
-        f'metadata/contests/{contest_id}/{problem_id}/description.md')
-    check[0]["hints"] = read_file(
-        f'metadata/contests/{contest_id}/{problem_id}/hints.md')
 
     if request.method == "GET":
         return render_template("contest/contest_problem.html", data=check[0])
@@ -701,12 +678,6 @@ def edit_contest_problem(contest_id, problem_id):
         cid=contest_id, pid=problem_id)
     if len(data) != 1:
         return render_template("contest/contest_problem_noexist.html"), 404
-
-    # Get problem statement and hints
-    data[0]["description"] = read_file(
-        f'metadata/contests/{contest_id}/{problem_id}/description.md')
-    data[0]["hints"] = read_file(
-        f'metadata/contests/{contest_id}/{problem_id}/hints.md')
 
     if request.method == "GET":
         return render_template('problem/edit_problem.html', data=data[0])
@@ -1041,22 +1012,10 @@ def problem(problem_id):
                       problem_id=problem_id)
 
     # Ensure problem exists
-    if len(data) != 1:
+    if len(data) != 1 or (data[0]["draft"] == 1 and session["admin"] != 1):
         return render_template("problem/problem_noexist.html"), 404
 
-    check = db.execute("SELECT * FROM problems WHERE id=:problem_id AND draft=0",
-                       problem_id=problem_id)
-
-    if len(check) != 1 and session["admin"] != 1:
-        return render_template("problem/problem_noexist.html"), 404
-
-    # Retrieve problem description and hints
-    data[0]["description"] = read_file(
-        'metadata/problems/' + problem_id + '/description.md')
-    data[0]["hints"] = read_file(
-        'metadata/problems/' + problem_id + '/hints.md')
-    data[0]["editorial"] = read_file(
-        'metadata/problems/' + problem_id + '/editorial.md')
+    data[0]["editorial"] = read_file(f"metadata/problems/{problem_id}/editorial.md")
 
     if request.method == "GET":
         return render_template('problem/problem.html', data=data[0])
@@ -1119,18 +1078,10 @@ def problem_editorial(problem_id):
     if len(data) == 0:
         return render_template("problem/problem_noexist.html"), 404
 
-    check = db.execute("SELECT * FROM problems WHERE id=:problem_id AND draft=0",
-                       problem_id=problem_id)
-
-    if len(check) != 1 and session["admin"] != 1:
+    if data[0]["draft"] == 1 and session["admin"] != 1:
         return render_template("problem/problem_noexist.html"), 404
 
-    # Ensure editorial exists
-    editorial = read_file('metadata/problems/' + problem_id + '/editorial.md')
-    if not editorial:
-        return render_template("problem/problem_noeditorial.html"), 404
-
-    return render_template('problem/problemeditorial.html', data=data[0], ed=editorial)
+    return render_template('problem/problemeditorial.html', data=data[0])
 
 
 @app.route('/problem/<problem_id>/edit', methods=["GET", "POST"])
@@ -1142,11 +1093,6 @@ def editproblem(problem_id):
     # Ensure problem exists
     if len(data) == 0:
         return render_template("problem/problem_noexist.html"), 404
-
-    data[0]['description'] = read_file(
-        'metadata/problems/' + problem_id + '/description.md')
-    data[0]['hints'] = read_file(
-        'metadata/problems/' + problem_id + '/hints.md')
 
     if request.method == "GET":
         return render_template('problem/edit_problem.html', data=data[0])
@@ -1643,9 +1589,6 @@ def editcontest(contest_id):
         flash('That contest does not exist', 'danger')
         return redirect("/contests")
 
-    data[0]["description"] = read_file(
-        'metadata/contests/' + contest_id + '/description.md')
-
     if request.method == "GET":
         return render_template('contest/edit.html', data=data[0])
 
@@ -1697,29 +1640,24 @@ def maintenance():
 @app.route("/admin/edithomepage", methods=["GET", "POST"])
 @admin_required
 def edit_homepage():
-    old_homepage = read_file(app.config['HOMEPAGE_FILE'])[2:]
     if request.method == "GET":
-        return render_template("admin/edithomepage.html", old=old_homepage)
+        return render_template("admin/edithomepage.html")
 
     # Reached via POST
 
     layout_method = request.form.get("method")
     content = request.form.get("content")
 
-    if not layout_method or not content:
+    if not content:
         flash('You have not entered all required fields', 'danger')
-        return render_template("admin/edithomepage.html", old=old_homepage), 400
-    if layout_method not in ["1", "2"]:
-        flash('Invalid layout method', 'danger')
-        return render_template("admin/edithomepage.html", old=content), 400
+        return render_template("admin/edithomepage.html"), 400
+    if not layout_method or layout_method not in ["1", "2"]:
+        layout_method = "1"
 
-    content = content.replace('\r', '')
-    content = layout_method + "\n" + content
-
-    # WARNING: NOT SANITIZED YET
-    # TODO: Sanitize HTML
+    content = layout_method + "\n" + content.replace('\r', '')
 
     write_file(app.config['HOMEPAGE_FILE'], content)
+
     flash("You have successfully edited the homepage!", "success")
     return redirect("/admin/previewhomepage")
 
@@ -1736,17 +1674,8 @@ def preview_homepage():
         "SELECT * FROM announcements ORDER BY id DESC LIMIT 10 OFFSET ?", page)
     length = len(db.execute("SELECT * FROM announcements"))
 
-    for i in range(len(data)):
-        aid = data[i]["id"]
-
-        data[i]["description"] = read_file(
-            'metadata/announcements/' + str(aid) + '.md')
-
-    template = read_file(app.config['HOMEPAGE_FILE'])
-    template_type = template[0]
-    template_content = template[1:]
+    template_type = read_file(app.config['HOMEPAGE_FILE'])[0]
     return render_template(f"home_fragment/home{template_type}.html",
-                           content=template_content,
                            data=data,
                            length=-(-length // 10))
 

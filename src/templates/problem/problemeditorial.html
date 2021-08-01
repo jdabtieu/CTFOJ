@@ -2,9 +2,27 @@
 
 {% block title %}{{ data["name"] }} Editorial{% endblock %}
 
+{% block preload %}
+<link rel="preload" href="/api/problem/editorial/{{ request.path.split('/')[2] }}" as="fetch" crossorigin="anonymous">
+{% endblock %}
+
 {% block main %}
 <h1><a href="{{ request.path[:-10] }}">{{ data["name"] }}</a> Editorial</h1>
-<div class="showdown">
-    <textarea style="display: none;">{{ ed | safe }}</textarea>
-</div>
+<div id="editorial" class="hidden"></div>
+{% endblock %}
+{% block script %}
+<script>
+    const problem_id = "{{ request.path.split('/')[2] }}";
+    fetch("/api/problem/editorial/" + problem_id).then(b => b.text())
+        .then(b => {
+                if (b.length > 0) {
+                    inject(document.getElementById("editorial"), b, false);
+                } else {
+                    document.getElementById("editorial").innerHTML =
+                        `This problem does not have an editorial.
+                         <a href="/problem/${problem_id}">Back to problem</a>`;
+                }
+                document.getElementById("editorial").classList.remove("hidden");
+            });
+</script>
 {% endblock %}

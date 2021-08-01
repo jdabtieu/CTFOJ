@@ -8,6 +8,7 @@
 	There are no future contests.
 {% endif %}
 {% for contest in future %}
+    <link rel="preload" href="/api/contest/{{ contest['id'] }}" as="fetch" crossorigin="anonymous">
     <div class="card post-card" style="max-height: 600px;">
         <div class="see-more-wrapper">
             <a href="#" class="see-more" style="margin-left: 8px;">See More</a>
@@ -15,9 +16,7 @@
         <h3><a href="/contest/{{ contest['id'] }}">{{ contest["name"] }}</a></h3>
         <p style="margin-bottom: 0;">Start: <span class="dt">{{ contest["start"] }}</span></p>
         <p style="margin-bottom: 0;">End: <span class="dt">{{ contest["end"] }}</span></p>
-        <div class="showdown">
-            <textarea style="display: none;">{{ contest["description"] | safe }}</textarea>
-        </div>
+        <div id="contest-{{ contest['id'] }}" class="hidden smarkdown"></div>
         {% if session["admin"] %}
             <a href="/admin/editcontest/{{ contest['id'] }}"
                style="position: absolute; top: 12px; right: 36px;">
@@ -42,6 +41,7 @@
 	There are no ongoing contests.
 {% endif %}
 {% for contest in current %}
+    <link rel="preload" href="/api/contest/{{ contest['id'] }}" as="fetch" crossorigin="anonymous">
     <div class="card post-card" style="max-height: 600px;">
         <div class="see-more-wrapper">
             <a href="#" class="see-more" style="margin-left: 8px;">See More</a>
@@ -49,9 +49,7 @@
         <h3><a href="/contest/{{ contest['id'] }}">{{ contest["name"] }}</a></h3>
         <p style="margin-bottom: 0;">Start: <span class="dt">{{ contest["start"] }}</span></p>
         <p style="margin-bottom: 0;">End: <span class="dt">{{ contest["end"] }}</span></p>
-        <div class="showdown">
-            <textarea style="display: none;">{{ contest["description"] | safe }}</textarea>
-        </div>
+        <div id="contest-{{ contest['id'] }}" class="hidden smarkdown"></div>
         {% if session["admin"] %}
             <a href="/admin/editcontest/{{ contest['id'] }}"
                style="position: absolute; top: 12px; right: 36px;">
@@ -76,6 +74,7 @@
 	There are no past contests.
 {% endif %}
 {% for contest in past %}
+    <link rel="preload" href="/api/contest/{{ contest['id'] }}" as="fetch" crossorigin="anonymous">
     <div class="card post-card" style="max-height: 600px;">
         <div class="see-more-wrapper">
             <a href="#" class="see-more" style="margin-left: 8px;">See More</a>
@@ -83,9 +82,7 @@
         <h3><a href="/contest/{{ contest['id'] }}">{{ contest["name"] }}</a></h3>
         <p style="margin-bottom: 0;">Start: <span class="dt">{{ contest["start"] }}</span></p>
         <p style="margin-bottom: 0;">End: <span class="dt">{{ contest["end"] }}</span></p>
-        <div class="showdown">
-            <textarea style="display: none;">{{ contest["description"] | safe }}</textarea>
-        </div>
+        <div id="contest-{{ contest['id'] }}" class="hidden smarkdown"></div>
         {% if session["admin"] %}
             <a href="/admin/editcontest/{{ contest['id'] }}"
                style="position: absolute; top: 12px; right: 36px;">
@@ -104,4 +101,20 @@
         {% endif %}
     </div>
 {% endfor %}
+{% endblock %}
+{% block script %}
+<script>
+    {% for contest in future %}
+        fetch("/api/contest/{{ contest['id'] }}").then(b => b.text())
+            .then(b => inject(document.getElementById("contest-{{ contest['id'] }}"), b, true));
+    {% endfor %}
+    {% for contest in current %}
+        fetch("/api/contest/{{ contest['id'] }}").then(b => b.text())
+            .then(b => inject(document.getElementById("contest-{{ contest['id'] }}"), b, true));
+    {% endfor %}
+    {% for contest in past %}
+        fetch("/api/contest/{{ contest['id'] }}").then(b => b.text())
+            .then(b => inject(document.getElementById("contest-{{ contest['id'] }}"), b, true));
+    {% endfor %}
+</script>
 {% endblock %}

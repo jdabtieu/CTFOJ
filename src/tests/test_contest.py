@@ -37,6 +37,16 @@ def test_contest(client, database):
     assert result.status_code == 200
     assert b'Testing Contest' in result.data
 
+    result = client.get('/api/contest/testingcontest')
+    assert result.status_code == 200
+    assert b'testing contest description' == result.data
+
+    result = client.get('/api/contest/nonexistent')
+    assert result.status_code == 404
+
+    result = client.get('/contests')
+    assert result.status_code == 200
+
     result = client.get('/admin/editcontest/noexist', follow_redirects=True)
     assert b'does not exist' in result.data
 
@@ -64,7 +74,7 @@ def test_contest(client, database):
     result = client.post('/contest/testingcontest/problem/helloworldtesting/edit', data={
         'name': 'hello world 2',
         'description': 'a short fun problem 2',
-        'hint': 'try looking at the title 2',
+        'hints': 'try looking at the title 2',
         'point_value': 2,
         'category': 'web'
     })
@@ -97,7 +107,17 @@ def test_contest(client, database):
     }, follow_redirects=True)
     result = client.get('/contest/testingcontest/problem/helloworldtesting')
     assert result.status_code == 200
-    assert b'a short fun problem' in result.data
+
+    result = client.get('/api/contest/testingcontest/problem/description/helloworldtesting')  # noqa E501
+    assert result.status_code == 200
+    assert b'a short fun problem 2' == result.data
+
+    result = client.get('/api/contest/testingcontest/problem/hints/helloworldtesting')
+    assert result.status_code == 200
+    assert b'try looking at the title 2' == result.data
+
+    result = client.get('/api/contest/testingcontest/problem/hints/boo')
+    assert result.status_code == 404
 
     result = client.post('/contest/testingcontest/problem/helloworldtesting', data={
         'flag': 'ctf{hello}'

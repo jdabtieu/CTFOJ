@@ -11,14 +11,20 @@ def test_homepage(client, database):
 
     with open('templates/unauth_index.html', 'w') as file:
         file.write("1\nThis is the homepage<p>HTML should render too</p>")
+    result = client.get('/api/homepage')
+    assert result.status_code == 200
+    assert b'This is the homepage<p>HTML should render too</p>' == result.data
+
     result = client.get('/admin/previewhomepage', follow_redirects=True)
     assert result.status_code == 200
-    assert b'HTML should render too' in result.data
     assert b'Announcements' not in result.data
 
     with open('templates/unauth_index.html', 'w') as file:
         file.write("2\nThis is the homepage<p>HTML should render too</p>")
+    result = client.get('/api/homepage')
+    assert result.status_code == 200
+    assert b'This is the homepage<p>HTML should render too</p>' == result.data
+
     result = client.get('/admin/previewhomepage', follow_redirects=True)
     assert result.status_code == 200
-    assert b'HTML should render too' in result.data
     assert b'Announcements' in result.data

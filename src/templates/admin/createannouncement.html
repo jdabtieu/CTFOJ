@@ -6,7 +6,7 @@
 <h1>Create Announcement</h1>
 <form autocomplete="off" method="post" id="create" name="create">
     <input class="form-control mb-3" type="text" id="name" name="name" placeholder="Name" required>
-    <div style="position: relative;">
+    <div style="display: flex;">
         <textarea class="form-control mb-3 md-preview"
                   id="description"
                   name="description"
@@ -21,11 +21,11 @@
 {% endblock %}
 {% block script %}
 <script>
-    document.getElementById('description').oninput = function() {
-        var product = converter.makeHtml(this.value);
-        var outputDiv = document.getElementById("description-out");
-        outputDiv.innerHTML = product;
-        document.getElementById("description").style.height = outputDiv.offsetHeight + "px";
+    document.getElementById("description-out").attachShadow({mode: "open"});
+    document.getElementById("description").oninput = function() {
+        const outputDiv = document.getElementById("description-out");
+        injectEditor(outputDiv, this.value);
+        this.style.height = outputDiv.offsetHeight + "px";
     }
 </script>
 {% endblock %}

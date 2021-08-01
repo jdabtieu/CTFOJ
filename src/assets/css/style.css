@@ -27,6 +27,7 @@
     position: relative;
     padding: 16px;
     width: 100%;
+    overflow-x: auto;
 }
 
 #home-container.home1 #home {
@@ -52,6 +53,7 @@
 }
 
 #hint {
+    overflow-x: auto;
     margin-top: 8px;
 }
 
@@ -68,6 +70,11 @@
     #category-selector-container {
         float: right;
     }
+}
+
+#problem-description {
+    overflow-x: auto;
+    position: relative;
 }
 
 /****************** CONTEST PAGE LAYOUT **********************/
@@ -111,13 +118,14 @@
 /****************** MD LIVE PREVIEW **************************/
 textarea.md-preview {
     min-height: 400px;
-    width: 49%;
+    margin-right: 1%;
+    flex: 1;
 }
 div.md-preview {
-    position: absolute;
-    right: 0;
-    top: 0;
-    width: 50%;
+    flex: 1;
+    overflow-x: auto;
+    min-width: 0px;
+    height: fit-content;
 }
 
 /****************** MISC DISPLAY FIXES ***********************/
@@ -278,4 +286,10 @@ body {
 
 .dark .form-select {
     background-image: url("data:image/svg+xml,<svg style='filter: invert(100%)' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/></svg>")
+}
+
+
+#hint-container {
+    display: none;
+    margin-top: 16px;
 }

@@ -6,9 +6,21 @@ import requests
 from datetime import datetime, timedelta
 from functools import wraps
 
-from flask import redirect, request, session, flash, Markup
+from flask import redirect, request, session, flash, Markup, make_response
 from flask_mail import Message
 from werkzeug.security import check_password_hash
+
+
+def api_login_required(f):
+    """
+    Decorate API routes to require login.
+    """
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session or "user_id" not in session or session.get("user_id") is None:
+            return make_response(("Unauthorized", 401))
+        return f(*args, **kwargs)
+    return decorated_function
 
 
 def login_required(f):
