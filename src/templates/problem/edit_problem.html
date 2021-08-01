@@ -58,35 +58,35 @@
 {% endblock %}
 {% block script %}
 <script>
-    const problem_id = "{{ request.path.split('/')[2] }}";
+    const problemId = "{{ request.path.split('/')[2] }}";
+    const description = document.getElementById("description");
+    const hints = document.getElementById("hints");
     document.getElementById("description-out").attachShadow({mode: "open"});
     document.getElementById("hints-out").attachShadow({mode: "open"});
 
     function updateDescription() {
-        const description = document.getElementById("description");
         const outputDiv = document.getElementById("description-out");
         injectEditor(outputDiv, description.value);
         description.style.height = outputDiv.offsetHeight + "px";
     }
-    document.getElementById("description").addEventListener('input', updateDescription);
+    description.addEventListener('input', updateDescription);
 
     function updateHints() {
-        const hints = document.getElementById("hints");
         const outputDiv = document.getElementById("hints-out");
         injectEditor(outputDiv, hints.value);
         hints.style.height = outputDiv.offsetHeight + "px";
     }
-    document.getElementById("hints").addEventListener('input', updateHints);
+    hints.addEventListener('input', updateHints);
 
-    fetch("/api/problem/description/" + problem_id).then(b => b.text())
+    fetch("/api/problem/description/" + problemId).then(b => b.text())
         .then(b => {
-            document.getElementById("description").value = b;
+            description.value = b;
             updateDescription();
         });
 
-    fetch("/api/problem/hints/" + problem_id).then(b => b.text())
+    fetch("/api/problem/hints/" + problemId).then(b => b.text())
         .then(b => {
-            document.getElementById("hints").value = b;
+            hints.value = b;
             updateHints();
         });
 </script>

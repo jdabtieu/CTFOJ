@@ -12,17 +12,18 @@
 {% endblock %}
 {% block script %}
 <script>
-    const problem_id = "{{ request.path.split('/')[2] }}";
-    fetch("/api/problem/editorial/" + problem_id).then(b => b.text())
+    const problemId = "{{ request.path.split('/')[2] }}";
+    const editorial = document.getElementById("editorial");
+    fetch("/api/problem/editorial/" + problemId).then(b => b.text())
         .then(b => {
                 if (b.length > 0) {
-                    inject(document.getElementById("editorial"), b, false);
+                    inject(editorial, b, false);
                 } else {
-                    document.getElementById("editorial").innerHTML =
+                    editorial.innerHTML =
                         `This problem does not have an editorial.
-                         <a href="/problem/${problem_id}">Back to problem</a>`;
+                         <a href="/problem/${problemId}">Back to problem</a>`;
                 }
-                document.getElementById("editorial").classList.remove("hidden");
+                editorial.classList.remove("hidden");
             });
 </script>
 {% endblock %}

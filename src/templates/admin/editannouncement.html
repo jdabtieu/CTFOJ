@@ -8,12 +8,12 @@
 
 {% block main %}
 <h1>Edit Announcement</h1>
-<form autocomplete="off" method="post" id="edit" name="edit">
+<form autocomplete="off" method="post">
     <input class="form-control mb-3"
            name="name"
            placeholder="Name"
            value="{{ data['name'] }}"
-           equired>
+           required>
     <div style="display: flex;">
         <textarea class="form-control mb-3 md-preview"
                   id="description"
@@ -23,13 +23,13 @@
                   required></textarea>
         <div id="description-out" class="md-preview"></div>
     </div>
-    <input class="btn btn-primary" type="submit" id="submit" name="submit" value="Edit">
+    <input class="btn btn-primary" type="submit" name="submit">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 </form>
 {% endblock %}
 {% block script %}
 <script>
-    const announcement_id = "{{ request.path.split('/')[3] }}";
+    const announcementId = "{{ request.path.split('/')[3] }}";
     const description = document.getElementById("description");
     const outputDiv = document.getElementById("description-out");
     outputDiv.attachShadow({mode: "open"});
@@ -40,7 +40,7 @@
     }
     description.addEventListener('input', update);
 
-    fetch("/api/announcement/" + announcement_id).then(b => b.text())
+    fetch("/api/announcement/" + announcementId).then(b => b.text())
         .then(b => {
             description.value = b;
             update();

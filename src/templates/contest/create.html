@@ -4,7 +4,7 @@
 
 {% block main %}
 <h1>Create Contest</h1>
-<form autocomplete="off" method="post" id="create" name="create">
+<form autocomplete="off" method="post">
     <input class="form-control mb-3" name="contest_id" placeholder="Contest ID" required>
     <input class="form-control mb-3" name="contest_name" placeholder="Contest Name" required>
     <div style="display: flex;">
@@ -45,13 +45,13 @@
     })
 
     document.getElementById("description-out").attachShadow({mode: "open"});
-    document.getElementById("description").oninput = function() {
+    document.getElementById("description").addEventListener("input", function() {
         const outputDiv = document.getElementById("description-out");
         injectEditor(outputDiv, this.value);
         this.style.height = outputDiv.offsetHeight + "px";
-    }
+    });
 
-    document.getElementById('create').addEventListener('submit', function(event) {
+    document.querySelector("form").addEventListener("submit", function() {
         var formStart = document.getElementById("start");
         var start = new Date(formStart.value).toISOString();
         formStart.setAttribute("type", "text");

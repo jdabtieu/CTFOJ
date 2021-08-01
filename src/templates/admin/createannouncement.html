@@ -22,10 +22,10 @@
 {% block script %}
 <script>
     document.getElementById("description-out").attachShadow({mode: "open"});
-    document.getElementById("description").oninput = function() {
+    document.getElementById("description").addEventListener("input", function() {
         const outputDiv = document.getElementById("description-out");
         injectEditor(outputDiv, this.value);
         this.style.height = outputDiv.offsetHeight + "px";
-    }
+    });
 </script>
 {% endblock %}

@@ -4,7 +4,7 @@
 
 {% block main %}
 <h1>Create Problem</h1>
-<form autocomplete="off" method="post" id="create" name="create" enctype=multipart/form-data>
+<form autocomplete="off" method="post" enctype=multipart/form-data>
     <input class="form-control mb-3" id="id" name="id" placeholder="ID" required>
     <input class="form-control mb-3" id="name" name="name" placeholder="Name" required>
     <div style="display: flex;">
@@ -76,16 +76,16 @@
 <script>
     document.getElementById("description-out").attachShadow({mode: "open"});
     document.getElementById("hints-out").attachShadow({mode: "open"});
-    document.getElementById("description").oninput = function() {
+    document.getElementById("description").addEventListener("input", function() {
         const outputDiv = document.getElementById("description-out");
         injectEditor(outputDiv, this.value);
         this.style.height = outputDiv.offsetHeight + "px";
-    }
-    document.getElementById("hints").oninput = function() {
+    });
+    document.getElementById("hints").addEventListener("input", function() {
         const outputDiv = document.getElementById("hints-out");
         injectEditor(outputDiv, this.value);
         this.style.height = outputDiv.offsetHeight + "px";
-    }
+    });
 
     let score_types = document.querySelectorAll("input[name='score_type']");
     score_types[0].onclick = function() {

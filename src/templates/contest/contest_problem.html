@@ -65,11 +65,11 @@
 {% endblock %}
 {% block script %}
 <script>
-    const contest_id = "{{ request.path.split('/')[2] }}";
-    const problem_id = "{{ request.path.split('/')[4] }}";
-    fetch(`/api/contest/${contest_id}/problem/description/${problem_id}`).then(b => b.text())
+    const contestId = "{{ request.path.split('/')[2] }}";
+    const problemId = "{{ request.path.split('/')[4] }}";
+    fetch(`/api/contest/${contestId}/problem/description/${problemId}`).then(b => b.text())
         .then(b => inject(document.getElementById("problem-description"), b, true));
-    fetch(`/api/contest/${contest_id}/problem/hints/${problem_id}`).then(b => b.text())
+    fetch(`/api/contest/${contestId}/problem/hints/${problemId}`).then(b => b.text())
         .then(b => {
                 if (b.length > 0) {
                     document.getElementById("hint-container").style.display = "block";

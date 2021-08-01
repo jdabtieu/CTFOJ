@@ -21,20 +21,20 @@
 {% endblock %}
 {% block script %}
 <script>
-    const problem_id = "{{ request.path.split('/')[2] }}";
-    const editorial_box = document.getElementById("editorial");
+    const problemId = "{{ request.path.split('/')[2] }}";
+    const editorialBox = document.getElementById("editorial");
     const outputDiv = document.getElementById("editorial-out");
     outputDiv.attachShadow({mode: "open"});
 
     function update() {
-        injectEditor(outputDiv, editorial_box.value);
-        editorial_box.style.height = outputDiv.offsetHeight + "px";
+        injectEditor(outputDiv, editorialBox.value);
+        editorialBox.style.height = outputDiv.offsetHeight + "px";
     }
-    editorial_box.addEventListener('input', update);
+    editorialBox.addEventListener('input', update);
 
-    fetch("/api/problem/editorial/" + problem_id).then(b => b.text())
+    fetch("/api/problem/editorial/" + problemId).then(b => b.text())
         .then(b => {
-            editorial_box.value = b;
+            editorialBox.value = b;
             update();
         });
 </script>

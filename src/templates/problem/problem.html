@@ -64,10 +64,10 @@
 {% endblock %}
 {% block script %}
 <script>
-    const problem_id = "{{ request.path.split('/')[2] }}";
-    fetch("/api/problem/description/" + problem_id).then(b => b.text())
+    const problemId = "{{ request.path.split('/')[2] }}";
+    fetch("/api/problem/description/" + problemId).then(b => b.text())
         .then(b => inject(document.getElementById("problem-description"), b, true));
-    fetch("/api/problem/hints/" + problem_id).then(b => b.text())
+    fetch("/api/problem/hints/" + problemId).then(b => b.text())
         .then(b => {
                 if (b.length > 0) {
                     document.getElementById("hint-container").style.display = "block";

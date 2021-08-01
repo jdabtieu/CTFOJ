@@ -8,7 +8,7 @@
 
 {% block main %}
 <h1>Edit Contest</h1>
-<form autocomplete="off" method="post" id="edit" name="edit">
+<form autocomplete="off" method="post">
     <input class="form-control mb-3"
            name="name"
            placeholder="Name"
@@ -43,7 +43,7 @@
 {% endblock %}
 {% block script %}
 <script>
-    const contest_id = "{{ request.path.split('/')[3] }}";
+    const contestId = "{{ request.path.split('/')[3] }}";
     const description = document.getElementById("description");
     const outputDiv = document.getElementById("description-out");
     outputDiv.attachShadow({mode: "open"});
@@ -51,22 +51,22 @@
         injectEditor(outputDiv, description.value);
         description.style.height = outputDiv.offsetHeight + "px";
     }
-    description.addEventListener('input', update);
+    description.addEventListener("input", update);
 
     document.querySelectorAll(".dtl").forEach(function (e) {
         var split = e.getAttribute("value").split(" ");
-        var date_split = split[0].split("-");
-        var final = date_split[1] + "/" + date_split[2] + "/" + date_split[0] + " " + split[1];
+        var dateSplit = split[0].split("-");
+        var final = dateSplit[1] + "/" + dateSplit[2] + "/" + dateSplit[0] + " " + split[1];
         var parsed = new Date(final + " UTC").toString().split(" ");
         e.value = `${ parsed[3] }-${ getMonthFromString(parsed[1]) }-${ parsed[2] }T${ parsed[4] }`;
 
         function getMonthFromString(mon) {
-            var str = (new Date(Date.parse(mon +" 1, 2012")).getMonth() + 1).toString();
+            var str = (new Date(Date.parse(mon + " 1, 2012")).getMonth() + 1).toString();
             return str.length == 2 ? str : "0" + str;
         }
     });
 
-    document.getElementsByTagName("form")[0].onsubmit = function(event) {
+    document.querySelector("form").onsubmit = function(event) {
         var formStart = this.querySelector("#start");
         var start = new Date(formStart.value).toISOString();
         formStart.setAttribute("type", "text");
@@ -78,7 +78,7 @@
         formEnd.value = end;
     }
 
-    fetch("/api/contest/" + contest_id).then(b => b.text())
+    fetch("/api/contest/" + contestId).then(b => b.text())
         .then(b => {
             description.value = b;
             update();
