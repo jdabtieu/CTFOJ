@@ -6,7 +6,7 @@ For updating instructions, click [here](#updating).
 Although CTFOJ can run on Linux, Windows, and MacOS, it is recommended to run it on a modern Linux distribution such as Ubuntu 20.04 LTS.
 
 # Installation Instructions
-It is recommended to use the provided INSTALL.sh script if you are running a Linux-based system. If you wish to install manually, or are using another operating system, please keep reading. If you use the INSTALL.sh script, skip to [Logging in for the first time](#step-6---logging-in-for-the-first-time)
+It is recommended to use the provided INSTALL.sh script if you are running a Linux-based system, MacOS, WSL, msys2, or Git Bash. If you wish to install manually, or are using another operating system, please keep reading. If you use the INSTALL.sh script, skip to [Logging in for the first time](#step-6---logging-in-for-the-first-time)
 
 ## Manual Installation
 ### Step 1 - Setting up the environment
@@ -55,7 +55,7 @@ $ python3 daily_tasks.py
 $ cp default_settings.py settings.py
 $ nano settings.py
 ```
-In settings.py, you should add your email credentials as indicated by default_settings.py. Additionally, you may change the other email settings if you use a SMTP provider other than Gmail. Next, you should choose whether to use a CAPTCHA or not, and add your hCaptcha site and secret keys if you are using a CAPTCHA. Finally, you should add a custom name for your club and change any other settings that you wish to change.
+In settings.py, you should add your email credentials as indicated by default_settings.py. Additionally, you may change the other email settings if you use a SMTP provider other than Gmail. Next, you should choose whether to use a CAPTCHA or not, and add your hCaptcha site and secret keys if you are using a CAPTCHA. After that, you should add a custom name for your club and change any other settings that you wish to change. Finally, you should choose whether to enable a homepage. If you decide to do so, make sure to specify the location of the homepage.
 
 Then, you should change the admin email manually so that you can reset your password in the future through the CTFOJ app.
 ```sql

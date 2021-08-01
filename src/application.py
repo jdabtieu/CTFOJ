@@ -93,7 +93,7 @@ def index():
     length = len(db.execute("SELECT * FROM announcements"))
 
     if not session or 'username' not in session:
-        template = read_file('templates/unauth_index.html')
+        template = read_file(app.config['HOMEPAGE_FILE'])
         template_type = template[0]
         return render_template(f"home_fragment/home{template_type}.html",
                                data=data,
@@ -1656,6 +1656,8 @@ def edit_homepage():
 
     content = layout_method + "\n" + content.replace('\r', '')
 
+    write_file(app.config['HOMEPAGE_FILE'], content)
+
     flash("You have successfully edited the homepage!", "success")
     return redirect("/admin/previewhomepage")
 
@@ -1672,8 +1674,7 @@ def preview_homepage():
         "SELECT * FROM announcements ORDER BY id DESC LIMIT 10 OFFSET ?", page)
     length = len(db.execute("SELECT * FROM announcements"))
 
-    template = read_file('templates/unauth_index.html')
-    template_type = template[0]
+    template_type = read_file(app.config['HOMEPAGE_FILE'])[0]
     return render_template(f"home_fragment/home{template_type}.html",
                            data=data,
                            length=-(-length // 10))

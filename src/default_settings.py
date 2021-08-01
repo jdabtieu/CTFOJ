@@ -56,6 +56,12 @@ you do not create a homepage first but turn on this setting, the site will break
 USE_HOMEPAGE = False
 
 """
+HOMEPAGE_FILE should store a path to your homepage. Unless you already have a homepage
+elsewhere, it is recommended to use the default location.
+"""
+HOMEPAGE_FILE = "templates/unauth_index.html"
+
+"""
 SESSION_COOKIE_SECURE controls whether the session cookie (and other cookies) should only
 be served over HTTPS. Change it to False if your club does not support HTTPS or unexpected
 errors are happening.
