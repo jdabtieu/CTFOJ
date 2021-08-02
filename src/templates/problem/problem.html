@@ -21,9 +21,7 @@
     <div style="flex: 3; padding: 4px; word-break: break-word; min-width: 0px;">
         <div id="problem-description" class="hidden"></div>
         <div id="hint-container">
-            <a class="btn btn-secondary"
-               id="togglehint"
-               onclick="document.getElementById('hint').classList.toggle('hidden')">
+            <a class="btn btn-secondary" id="togglehint">
                 Show/Hide Hints
             </a>
             <div id="hint" class="card hidden"></div>
@@ -53,9 +51,9 @@
                 <br><a href="{{ request.path }}/editeditorial">Create/edit editorial</a>
                 <br><a href="{{ request.path }}/edit">Edit problem</a>
                 <br><a href="{{ request.path }}/download">Download problem</a>
-                <br><a href="#" onclick="deletemsg()">Delete problem</a>
+                <br><a href="#" class="btn-delete">Delete problem</a>
                 {% if data["draft"] %}
-                    <br><a href="#" onclick="publishmsg()">Publish draft</a>
+                    <br><a href="#" class="btn-publish">Publish draft</a>
                 {% endif %}
             {% endif %}
         </div>
@@ -74,26 +72,30 @@
                     inject(document.getElementById("hint"), b, false);
                 }
             });
+
+    document.getElementById("togglehint").addEventListener("click", function() {
+        document.getElementById("hint").classList.toggle("hidden");
+    });
 </script>
 {% if session["admin"] %}
     <script>
-        function deletemsg() {
+        document.querySelector(".btn-delete").addEventListener("click", function () {
             document.getElementById("confirm").style.display = "";
             document.querySelector("#confirm form")
                     .setAttribute("action", window.location.pathname + "/delete");
             document.querySelector("#confirm form .btn")
                     .setAttribute("value", "Are you sure you want to delete this problem? " +
                                            "Click here to confirm.");
-        }
+        });
 
-        function publishmsg() {
+        document.querySelector(".btn-publish").addEventListener("click", function () {
             document.getElementById("confirm").style.display = "";
             document.querySelector("#confirm form")
                     .setAttribute("action", window.location.pathname + "/publish");
             document.querySelector("#confirm form .btn")
                     .setAttribute("value", "Are you sure you want to publish this problem? " +
                                            "Click here to confirm.");
-        }
+        });
     </script>
 {% endif %}
 {% endblock %}

@@ -10,7 +10,7 @@
 {% block main %}
 <h1>{{ data["name"] }}</h1>
 {% if session["admin"] %}
-    <div id="confirm" style="display: none;">
+    <div id="confirm" class="hidden">
         <form method="post" style="margin-bottom: 1rem;" action="{{ request.path }}/publish">
             <input class="btn btn-danger"
                    type="submit"
@@ -23,9 +23,7 @@
     <div style="flex: 3; padding: 4px; word-break: break-word; min-width: 0px;">
         <div id="problem-description" class="hidden"></div>
         <div id="hint-container">
-            <a class="btn btn-secondary"
-               id="togglehint"
-               onclick="document.getElementById('hint').classList.toggle('hidden')">
+            <a class="btn btn-secondary" id="togglehint">
                 Show/Hide Hints
             </a>
             <div id="hint" class="card hidden"></div>
@@ -53,7 +51,7 @@
                 <br><a href="{{ request.path }}/edit">Edit problem</a>
                 <br><a href="{{ request.path }}/download">Download problem</a>
                 {% if data["draft"] %}
-                    <br><a href="#" onclick="document.getElementById('confirm').style.display = ''">
+                    <br><a href="#" id="btn-publish" onclick="">
                             Publish problem
                         </a>
                 {% endif %}
@@ -76,5 +74,16 @@
                     inject(document.getElementById("hint"), b, false);
                 }
             });
+
+    document.getElementById("togglehint").addEventListener("click", function() {
+        document.getElementById("hint").classList.toggle("hidden");
+    });
 </script>
+{% if data["draft"] %}
+    <script>
+        document.getElementById("btn-publish").addEventListener("click", function() {
+            document.getElementById("confirm").style.display = "block";
+        });
+    </script>
+{% endif %}
 {% endblock %}

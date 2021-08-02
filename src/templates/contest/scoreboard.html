@@ -5,7 +5,7 @@
 {% block main %}
 <h1><a href="{{ request.path[:-11] }}">{{ title }}</a></h1>
 {% if session["admin"] %}
-    <div id="confirm" style="display: none;">
+    <div id="confirm" class="hidden">
         <form method="post" style="margin-bottom: 1rem;" action="{{ request.path }}/ban">
             <input type="hidden" name="user_id">
             <input class="btn btn-danger" type="submit">
@@ -38,13 +38,15 @@
                     <td>None</td>
                 {% endif %}
                 {% if session["admin"] %}
-                    <td><a href="#" onclick="dq(this, {{ data[i]['user_id'] }})">
-                        <img src="/assets/images/restrict.svg"
-                             onerror="this.src='/assets/images/restrict.png'"
-                             class="svg-red icon"
-                             alt="Disqualify user"
-                             title="Disqualify user">
-                    </a></td>
+                    <td data-id="{{ data[i]['user_id'] }}" data-username="{{ data[i]['username'] }}">
+                        <a href="#">
+                            <img src="/assets/images/restrict.svg"
+                                 onerror="this.src='/assets/images/restrict.png'"
+                                 class="svg-red icon scoreboard-dq"
+                                 alt="Disqualify user"
+                                 title="Disqualify user">
+                        </a>
+                    </td>
                 {% endif %}
             </tr>
             {% endfor %}
@@ -55,17 +57,16 @@
 {% block script %}
 {% if session["admin"] %}
     <script>
-        function createForm(userId, username) {
-            document.getElementById("confirm").style.display = "";
-            document.querySelector("#confirm .btn")
-                    .setAttribute("value", `Are you sure you want to disqualify ${username}? ` +
-                                           "This action is irreversible. Click here to confirm");
-            document.querySelector("#confirm input[name=user_id]").setAttribute("value", userId);
-        }
-
-        function dq(e, userId) {
-            var username = e.parentElement.parentElement.querySelector(".username").innerText;
-            createForm(userId, username);
+        for (let node of document.getElementsByClassName("scoreboard-dq")) {
+            node.parentElement.addEventListener("click", function() {
+                var username = this.parentElement.getAttribute("data-username");
+                var userId = this.parentElement.getAttribute("data-id");
+                document.getElementById("confirm").style.display = "block";
+                document.querySelector("#confirm .btn")
+                        .setAttribute("value", `Are you sure you want to disqualify ${username}? ` +
+                                               "This action is irreversible. Click here to confirm");
+                document.querySelector("#confirm input[name=user_id]").setAttribute("value", userId);
+            });
         }
     </script>
 {% endif %}

@@ -3,8 +3,9 @@
 {% block title %}Home{% endblock %}
 
 {% block main %}
+<h1>Announcements</h1>
 {% if session["admin"] %}
-    <div id="confirm" style="display: none;">
+    <div id="confirm" class="hidden">
         <form method="post" style="margin-bottom: 1rem;" action="/admin/deleteannouncement">
             <input class="btn btn-danger"
                    type="submit"
@@ -14,7 +15,6 @@
         </form>
     </div>
 {% endif %}
-<h1>Announcements</h1>
 {% for announcement in data %}
     <link rel="preload" href="/api/announcement/{{ announcement['id'] }}" as="fetch" crossorigin="anonymous">
     <div class="card post-card">
@@ -25,22 +25,22 @@
         <p style="margin: 0;">Posted <span class="dt">{{ announcement["date"] }}</span></p>
         <div id="announcement-{{ announcement['id'] }}" class="hidden smarkdown"></div>
         {% if session["admin"] %}
-        <a href="/admin/editannouncement/{{ announcement['id'] }}"
-           style="position: absolute; top: 12px; right: 36px;">
-            <img src="/assets/images/pencil.svg"
-                 onerror="this.src='/assets/images/pencil.png'"
-                 alt="Edit announcement"
-                 class="icon">
-        </a>
-        <a data-id="{{ announcement['id'] }}"
-           href="#"
-           onclick="deletemsg(this)"
-           style="position: absolute; top: 12px; right: 16px;">
-            <img src="/assets/images/trash.svg"
-                 onerror="this.src='/assets/images/trash.png'"
-                 alt="Delete announcement"
-                 class="icon">
-        </a>
+            <a href="/admin/editannouncement/{{ announcement['id'] }}"
+               style="position: absolute; top: 12px; right: 36px;">
+                <img src="/assets/images/pencil.svg"
+                     onerror="this.src='/assets/images/pencil.png'"
+                     alt="Edit announcement"
+                     class="icon">
+            </a>
+            <a data-id="{{ announcement['id'] }}"
+               href="#"
+               class="btn-delete"
+               style="position: absolute; top: 12px; right: 16px;">
+                <img src="/assets/images/trash.svg"
+                     onerror="this.src='/assets/images/trash.png'"
+                     alt="Delete announcement"
+                     class="icon">
+            </a>
         {% endif %}
     </div>
 {% endfor %}
@@ -52,10 +52,13 @@
         fetch("/api/announcement/{{ announcement['id'] }}").then(b => b.text())
             .then(b => inject(document.getElementById("announcement-{{ announcement['id'] }}"), b, true));
     {% endfor %}
-    function deletemsg(e) {
-        var id = e.getAttribute("data-id");
-        document.getElementById("confirm").style.display = "";
-        document.querySelector("#confirm input[name='aid']").setAttribute("value", id);
+    for (let node of document.getElementsByClassName("btn-delete")) {
+        node.addEventListener("click", function() {
+            let id = this.getAttribute("data-id");
+            document.getElementById("confirm").style.display = "block";
+            document.querySelector("#confirm input[name='aid']").setAttribute("value", id);
+        });
     }
+    
 </script>
 {% endblock %}

@@ -26,7 +26,7 @@ if (getCookie("darkMode") == 1) {
     document.querySelector(".dark-toggle").setAttribute("checked", "");
 }
 
-function toggleDark() {
+document.querySelector(".dark-toggle").addEventListener("click", function() {
     document.body.classList.toggle("dark");
     setCookie("darkMode", getCookie("darkMode") == 1 ? 0 : 1, 7);
-}
+});

@@ -34,25 +34,25 @@
                 </td>
                 <td>{{ row["email"] }}</td>
                 <td class="dt">{{ row["join_date"] }}</td>
-                <td>
-                    <a href="#" onclick="ban(this)">
+                <td data-id="{{ row['id'] }}" data-username="{{ row['username'] }}">
+                    <a href="#">
                         <img src="/assets/images/restrict.svg"
                              onerror="this.src='/assets/images/restrict.png'"
-                             class="svg-red icon"
+                             class="svg-red icon users-ban"
                              alt="Ban/Unban user"
                              title="Ban/Unban user">
                     </a>
-                    <a href="#" onclick="resetpass(this)">
+                    <a href="#">
                         <img src="/assets/images/key.svg"
                              onerror="this.src='/assets/images/key.png'"
-                             class="icon"
+                             class="icon users-resetpass"
                              alt="Reset password"
                              title="Reset password">
                     </a>
-                    <a href="#" onclick="admin(this)">
+                    <a href="#">
                         <img src="/assets/images/arrow-up.svg"
                              onerror="this.src='/assets/images/arrow-up.png'"
-                             class="svg-green icon"
+                             class="svg-green icon users-admin"
                              alt="Grant/Revoke admin"
                              title="Grant/Revoke admin">
                     </a>
@@ -72,25 +72,28 @@
         document.querySelector("#confirm input[name=user_id]").setAttribute("value", userId);
     }
 
-    function ban(e) {
-        var username = e.parentElement.parentElement.querySelector(".username").innerHTML.trim();
-        var userId = e.parentElement.parentElement.querySelector(".userid").innerHTML;
-        var msg = `Are you sure you want to ban/unban ${username}? Click here to confirm.`;
-        createForm(msg, "/admin/ban", userId);
+    for (let node of document.getElementsByClassName("users-ban")) {
+        node.parentElement.addEventListener("click", function() {
+            var username = this.parentElement.getAttribute("data-username");
+            var msg = `Are you sure you want to ban/unban ${username}? Click here to confirm.`;
+            createForm(msg, "/admin/ban", this.parentElement.getAttribute("data-id"));
+        });
     }
 
-    function resetpass(e) {
-        var username = e.parentElement.parentElement.querySelector(".username").innerHTML.trim();
-        var userId = e.parentElement.parentElement.querySelector(".userid").innerHTML;
-        var msg = `Are you sure you want to reset ${username}'s password? Click here to confirm.`;
-        createForm(msg, "/admin/resetpass", userId);
+    for (let node of document.getElementsByClassName("users-resetpass")) {
+        node.parentElement.addEventListener("click", function() {
+            var username = this.parentElement.getAttribute("data-username");
+            var msg = `Are you sure you want to reset ${username}'s password? Click here to confirm.`;
+            createForm(msg, "/admin/resetpass", this.parentElement.getAttribute("data-id"));
+        });
     }
 
-    function admin(e) {
-        var username = e.parentElement.parentElement.querySelector(".username").innerHTML.trim();
-        var userId = e.parentElement.parentElement.querySelector(".userid").innerHTML;
-        var msg = `Are you sure you want to grant/revoke admin to ${username}? Click here to confirm.`;
-        createForm(msg, "/admin/makeadmin", userId);
+    for (let node of document.getElementsByClassName("users-admin")) {
+        node.parentElement.addEventListener("click", function() {
+            var username = this.parentElement.getAttribute("data-username");
+            var msg = `Are you sure you want to grant/revoke admin to ${username}? Click here to confirm.`;
+            createForm(msg, "/admin/makeadmin", this.parentElement.getAttribute("data-id"));
+        });
     }
 </script>
 {% endblock %}

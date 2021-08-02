@@ -982,7 +982,7 @@ def problems():
              "GROUP BY problems.id ORDER BY id ASC LIMIT 50 OFFSET ?"), page)
         length = len(db.execute("SELECT * FROM problems WHERE draft=0"))
 
-    categories = db.execute("SELECT DISTINCT category FROM problems")
+    categories = db.execute("SELECT DISTINCT category FROM problems WHERE draft=0")
     categories.sort(key=lambda x: x['category'])
 
     return render_template('problem/problems.html',
