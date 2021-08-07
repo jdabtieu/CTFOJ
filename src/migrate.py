@@ -1,7 +1,5 @@
 import cs50
-import shutil
 import sys
-import re
 
 msg = """Before migrating, please confirm the following:
  - You are on v2.3.0 or v2.3.1 (older version please update to one of these first, new version no migrate necessary)
@@ -17,6 +15,6 @@ if confirm != 'y':
 
 db = cs50.SQL("sqlite:///database.db")
 
-db.execute("DELETE FROM problem_solved WHERE rowid NOT IN (SELECT min(rowid) FROM problem_solved GROUP BY user_id, problem_id)")
+db.execute("ALTER TABLE users ADD COLUMN 'api' varchar(36)")
 
 print('Migration completed.')

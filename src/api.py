@@ -1,4 +1,5 @@
 from flask import Blueprint, make_response, send_from_directory, redirect
+import uuid
 
 from helpers import *  # noqa
 
@@ -9,6 +10,15 @@ api = Blueprint("api", __name__)
 def api_documentation():
     return redirect("https://github.com/jdabtieu/CTFOJ/wiki/CTFOJ-API")
 
+@api.route("/getkey")
+@login_required
+def get_api_key():
+    from application import db
+    new_key = str(uuid.uuid4())
+    while len(db.execute("SELECT * FROM users WHERE api=?", new_key)) != 0:
+        new_key = str(uuid.uuid4())
+    db.execute("UPDATE users SET api=? WHERE id=?", new_key, session["user_id"])
+    return new_key
 
 @api.route("/problem/description/<problem_id>")
 @api_login_required
@@ -78,10 +88,16 @@ def contest_description(contest_id):
 @api.route("/announcement/<announcement_id>")
 def announcement(announcement_id):
     from application import app
-    if not session or 'username' not in session:  # not logged in
-        if (not app.config["USE_HOMEPAGE"]
-                or (read_file('templates/unauth_index.html')[0] != '2')):
-            return make_response(("Unauthorized", 401))
+    if app.config["USE_HOMEPAGE"] and read_file('templates/unauth_index.html')[0] == '2':
+        return _announcement(announcement_id)
+    return login_announcement(announcement_id)
+    
+
+@api_login_required
+def login_announcement(announcement_id):
+    return _announcement(announcement_id)
+
+def _announcement(announcement_id):
     from application import db
     if len(db.execute(
             "SELECT * FROM announcements WHERE id=:aid", aid=announcement_id)) == 0:
@@ -92,6 +108,14 @@ def announcement(announcement_id):
 @api.route("/homepage")
 def homepage():
     from application import app
-    if not app.config["USE_HOMEPAGE"] and not session["admin"]:
-        return make_response(("Unauthorized", 403))
+    if app.config["USE_HOMEPAGE"]:
+        return _homepage()
+    return admin_homepage()
+
+@api_admin_required
+def admin_homepage():
+    return _homepage()
+
+def _homepage():
+    from application import app
     return read_file(app.config['HOMEPAGE_FILE'])[2:]

@@ -8,4 +8,20 @@
 <br>
 <br>
 <a class="btn btn-primary" href="/settings/toggle2fa" role="button">Toggle 2FA</a>
+<br>
+<br>
+<a class="btn btn-primary" href="#" id="btnApi" role="button">Generate New API Key</a>
+<br>
+<textarea disabled class="hidden apikey font-mono" cols="36" rows="1"></textarea>
+{% endblock %}
+{% block script %}
+<script>
+	document.querySelector("#btnApi").addEventListener("click", () => {
+		fetch("/api/getkey").then(b => b.text()).then(b => {
+			const outputDiv = document.querySelector(".apikey");
+			outputDiv.value = b;
+			outputDiv.classList.remove("hidden");
+		});
+	});
+</script>
 {% endblock %}

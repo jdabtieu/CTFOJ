@@ -17,9 +17,40 @@ def api_login_required(f):
     """
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if not session or "user_id" not in session or session.get("user_id") is None:
-            return make_response(("Unauthorized", 401))
-        return f(*args, **kwargs)
+        if session and "user_id" in session and session.get("user_id") is not None:
+            return f(*args, **kwargs)
+        if request.method == "GET" and request.args.get("key"):
+            from application import db
+            user = db.execute("SELECT * FROM users WHERE api=?", request.args.get("key"))
+            if len(user) == 1:
+                return f(*args, **kwargs)
+        if request.method == "POST" and request.form.get("key"):
+            from application import db
+            user = db.execute("SELECT * FROM users WHERE api=?", request.form.get("key"))
+            if len(user) == 1:
+                return f(*args, **kwargs)
+        return make_response(("Unauthorized", 401))
+    return decorated_function
+
+def api_admin_required(f):
+    """
+    Decorate API routes to require adminlogin.
+    """
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if session and "admin" in session and session.get("admin")  == 1:
+            return f(*args, **kwargs)
+        if request.method == "GET" and request.args.get("key"):
+            from application import db
+            user = db.execute("SELECT * FROM users WHERE api=? AND admin=1", request.args.get("key"))
+            if len(user) == 1:
+                return f(*args, **kwargs)
+        if request.method == "POST" and request.form.get("key"):
+            from application import db
+            user = db.execute("SELECT * FROM users WHERE api=? AND admin=1", request.form.get("key"))
+            if len(user) == 1:
+                return f(*args, **kwargs)
+        return make_response(("Unauthorized", 401))
     return decorated_function
 
 
