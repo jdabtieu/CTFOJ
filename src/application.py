@@ -1,5 +1,6 @@
 import logging
 import os
+import requests
 import shutil
 import sys
 import zipfile
@@ -33,6 +34,8 @@ app.jinja_env.globals['CLUB_NAME'] = app.config['CLUB_NAME']
 app.jinja_env.globals['USE_CAPTCHA'] = app.config['USE_CAPTCHA']
 
 # Configure logging
+for handler in logging.root.handlers[:]:
+    logging.root.removeHandler(handler)
 logging.basicConfig(
     filename=app.config['LOGGING_FILE_LOCATION'],
     level=logging.DEBUG,
@@ -58,6 +61,31 @@ mail = Mail(app)
 csrf = CSRFProtect(app)
 csrf.init_app(app)
 
+# Validate settings
+if not app.config['TESTING']:
+    with app.app_context():
+        try:
+            send_email('CTFOJ test email', app.config['MAIL_DEFAULT_SENDER'], [app.config['MAIL_DEFAULT_SENDER']], 'This email tests that your provided email credentials are valid. If you see this email, please either delete or ignore it.', mail)
+        except Exception as error:
+            logging.warning("Settings validation: Email credentials invalid.")
+            logging.warning(str(error))
+        else:
+            logging.debug("Settings validation: Email credentials valid.")
+        if app.config['USE_CAPTCHA']:
+            captcha = requests.post('https://hcaptcha.com/siteverify', data={
+                'secret': app.config['HCAPTCHA_SECRET'],
+                'response': "placeholder",
+                'sitekey': app.config['HCAPTCHA_SITE']
+            })
+            if len(captcha.json()["error-codes"]) == 1:  # only error is invalid input
+                logging.debug("Settings validation: hCaptcha credentials valid.")
+            else:
+                logging.warning("Settings validation: hCaptcha credentials invalid.")
+        if app.config['USE_HOMEPAGE']:
+            if os.path.isfile(app.config['HOMEPAGE_FILE']):
+                logging.debug("Settings validation: Homepage file exists.")
+            else:
+                logging.warning("Settings validation: Homepage file nonexistent.")
 
 @app.before_request
 def check_for_maintenance():
