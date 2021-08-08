@@ -10,6 +10,7 @@ api = Blueprint("api", __name__)
 def api_documentation():
     return redirect("https://github.com/jdabtieu/CTFOJ/wiki/CTFOJ-API")
 
+
 @api.route("/getkey")
 @login_required
 def get_api_key():
@@ -19,6 +20,7 @@ def get_api_key():
         new_key = str(uuid.uuid4())
     db.execute("UPDATE users SET api=? WHERE id=?", new_key, session["user_id"])
     return new_key
+
 
 @api.route("/problem/description/<problem_id>")
 @api_login_required
@@ -91,11 +93,12 @@ def announcement(announcement_id):
     if app.config["USE_HOMEPAGE"] and read_file('templates/unauth_index.html')[0] == '2':
         return _announcement(announcement_id)
     return login_announcement(announcement_id)
-    
+
 
 @api_login_required
 def login_announcement(announcement_id):
     return _announcement(announcement_id)
+
 
 def _announcement(announcement_id):
     from application import db
@@ -112,9 +115,11 @@ def homepage():
         return _homepage()
     return admin_homepage()
 
+
 @api_admin_required
 def admin_homepage():
     return _homepage()
+
 
 def _homepage():
     from application import app

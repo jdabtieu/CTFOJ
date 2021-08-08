@@ -32,7 +32,8 @@ def database():
          "'username' varchar(20) NOT NULL, 'password' varchar(64) NOT NULL, "
          "'email' varchar(128), 'join_date' datetime NOT NULL DEFAULT (0), "
          "'admin' boolean NOT NULL DEFAULT (0), 'banned' boolean NOT NULL DEFAULT (0), "
-         "'verified' boolean NOT NULL DEFAULT (0), 'twofa' boolean NOT NULL DEFAULT (0))"))  # noqa
+         "'verified' boolean NOT NULL DEFAULT (0), 'twofa' boolean NOT NULL DEFAULT (0), "
+         "'api' varchar(36))"))
     db.execute(
         ("CREATE TABLE 'submissions' ('sub_id' integer PRIMARY KEY NOT NULL, "
          "'date' datetime NOT NULL, 'user_id' integer NOT NULL, "

@@ -32,22 +32,25 @@ def api_login_required(f):
         return make_response(("Unauthorized", 401))
     return decorated_function
 
+
 def api_admin_required(f):
     """
     Decorate API routes to require adminlogin.
     """
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if session and "admin" in session and session.get("admin")  == 1:
+        if session and "admin" in session and session.get("admin") == 1:
             return f(*args, **kwargs)
         if request.method == "GET" and request.args.get("key"):
             from application import db
-            user = db.execute("SELECT * FROM users WHERE api=? AND admin=1", request.args.get("key"))
+            user = db.execute("SELECT * FROM users WHERE api=? AND admin=1",
+                              request.args.get("key"))
             if len(user) == 1:
                 return f(*args, **kwargs)
         if request.method == "POST" and request.form.get("key"):
             from application import db
-            user = db.execute("SELECT * FROM users WHERE api=? AND admin=1", request.form.get("key"))
+            user = db.execute("SELECT * FROM users WHERE api=? AND admin=1",
+                              request.form.get("key"))
             if len(user) == 1:
                 return f(*args, **kwargs)
         return make_response(("Unauthorized", 401))

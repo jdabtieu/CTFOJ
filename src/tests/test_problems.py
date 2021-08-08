@@ -10,7 +10,7 @@ def test_problem(client, database):
     database.execute(
         ("INSERT INTO 'users' VALUES(1, 'admin', 'pbkdf2:sha256:150000$XoLKRd3I$"
          "2dbdacb6a37de2168298e419c6c54e768d242aee475aadf1fa9e6c30aa02997f', 'e', "
-         "datetime('now'), 1, 0, 1, 0)"))
+         "datetime('now'), 1, 0, 1, 0, NULL)"))
     client.post('/login', data={'username': 'admin', 'password': 'CTFOJadmin'})
 
     file = open("test_upload.txt", "w")
@@ -58,7 +58,7 @@ def test_problem(client, database):
     database.execute(
         ("INSERT INTO 'users' VALUES(2, 'normal_user', 'pbkdf2:sha256:150000$XoLKRd3I$"
          "2dbdacb6a37de2168298e419c6c54e768d242aee475aadf1fa9e6c30aa02997f', 'e', "
-         "datetime('now'), 0, 0, 1, 0)"))
+         "datetime('now'), 0, 0, 1, 0, NULL)"))
     client.post('/login', data={'username': 'normal_user', 'password': 'CTFOJadmin'},
                 follow_redirects=True)
     result = client.get('/problem/helloworldtesting')
