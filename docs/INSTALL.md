@@ -53,6 +53,7 @@ $ mkdir logs dl metadata metadata/contests metadata/problems metadata/announceme
 $ chmod +x daily_tasks.py
 $ python3 daily_tasks.py
 $ cp default_settings.py settings.py
+$ cp templates/default_homepage.html metadata/homepage.html
 $ nano settings.py
 ```
 In settings.py, you should add your email credentials as indicated by default_settings.py. Additionally, you may change the other email settings if you use a SMTP provider other than Gmail. Next, you should choose whether to use a CAPTCHA or not, and add your hCaptcha site and secret keys if you are using a CAPTCHA. After that, you should add a custom name for your club and change any other settings that you wish to change. Finally, you should choose whether to enable a homepage. If you decide to do so, make sure to specify the location of the homepage.

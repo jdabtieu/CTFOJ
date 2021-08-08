@@ -59,7 +59,7 @@ USE_HOMEPAGE = False
 HOMEPAGE_FILE should store a path to your homepage. Unless you already have a homepage
 elsewhere, it is recommended to use the default location.
 """
-HOMEPAGE_FILE = "templates/unauth_index.html"
+HOMEPAGE_FILE = "metadata/homepage.html"
 
 """
 SESSION_COOKIE_SECURE controls whether the session cookie (and other cookies) should only

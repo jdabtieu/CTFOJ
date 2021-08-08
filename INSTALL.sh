@@ -24,6 +24,7 @@ mkdir logs dl metadata metadata/contests metadata/problems metadata/announcement
 chmod +x daily_tasks.py
 python3 daily_tasks.py
 cp default_settings.py settings.py
+cp templates/default_homepage.html metadata/homepage.html
 echo "Configuring settings..."
 echo "Admin Email: "
 read ADMIN_EMAIL
