@@ -49,7 +49,7 @@ def test_admin(client, database):
     assert b'Log In' in result_nouser.data
 
     # Test admin-only API
-    with open('templates/unauth_index.html', 'w') as file:
+    with open('metadata/homepage.html', 'w') as file:
         file.write('1\nadmin only')
     result = client.get('/api/homepage')
     assert result.status_code == 401

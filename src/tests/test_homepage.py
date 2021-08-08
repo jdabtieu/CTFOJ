@@ -9,7 +9,7 @@ def test_homepage(client, database):
          "datetime('now'), 1, 0, 1, 0, '00000000-0000-0000-0000-000000000000')"))
     client.post('/login', data={'username': 'admin', 'password': 'CTFOJadmin'})
 
-    with open('templates/unauth_index.html', 'w') as file:
+    with open('metadata/homepage.html', 'w') as file:
         file.write("1\nThis is the homepage<p>HTML should render too</p>")
     result = client.get('/api/homepage')
     assert result.status_code == 200
@@ -19,7 +19,7 @@ def test_homepage(client, database):
     assert result.status_code == 200
     assert b'Announcements' not in result.data
 
-    with open('templates/unauth_index.html', 'w') as file:
+    with open('metadata/homepage.html', 'w') as file:
         file.write("2\nThis is the homepage<p>HTML should render too</p>")
     result = client.get('/api/homepage')
     assert result.status_code == 200

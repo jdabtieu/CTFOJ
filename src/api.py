@@ -90,7 +90,7 @@ def contest_description(contest_id):
 @api.route("/announcement/<announcement_id>")
 def announcement(announcement_id):
     from application import app
-    if app.config["USE_HOMEPAGE"] and read_file('templates/unauth_index.html')[0] == '2':
+    if app.config["USE_HOMEPAGE"] and read_file(app.config['HOMEPAGE_FILE'])[0] == '2':
         return _announcement(announcement_id)
     return login_announcement(announcement_id)
 
