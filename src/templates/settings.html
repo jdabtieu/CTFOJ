@@ -16,12 +16,17 @@
 {% endblock %}
 {% block script %}
 <script>
-	document.querySelector("#btnApi").addEventListener("click", () => {
-		fetch("/api/getkey").then(b => b.text()).then(b => {
-			const outputDiv = document.querySelector(".apikey");
-			outputDiv.value = b;
-			outputDiv.classList.remove("hidden");
-		});
-	});
+    document.querySelector("#btnApi").addEventListener("click", () => {
+        const formData = new FormData();
+        formData.append("csrf_token", "{{ csrf_token() }}");
+        fetch("/api/getkey", {
+            method: "POST",
+            body: formData
+        }).then(b => b.text()).then(b => {
+            const outputDiv = document.querySelector(".apikey");
+            outputDiv.value = b;
+            outputDiv.classList.remove("hidden");
+        });
+    });
 </script>
 {% endblock %}

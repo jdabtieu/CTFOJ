@@ -11,7 +11,7 @@ def api_documentation():
     return redirect("https://github.com/jdabtieu/CTFOJ/wiki/CTFOJ-API")
 
 
-@api.route("/getkey")
+@api.route("/getkey", methods=["POST"])
 @login_required
 def get_api_key():
     from application import db
