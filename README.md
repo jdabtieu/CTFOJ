@@ -3,7 +3,7 @@
 [![CodeQL Analysis](https://github.com/jdabtieu/CTFOJ/workflows/CodeQL/badge.svg)](https://github.com/jdabtieu/CTFOJ/actions)
 [![Codecov Report](https://img.shields.io/codecov/c/github/jdabtieu/CTFOJ)](https://codecov.io/github/jdabtieu/CTFOJ/)
 [![GitHub Release](https://img.shields.io/github/v/release/jdabtieu/CTFOJ)](https://github.com/jdabtieu/CTFOJ/releases)
-[![Github License](https://img.shields.io/github/license/jdabtieu/CTFOJ)](https://github.com/jdabtieu/CTFOJ/blob/master/LICENSE)
+[![AGPL-3.0 License](https://img.shields.io/github/license/jdabtieu/CTFOJ)](https://github.com/jdabtieu/CTFOJ/blob/master/LICENSE)
 
 CTFOJ is a open-source online judge to host capture-the-flag problems and contests. It is primarily designed for capture-the-flag clubs who would like to host unlimited contests and practice problems.
 
@@ -20,13 +20,14 @@ CTFOJ is a open-source online judge to host capture-the-flag problems and contes
     - Announce anything you want, to all users of the site
 - Custom homepage
     - Add your own customized content to a homepage displayed to all anonymous users
-- Markdown support in problems, hints, editorials, contests, and announcements
+- Full Markdown support
 - User management
     - Remotely reset passwords
     - Ban users
     - Disqualify users from contest
 - 2FA support
 - SMTP support
+- API access
 - Automatic contest starting and ending
 - \+ many more
 
@@ -57,6 +58,3 @@ breaking the line would reduce readability.
 
 For non-Python code, please use 4 space tabs, limit your lines to under 100 characters, use
 descriptive variable names, and follow general good practices (unless it would reduce readability or performance).
-
-## License
-This project is licensed under the [GNU AGPLv3](LICENSE).
