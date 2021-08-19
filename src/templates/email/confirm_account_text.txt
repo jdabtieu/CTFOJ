@@ -1,9 +1,13 @@
 Dear {{ username }},
 
-To confirm your registration, click on the following link:
+If you have recently registered for a CTFOJ account, click on the following link to confirm your registration:
 
 {{ url_for('confirm_register', token=token, _external=True) }}
 
-If you have not registered for our website, please ignore this message.
+Otherwise, you can remove your email from our database with the following link:
+
+{{ url_for('cancel_register', token=token, _external=True) }}
+
+Regards,
 
 {{ CLUB_NAME }}

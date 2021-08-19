@@ -1,9 +1,13 @@
 Dear {{ username }},
 
-To confirm your login, click on the following link:
+If you have recently tried to login to your CTFOJ account, click on the following link to confirm your login:
 
 {{ url_for('confirm_login', token=token, _external=True) }}
 
-If you have not tried to login in, please change your password as it may have been compromised.
+Otherwise, your password has been compromised and you should change it immediately at the following link:
+
+{{ url_for('changepassword', _external=True) }}
+
+Regards,
 
 {{ CLUB_NAME }}
