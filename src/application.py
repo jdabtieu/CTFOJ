@@ -671,6 +671,11 @@ def contest_problem(contest_id, problem_id):
     return render_template("contest/contest_problem.html", data=check[0])
 
 
+@app.route("/docs")
+def docs():
+    return redirect(app.config['DOCS_URL'])
+
+
 @app.route("/contest/<contest_id>/problem/<problem_id>/publish", methods=["POST"])
 @admin_required
 def publish_contest_problem(contest_id, problem_id):

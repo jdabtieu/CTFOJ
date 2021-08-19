@@ -67,3 +67,9 @@ be served over HTTPS. Change it to False if your club does not support HTTPS or 
 errors are happening.
 """
 SESSION_COOKIE_SECURE = True
+
+"""
+DOCS_URL controls the website users are redirected to when they access the route /docs.
+By default, this is set to the GitHub wiki documentation for the CTFOJ platform itself.
+"""
+DOCS_URL = "https://github.com/jdabtieu/CTFOJ/wiki"
