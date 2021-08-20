@@ -106,3 +106,24 @@ def test_register(client, database):
 
     result = client.get(f'/confirmregister/{token}', follow_redirects=True)
     assert b'expired' in result.data
+
+    result = client.post('/register', data={
+        'username': 'testing2',
+        'password': 'testingpass2',
+        'confirmation': 'testingpass2',
+        'email': 'testingemail2@email.com'
+    }, follow_redirects=True)
+
+    # Manually generate token to check
+    exp = datetime.utcnow() + timedelta(seconds=1800)
+    token = jwt.encode(
+        {
+            'email': 'testingemail2@email.com',
+            'expiration': exp.isoformat()
+        },
+        'testing_secret_key',
+        algorithm='HS256'
+    )
+
+    result = client.get(f'/cancelregister/{token}')
+    assert result.status_code == 302
