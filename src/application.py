@@ -38,7 +38,7 @@ LOG_HANDLER.setFormatter(
                       style='{'))
 logger = logging.getLogger("CTFOJ")
 logger.addHandler(LOG_HANDLER)
-logger.propogate = False
+logger.propagate = False
 for handler in logging.root.handlers[:]:
     logging.root.removeHandler(handler)
 logging.basicConfig(
