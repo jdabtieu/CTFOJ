@@ -19,10 +19,8 @@ from werkzeug.exceptions import HTTPException, InternalServerError, default_exce
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from helpers import *  # noqa
-from api import api
 
 app = Flask(__name__)
-app.register_blueprint(api, url_prefix="/api")
 
 try:
     app.config.from_object('settings')
@@ -34,6 +32,13 @@ app.jinja_env.globals['CLUB_NAME'] = app.config['CLUB_NAME']
 app.jinja_env.globals['USE_CAPTCHA'] = app.config['USE_CAPTCHA']
 
 # Configure logging
+LOG_HANDLER = logging.FileHandler(app.config['LOGGING_FILE_LOCATION'])
+LOG_HANDLER.setFormatter(
+    logging.Formatter(fmt="[CTFOJ] [{section}] [{levelname}] [{asctime}] {message}",
+                      style='{'))
+logger = logging.getLogger("CTFOJ")
+logger.addHandler(LOG_HANDLER)
+logger.propogate = False
 for handler in logging.root.handlers[:]:
     logging.root.removeHandler(handler)
 logging.basicConfig(
@@ -60,6 +65,10 @@ mail = Mail(app)
 # Configure flask-WTF
 csrf = CSRFProtect(app)
 csrf.init_app(app)
+
+# Load API
+from api import api
+app.register_blueprint(api, url_prefix="/api")
 
 # Validate settings
 if not app.config['TESTING']:
