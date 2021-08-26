@@ -22,10 +22,8 @@ if os.path.exists('metadata'):
 cmd = None
 if sys.platform == "win32":
     cmd = "tree /A"
-elif sys.platform == "darwin":
-    cmd = "find * -print | sed -e 's;[^/]*/;|____;g;s;____|; |;g'"
 else:
-    cmd = "tree"
+    cmd = "find * -print | sed -e 's;[^/]*/;|____;g;s;____|; |;g'"
 result = subprocess.check_output(cmd, shell=True).decode()
 with open("structure.bak", "w") as file:
     file.write(result)
