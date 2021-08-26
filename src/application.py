@@ -74,7 +74,7 @@ app.register_blueprint(api, url_prefix="/api")
 if not app.config['TESTING']:
     with app.app_context():
         try:
-            send_email('CTFOJ test email', app.config['MAIL_DEFAULT_SENDER'], [app.config['MAIL_DEFAULT_SENDER']], 'This email tests that your provided email credentials are valid. If you see this email, please either delete or ignore it.', mail)
+            send_email('CTFOJ Email Setup', app.config['MAIL_DEFAULT_SENDER'], [app.config['MAIL_DEFAULT_SENDER']], 'This email tests your configured email settings for CTFOJ. Please ignore this email.', mail)
         except Exception as error:
             logging.warning("Settings validation: Email credentials invalid.")
             logging.warning(str(error))
@@ -201,7 +201,7 @@ def login():
                                username=request.form.get('username'), token=token)
 
         if not app.config['TESTING']:
-            send_email('Confirm Your CTF Login',
+            send_email('CTFOJ Login Confirmation',
                        app.config['MAIL_DEFAULT_SENDER'], [email], text, mail)
 
         flash(('A login confirmation email has been sent to the email address you '
@@ -284,7 +284,7 @@ def register():
                 "VALUES(:username, :password, :email, datetime('now'))"),
                username=username, password=generate_password_hash(password), email=email)
     if not app.config['TESTING']:
-        send_email('Confirm Your CTF Account',
+        send_email('CTFOJ Signup Confirmation',
                    app.config['MAIL_DEFAULT_SENDER'], [email], text, mail)
 
     flash(('An account creation confirmation email has been sent to the email address '
@@ -305,7 +305,7 @@ def confirm_register(token):
     if datetime.strptime(token["expiration"], "%Y-%m-%dT%H:%M:%S.%f") < datetime.utcnow():
         db.execute(
             "DELETE FROM users WHERE verified=0 and email=:email", email=token['email'])
-        flash("Email verification link expired. Please register again using the same email",  # noqa
+        flash("Email verification link expired. Please register again using the same email.",  # noqa
               "danger")
         return redirect("/register")
 
@@ -319,6 +319,23 @@ def confirm_register(token):
     session["admin"] = False  # ensure no one can get admin right after registering
 
     return redirect("/problem/helloworld")
+
+
+@app.route('/cancelregister/<token>')
+def cancel_register(token):
+    try:
+        token = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+    except Exception as e:
+        sys.stderr.write(str(e))
+        token = 0
+    if not token:
+        flash("Email verification link invalid", "danger")
+        return redirect("/register")
+    db.execute(
+        "DELETE FROM users WHERE verified=0 and email=:email", email=token['email'])
+    flash("Your registration has been successfully removed from our database.",  # noqa
+            "success")
+    return redirect("/register")
 
 
 @app.route('/confirmlogin/<token>')
@@ -447,7 +464,7 @@ def forgotpassword():
         text = render_template('email/reset_password_text.txt',
                                username=rows[0]["username"], token=token)
         if not app.config['TESTING']:
-            send_email('Reset Your CTF Password',
+            send_email('CTFOJ Password Reset',
                        app.config['MAIL_DEFAULT_SENDER'], [email], text, mail)
 
     flash(('If there is an account associated with that email, a password reset email '
@@ -678,6 +695,11 @@ def contest_problem(contest_id, problem_id):
 
     flash('Congratulations! You have solved this problem!', 'success')
     return render_template("contest/contest_problem.html", data=check[0])
+
+
+@app.route("/docs")
+def docs():
+    return redirect(app.config['DOCS_URL'])
 
 
 @app.route("/contest/<contest_id>/problem/<problem_id>/publish", methods=["POST"])
