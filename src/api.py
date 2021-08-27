@@ -17,7 +17,8 @@ def api_documentation():
 @api.route("/getkey", methods=["POST"])
 @login_required
 def get_api_key():
-    logger.info(f"User #{session['user_id']} ({session['username']}) generated a new API key", extra={"section": "api"})
+    logger.info((f"User #{session['user_id']} ({session['username']}) "
+                 "generated a new API key"), extra={"section": "api"})
     from application import db
     new_key = str(uuid.uuid4())
     while len(db.execute("SELECT * FROM users WHERE api=?", new_key)) != 0:
