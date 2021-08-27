@@ -210,7 +210,7 @@ def login():
 
         flash(('A login confirmation email has been sent to the email address you '
                'provided. Be sure to check your spam folder!'), 'success')
-        logger.info((f"User #{session['user_id']} ({session['username']}) initiated 2FA "
+        logger.info((f"User #{rows[0]['id']} ({rows[0]['username']}) initiated 2FA "
                      f"on IP {request.remote_addr}"), extra={"section": "auth"})
         return render_template("auth/login.html", site_key=app.config['HCAPTCHA_SITE'])
 
@@ -523,7 +523,7 @@ def reset_password_user(token):
     db.execute("UPDATE users SET password=:new WHERE id=:id",
                new=generate_password_hash(password), id=user_id)
 
-    logger.info((f"User #{rows[0]['id']} completed a password reset from "
+    logger.info((f"User #{user_id} completed a password reset from "
                  f"IP {request.remote_addr}"), extra={"section": "auth"})
     flash('Your password has been successfully reset', 'success')
     return redirect("/login")
