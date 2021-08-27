@@ -6,40 +6,34 @@ PYTHPIP=$(which pip3)
 python3 --version
 if [[ $? != 0 ]]; then
     python --version
-	if [[ $? != 0 ]]; then
-		echo "Python 3 not installed. Make sure you have Python 3 installed and available in PATH."
-		echo "**STOPPING**"
-		exit 1
-	fi
-	if [[ $(python --version | grep "Python 3" | wc -c) -eq 0 ]]; then
-		echo "Python 3 not installed. Make sure you have Python 3 installed and available in PATH."
-		echo "**STOPPING**"
-		exit 1
-	else
-		pip --version
-		if [[ $? != 0 ]]; then
-			echo "pip not installed. Make sure you have pip installed and available in PATH."
-			echo "**STOPPING**"
-			exit 1
-		fi
-		PYTH=$(which python)
-		PYTHPIP=$(which pip)
-	fi
+    if [[ $? != 0 ]]; then
+        echo "Python 3 not installed. Make sure you have Python 3 installed and available in PATH."
+        echo "**STOPPING**"
+        exit 1
+    fi
+    if [[ $(python --version | grep "Python 3" | wc -c) -eq 0 ]]; then
+        echo "Python 3 not installed. Make sure you have Python 3 installed and available in PATH."
+        echo "**STOPPING**"
+        exit 1
+    else
+        pip --version
+        if [[ $? != 0 ]]; then
+            echo "pip not installed. Make sure you have pip installed and available in PATH."
+            echo "**STOPPING**"
+            exit 1
+        fi
+        PYTH=$(which python)
+        PYTHPIP=$(which pip)
+    fi
 else
-	pip3 --version
-	if [[ $? != 0 ]]; then
-		echo "pip3 not installed. Make sure you have pip3 installed and available in PATH."
-		echo "**STOPPING**"
-		exit 1
-	fi
+    pip3 --version
+    if [[ $? != 0 ]]; then
+        echo "pip3 not installed. Make sure you have pip3 installed and available in PATH."
+        echo "**STOPPING**"
+        exit 1
+    fi
 fi
 
-"$PYTH" -m venv .
-if [[ $? != 0 ]]; then
-    echo "venv creation failed. Make sure you have Python 3 and the virtualenv package installed."
-    echo "**STOPPING**"
-    exit 1
-fi
 if [[ $(which sqlite3 | wc -c) -eq 0 ]]; then
     echo "sqlite3 not installed. Make sure it is installed and available in PATH."
     echo "**STOPPING**"
@@ -50,9 +44,14 @@ if [[ $(which nano | wc -c) -eq 0 ]]; then
     echo "**STOPPING**"
     exit 1
 fi
+"$PYTH" -m venv .
+if [[ $? != 0 ]]; then
+    echo "venv creation failed. Make sure you have Python 3 and the virtualenv package installed."
+    echo "**STOPPING**"
+    exit 1
+fi
 echo "Precheck complate!"
-. bin/activate
-. Scripts/activate
+. bin/activate || . Scripts/activate
 cd src
 echo "Installing dependencies..."
 "$PYTHPIP" install wheel
