@@ -206,6 +206,7 @@ def login():
 
         flash(('A login confirmation email has been sent to the email address you '
                'provided. Be sure to check your spam folder!'), 'success')
+        logger.info(f"User #{session['user_id']} ({session['username']}) initiated 2FA in on IP {request.remote_addr}", extra={"section": "auth"})
         return render_template("auth/login.html", site_key=app.config['HCAPTCHA_SITE'])
 
     # Remember which user has logged in
@@ -213,6 +214,7 @@ def login():
     session["username"] = rows[0]["username"]
     session["admin"] = rows[0]["admin"]
 
+    logger.info(f"User #{session['user_id']} ({session['username']}) logged in on IP {request.remote_addr}", extra={"section": "auth"})
     # Redirect user to next page
     next_url = request.form.get("next")
     if next_url and '//' not in next_url and ':' not in next_url:
@@ -289,6 +291,7 @@ def register():
 
     flash(('An account creation confirmation email has been sent to the email address '
            'you provided. Be sure to check your spam folder!'), 'success')
+    logger.info(f"User {username} ({email}) has initiated a registration request on IP {request.remote_addr}", extra={"section": "auth"})
     return render_template("auth/register.html", site_key=app.config['HCAPTCHA_SITE'])
 
 
@@ -318,6 +321,7 @@ def confirm_register(token):
     session["username"] = user["username"]
     session["admin"] = False  # ensure no one can get admin right after registering
 
+    logger.info(f"User #{session['user_id']} ({session['username']}) has successfully registered on IP {request.remote_addr}", extra={"section": "auth"})
     return redirect("/problem/helloworld")
 
 
@@ -335,6 +339,7 @@ def cancel_register(token):
         "DELETE FROM users WHERE verified=0 and email=:email", email=token['email'])
     flash("Your registration has been successfully removed from our database.",  # noqa
             "success")
+    logger.info(f"User #{session['user_id']} ({session['username']}) has cancelled registration on IP {request.remote_addr}", extra={"section": "auth"})
     return redirect("/register")
 
 
@@ -362,6 +367,7 @@ def confirm_login(token):
     session["username"] = user["username"]
     session["admin"] = user["admin"]
 
+    logger.info(f"User #{session['user_id']} ({session['username']}) logged in via 2FA on IP {request.remote_addr}", extra={"section": "auth"})
     return redirect("/")
 
 
@@ -403,6 +409,7 @@ def changepassword():
     db.execute("UPDATE users SET password=:new WHERE id=:id",
                new=generate_password_hash(new_password), id=session["user_id"])
 
+    logger.info(f"User #{session['user_id']} ({session['username']}) has changed their password", extra={"section": "auth"})
     flash("Password change successful", "success")
     return redirect("/settings")
 
@@ -423,12 +430,13 @@ def toggle2fa():
         flash('Incorrect password', 'danger')
         return render_template("toggle2fa.html", status=user["twofa"]), 401
 
+    msg = "disabled" if user["twofa"] else "enabled"
     if user["twofa"]:
         db.execute("UPDATE users SET twofa=0 WHERE id=:id", id=session["user_id"])
-        flash("2FA successfully disabled", "success")
     else:
         db.execute("UPDATE users SET twofa=1 WHERE id=:id", id=session["user_id"])
-        flash("2FA successfully enabled", "success")
+    flash("2FA successfully " + msg, "success")
+    logger.info(f"User #{session['user_id']} ({session['username']}) {msg} 2FA", extra={"section": "auth"})
     return redirect("/settings")
 
 
@@ -463,6 +471,7 @@ def forgotpassword():
         token = create_jwt({'user_id': rows[0]["id"]}, app.config['SECRET_KEY'])
         text = render_template('email/reset_password_text.txt',
                                username=rows[0]["username"], token=token)
+        logger.info(f"User #{rows[0]['id']} ({rows[0]['username']}) initiated a password reset from IP {request.remote_addr}", extra={"section": "auth"})
         if not app.config['TESTING']:
             send_email('CTFOJ Password Reset',
                        app.config['MAIL_DEFAULT_SENDER'], [email], text, mail)
@@ -501,6 +510,7 @@ def reset_password_user(token):
     db.execute("UPDATE users SET password=:new WHERE id=:id",
                new=generate_password_hash(password), id=user_id)
 
+    logger.info(f"User #{rows[0]['id']} completed a password reset from IP {request.remote_addr}", extra={"section": "auth"})
     flash('Your password has been successfully reset', 'success')
     return redirect("/login")
 
@@ -1472,11 +1482,9 @@ def ban():
     db.execute("UPDATE users SET banned=:status WHERE id=:id",
                status=not user["banned"], id=user_id)
 
-    if user["banned"]:
-        flash("Successfully unbanned " + user["username"], "success")
-    else:
-        flash("Successfully banned " + user["username"], "success")
-
+    msg = "unbanned" if user["banned"] else "banned"
+    flash(f"Successfully {msg} {user['username']}", "success")
+    logger.info(f"User #{user_id} ({user['username']}) {msg} by user #{session['user_id']} ({session['username']})", extra={"section": "auth"})
     return redirect("/admin/users")
 
 
@@ -1500,6 +1508,7 @@ def reset_password():
 
     flash(f"Password for {user[0]['username']} resetted! Their new password is {password}",  # noqa
           "success")
+    logger.info(f"User #{user_id} ({user[0]['username']})'s password reset by user #{session['user_id']} ({session['username']})", extra={"section": "auth"})
     return redirect("/admin/users")
 
 
@@ -1531,10 +1540,12 @@ def makeadmin():
     if admin_status and session["user_id"] == 1:
         db.execute("UPDATE users SET admin=0 WHERE id=:id", id=user_id)
         flash("Admin privileges for " + user[0]["username"] + " revoked", "success")
+        logger.info(f"Admin privileges for user #{user_id} ({user[0]['username']}) revoked", extra={"section": "auth"})
         return redirect("/admin/users")
     else:
         db.execute("UPDATE users SET admin=1 WHERE id=:id", id=user_id)
         flash("Admin privileges for " + user[0]["username"] + " granted", "success")
+        logger.info(f"Admin privileges for user #{user_id} ({user[0]['username']}) granted by user #{session['user_id']} ({session['username']})", extra={"section": "auth"})
         return redirect("/admin/users")
 
 
@@ -1686,13 +1697,14 @@ def editcontest(contest_id):
 def maintenance():
     maintenance_mode = os.path.exists('maintenance_mode')
 
+    msg = "Disabled" if maintenance_mode else "Enabled"
     if maintenance_mode:
         os.remove('maintenance_mode')
-        flash("Disabled maintenance mode", "success")
     else:
         write_file('maintenance_mode', '')
-        flash("Enabled maintenance mode", "success")
+    flash(msg + " maintenance mode", "success")
 
+    logger.info(f"{msg} maintenance mode by user #{session['user_id']} ({session['username']})", extra={"section": "misc"})
     return redirect('/admin/console')
 
 

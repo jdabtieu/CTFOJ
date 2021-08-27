@@ -1,4 +1,5 @@
 import jwt
+import logging
 import math
 import secrets
 import re
@@ -224,20 +225,24 @@ def login_chk(rows):
     Used by login() in application.py
     rows is a result of a db query for the user
     """
+    logger = logging.getLogger("CTFOJ")
     # Check if username and password match db entry
     if len(rows) != 1 or not check_password_hash(rows[0]["password"],
                                                  request.form.get("password")):
         flash('Incorrect username/password', 'danger')
+        logger.info(f"Incorrect login attempt from IP {request.remote_addr}", extra={"section": "auth"})
         return 401
 
     # Check if user is banned
     if rows[0]["banned"]:
         flash('You are banned! Please message an admin to appeal the ban', 'danger')
+        logger.info(f"User #{session['user_id']} ({session['username']}) tried to login but is banned", extra={"section": "auth"})
         return 403
 
     # Check if user's account is confirmed
     if not rows[0]["verified"]:
         flash('You have not confirmed your account yet. Please check your email', 'danger')  # noqa
+        logger.info(f"User #{session['user_id']} ({session['username']}) tried to login but has not comfirmed their account yet", extra={"section": "auth"})
         return 403
 
     return 0
