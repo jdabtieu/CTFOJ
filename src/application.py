@@ -631,6 +631,9 @@ def contest_notify(contest_id):
     if not app.config['TESTING']:
         send_email(subject, app.config['MAIL_DEFAULT_SENDER'], [], message, emails)
 
+    logger.info((f"User #{session['user_id']} ({session['username']}) sent a "
+                 f"notification email to participants of contest {contest_id}"),
+                extra={"section": "problem"})
     flash('Participants sucessfully notified', 'success')
     return redirect("/contest/" + contest_id)
 
@@ -744,6 +747,8 @@ def publish_contest_problem(contest_id, problem_id):
         "UPDATE contest_problems SET draft=0 WHERE problem_id=:pid AND contest_id=:cid",
         pid=problem_id, cid=contest_id)
 
+    logger.info((f"User #{session['user_id']} ({session['username']}) published "
+                 f"{problem_id} from contest {contest_id}"), extra={"section": "contest"})
     flash('Problem successfully published', 'success')
     return redirect("/contest/" + contest_id + "/problem/" + problem_id)
 
@@ -763,7 +768,7 @@ def edit_contest_problem(contest_id, problem_id):
         return render_template("contest/contest_problem_noexist.html"), 404
 
     if request.method == "GET":
-        return render_template('problem/edit_problem.html', data=data[0])
+        return render_template('contest/edit_problem.html', data=data[0])
 
     # Reached via POST
 
@@ -777,12 +782,12 @@ def edit_contest_problem(contest_id, problem_id):
     if (not new_name or not new_description or not new_category
             or (not new_points and data[0]["score_users"] == -1)):
         flash('You have not entered all required fields', 'danger')
-        return render_template('problem/edit_problem.html', data=data[0]), 400
+        return render_template('contest/edit_problem.html', data=data[0]), 400
 
     if new_flag:
         if not verify_flag(new_flag):
             flash('Invalid flag', 'danger')
-            return render_template('problem/edit_problem.html', data=data[0]), 400
+            return render_template('contest/edit_problem.html', data=data[0]), 400
         if request.form.get("rejudge"):
             rejudge_contest_problem(contest_id, problem_id, new_flag)
     else:
@@ -812,6 +817,9 @@ def edit_contest_problem(contest_id, problem_id):
         f'metadata/contests/{contest_id}/{problem_id}/description.md', new_description)
     write_file(f'metadata/contests/{contest_id}/{problem_id}/hints.md', new_hint)
 
+    logger.info((f"User #{session['user_id']} ({session['username']}) edited problem "
+                 f"{problem_id} in contest {contest_id}"),
+                extra={"section": "contest"})
     flash('Problem successfully edited', 'success')
     return redirect(request.path[:-5])
 
@@ -855,6 +863,9 @@ def contest_dq(contest_id):
         "UPDATE contest_users SET points=-999999 WHERE user_id=:uid AND contest_id=:cid",
         uid=user_id, cid=contest_id)
 
+    logger.info((f"User #{user_id} banned from contest {contest_id} by "
+                 f"user #{session['user_id']} ({session['username']})"),
+                extra={"section": "auth"})
     return redirect("/contest/" + contest_id + "/scoreboard")
 
 
@@ -954,6 +965,9 @@ def contest_add_problem(contest_id):
 
     # Go to contest page on success
     flash('Problem successfully created', 'success')
+    logger.info((f"User #{session['user_id']} ({session['username']}) added problem "
+                 f"{problem_id} to contest {contest_id}"),
+                extra={"section": "contest"})
     return redirect("/contest/" + contest_id + "/problem/" + problem_id)
 
 
@@ -1011,6 +1025,9 @@ def export_contest_problem(contest_id, problem_id):
                 'metadata/problems/' + new_id + '/hints.md')
     open('metadata/problems/' + new_id + '/editorial.md', 'w').close()
 
+    logger.info((f"User #{session['user_id']} ({session['username']}) exported problem "
+                 f"{problem_id} from contest {contest_id} to {new_id}"),
+                extra={"section": "problem"})
     flash('Problem successfully exported', 'success')
     return redirect("/problem/" + new_id)
 
@@ -1147,6 +1164,8 @@ def publish_problem(problem_id):
 
     db.execute("UPDATE problems SET draft=0 WHERE id=:problem_id", problem_id=problem_id)
 
+    logger.info(f"User #{session['user_id']} ({session['username']}) published {problem_id}",  # noqa
+                extra={"section": "problem"})
     flash('Problem successfully published', 'success')
     return redirect("/problem/" + problem_id)
 
@@ -1217,6 +1236,8 @@ def editproblem(problem_id):
     write_file('metadata/problems/' + problem_id + '/description.md', new_description)
     write_file('metadata/problems/' + problem_id + '/hints.md', new_hint)
 
+    logger.info((f"User #{session['user_id']} ({session['username']}) updated problem "
+                 f"{problem_id}"), extra={"section": "problem"})
     flash('Problem successfully edited', 'success')
     return redirect("/problem/" + problem_id)
 
@@ -1245,6 +1266,8 @@ def problem_editeditorial(problem_id):
 
     write_file('metadata/problems/' + problem_id + '/editorial.md', new_editorial)
 
+    logger.info((f"User #{session['user_id']} ({session['username']}) updated the "
+                 f"editorial for problem {problem_id}"), extra={"section": "problem"})
     flash('Editorial successfully edited', 'success')
     return redirect("/problem/" + problem_id)
 
@@ -1264,6 +1287,8 @@ def delete_problem(problem_id):
     db.execute("COMMIT")
     shutil.rmtree(f"metadata/problems/{problem_id}")
 
+    logger.info((f"User #{session['user_id']} ({session['username']}) deleted "
+                 f"problem {problem_id}"), extra={"section": "problem"})
     flash('Problem successfully deleted', 'success')
     return redirect("/problems")
 
@@ -1399,6 +1424,8 @@ def admin_createcontest():
     os.makedirs('metadata/contests/' + contest_id)
     write_file('metadata/contests/' + contest_id + '/description.md', description)
 
+    logger.info((f"User #{session['user_id']} ({session['username']}) created "
+                 f"contest {contest_id}"), extra={"section": "contest"})
     flash('Contest successfully created', 'success')
     return redirect("/contest/" + contest_id)
 
@@ -1464,6 +1491,8 @@ def createproblem():
     write_file('metadata/problems/' + problem_id + '/hints.md', hints)
     open('metadata/problems/' + problem_id + '/editorial.md', 'w').close()
 
+    logger.info((f"User #{session['user_id']} ({session['username']}) created "
+                 f"problem {problem_id}"), extra={"section": "problem"})
     flash('Problem successfully created', 'success')
     return redirect("/problem/" + problem_id)
 
@@ -1591,6 +1620,8 @@ def createannouncement():
 
     write_file('metadata/announcements/' + str(aid) + '.md', description)
 
+    logger.info((f"User #{session['user_id']} ({session['username']}) created "
+                 f"announcement {aid}"), extra={"section": "announcement"})
     flash('Announcement successfully created', 'success')
     return redirect("/")
 
@@ -1605,6 +1636,8 @@ def delete_announcement():
     db.execute("DELETE FROM announcements WHERE id=:id", id=aid)
     os.remove('metadata/announcements/' + aid + '.md')
 
+    logger.info((f"User #{session['user_id']} ({session['username']}) deleted "
+                 f"announcement {aid}"), extra={"section": "announcement"})
     flash('Announcement successfully deleted', 'success')
     return redirect("/")
 
@@ -1617,7 +1650,7 @@ def delete_contest(contest_id):
         return render_template("contest/contest_noexist.html")
 
     if request.method == "GET":
-        return render_template("contest/delete_confirm.html", data=check[0])
+        return render_template("contest/delete_confirm.html", data=contest_id)
 
     # Reached using POST
 
@@ -1630,6 +1663,8 @@ def delete_contest(contest_id):
 
     shutil.rmtree('metadata/contests/' + contest_id)
 
+    logger.info((f"User #{session['user_id']} ({session['username']}) deleted "
+                 f"contest {contest_id}"), extra={"section": "contest"})
     flash('Contest successfully deleted', 'success')
     return redirect("/contests")
 
@@ -1666,6 +1701,8 @@ def editannouncement(aid):
 
     write_file('metadata/announcements/' + aid + '.md', new_description)
 
+    logger.info((f"User #{session['user_id']} ({session['username']}) updated "
+                 f"announcement {aid}"), extra={"section": "announcement"})
     flash('Announcement successfully edited', 'success')
     return redirect("/")
 
@@ -1709,6 +1746,8 @@ def editcontest(contest_id):
 
     write_file(f'metadata/contests/{contest_id}/description.md', new_description)
 
+    logger.info((f"User #{session['user_id']} ({session['username']}) updated "
+                 f"contest {contest_id}"), extra={"section": "contest"})
     flash('Contest successfully edited', 'success')
     return redirect("/contests")
 
@@ -1752,6 +1791,8 @@ def edit_homepage():
 
     write_file(app.config['HOMEPAGE_FILE'], content)
 
+    logger.info(f"User #{session['user_id']} ({session['username']}) updated the homepage ",  # noqa
+                extra={"section": "announcement"})
     flash("You have successfully edited the homepage!", "success")
     return redirect("/admin/previewhomepage")
 
