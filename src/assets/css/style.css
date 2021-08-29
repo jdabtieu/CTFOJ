@@ -115,6 +115,14 @@
     filter: drop-shadow(6px 6px 4px #444444);
 }
 
+.user-ban {
+    color: red;
+}
+
+.user-admin {
+    font-weight: bold;
+}
+
 /****************** MD LIVE PREVIEW **************************/
 textarea.md-preview {
     min-height: 400px;

@@ -27,9 +27,9 @@
             {% for row in data %}
             <tr>
                 <td class="userid">{{ row["id"] }}</td>
-                <td class="username"
-                    style="{{ 'color:red;' if row['banned'] }}
-                           {{ 'font-weight:bold;' if row['admin'] }}">
+                <td class="username
+                           {{ 'user-ban' if row['banned'] }}
+                           {{ 'user-admin' if row['admin'] }}">
                     {{ row["username"] }}
                 </td>
                 <td>{{ row["email"] }}</td>
