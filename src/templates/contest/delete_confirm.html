@@ -1,11 +1,11 @@
 {% extends "layout.html" %}
 
-{% block title %}Delete {{ data["name"] }}{% endblock %}
+{% block title %}Delete {{ data }}{% endblock %}
 
 {% block main %}
-<h1 >Delete {{ data["name"] }}</h1>
+<h1 >Delete {{ data }}</h1>
 <p style="color: red;">
-    Are you sure you want to delete the contest {{ data["name"] }}?
+    Are you sure you want to delete the contest {{ data }}?
     This action is irreversible.
 </p>
 <form method="post">
