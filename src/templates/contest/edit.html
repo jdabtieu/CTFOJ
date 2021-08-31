@@ -3,7 +3,7 @@
 {% block title %}Edit Contest{% endblock %}
 
 {% block preload %}
-<link rel="preload" href="/api/contest/{{ request.path.split('/')[3] }}" as="fetch" crossorigin="anonymous">
+<link rel="preload" href="/api/contest/{{ request.path.split('/')[2] }}" as="fetch" crossorigin="anonymous">
 {% endblock %}
 
 {% block main %}
@@ -43,7 +43,7 @@
 {% endblock %}
 {% block script %}
 <script>
-    const contestId = "{{ request.path.split('/')[3] }}";
+    const contestId = "{{ request.path.split('/')[2] }}";
     const description = document.getElementById("description");
     const outputDiv = document.getElementById("description-out");
     outputDiv.attachShadow({mode: "open"});

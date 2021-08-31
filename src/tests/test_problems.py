@@ -16,7 +16,7 @@ def test_problem(client, database):
     file = open("test_upload.txt", "w")
     file.write('ree')
     file.close()
-    result = client.post('/admin/createproblem', data={
+    result = client.post('/problems/create', data={
         'id': 'helloworldtesting',
         'name': 'hello world',
         'description': 'a short fun problem',

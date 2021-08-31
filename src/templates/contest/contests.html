@@ -18,14 +18,14 @@
         <p style="margin-bottom: 0;">End: <span class="dt">{{ contest["end"] }}</span></p>
         <div id="contest-{{ contest['id'] }}" class="hidden smarkdown"></div>
         {% if session["admin"] %}
-            <a href="/admin/editcontest/{{ contest['id'] }}"
+            <a href="/contest/{{ contest['id'] }}/edit"
                style="position: absolute; top: 12px; right: 36px;">
                 <img src="/assets/images/pencil.svg"
                      onerror="this.src='/assets/images/pencil.png'"
                      alt="Edit contest"
                      class="icon">
             </a>
-            <a href="/admin/deletecontest/{{ contest['id'] }}"
+            <a href="/contest/{{ contest['id'] }}/delete"
                style="position: absolute; top: 12px; right: 16px;">
                 <img src="/assets/images/trash.svg"
                      onerror="this.src='/assets/images/trash.png'"
@@ -51,14 +51,14 @@
         <p style="margin-bottom: 0;">End: <span class="dt">{{ contest["end"] }}</span></p>
         <div id="contest-{{ contest['id'] }}" class="hidden smarkdown"></div>
         {% if session["admin"] %}
-            <a href="/admin/editcontest/{{ contest['id'] }}"
+            <a href="/contest/{{ contest['id'] }}/edit"
                style="position: absolute; top: 12px; right: 36px;">
                 <img src="/assets/images/pencil.svg"
                      onerror="this.src='/assets/images/pencil.png'"
                      alt="Edit contest"
                      class="icon">
             </a>
-            <a href="/admin/deletecontest/{{ contest['id'] }}"
+            <a href="/contest/{{ contest['id'] }}/delete"
                style="position: absolute; top: 12px; right: 16px;">
                 <img src="/assets/images/trash.svg"
                      onerror="this.src='/assets/images/trash.png'"
@@ -84,14 +84,14 @@
         <p style="margin-bottom: 0;">End: <span class="dt">{{ contest["end"] }}</span></p>
         <div id="contest-{{ contest['id'] }}" class="hidden smarkdown"></div>
         {% if session["admin"] %}
-            <a href="/admin/editcontest/{{ contest['id'] }}"
+            <a href="/contest/{{ contest['id'] }}/edit"
                style="position: absolute; top: 12px; right: 36px;">
                 <img src="/assets/images/pencil.svg"
                      onerror="this.src='/assets/images/pencil.png'"
                      alt="Edit contest"
                      class="icon">
             </a>
-            <a href="/admin/deletecontest/{{ contest['id'] }}"
+            <a href="/contest/{{ contest['id'] }}/delete"
                style="position: absolute; top: 12px; right: 16px;">
                 <img src="/assets/images/trash.svg"
                      onerror="this.src='/assets/images/trash.png'"

@@ -130,11 +130,6 @@ def index():
         return render_template("index.html", data=data, length=-(-length // 10))
 
 
-@app.route("/assets/<path:filename>")
-def get_asset(filename):
-    return send_from_directory("assets/", filename)
-
-
 @app.route("/privacy")
 def privacy():
     return render_template("privacy.html")
@@ -143,6 +138,16 @@ def privacy():
 @app.route("/terms")
 def terms():
     return render_template("terms.html")
+
+
+@app.route("/docs")
+def docs():
+    return redirect(app.config['DOCS_URL'])
+
+
+@app.route("/assets/<path:filename>")
+def get_asset(filename):
+    return send_from_directory("assets/", filename)
 
 
 @app.route("/dl/<path:filename>")
@@ -510,6 +515,59 @@ def contests():
                            past=past, current=current, future=future)
 
 
+@app.route("/contests/create", methods=["GET", "POST"])
+@admin_required
+def create_contest():
+    if request.method == "GET":
+        return render_template("contest/create.html")
+
+    # Reached using POST
+
+    contest_id = request.form.get("contest_id")
+
+    # Ensure contest ID is valid
+    if not contest_id or not verify_text(contest_id) or contest_id == "None":
+        flash('Invalid contest ID', 'danger')
+        return render_template("contest/create.html"), 400
+
+    contest_name = request.form.get("contest_name")
+
+    # Ensure contest doesn't already exist
+    check = db.execute("SELECT * FROM contests WHERE id=:cid OR name=:contest_name",
+                       cid=contest_id, contest_name=contest_name)
+    if len(check) != 0:
+        flash('A contest with that name or ID already exists', 'danger')
+        return render_template("contest/create.html"), 409
+
+    start = request.form.get("start")
+    end = request.form.get("end")
+
+    # Ensure start and end dates are valid
+    check_start = datetime.strptime(start, "%Y-%m-%dT%H:%M:%S.%fZ")
+    check_end = datetime.strptime(end, "%Y-%m-%dT%H:%M:%S.%fZ")
+    if check_end < check_start:
+        flash('Contest cannot end before it starts!', 'danger')
+        return render_template("contest/create.html"), 400
+
+    description = request.form.get("description").replace('\r', '')
+    scoreboard_visible = bool(request.form.get("scoreboard_visible"))
+    if not description:
+        flash('Description cannot be empty', 'danger')
+        return render_template("contest/create.html"), 400
+
+    db.execute(
+        ("INSERT INTO contests (id, name, start, end, scoreboard_visible) "
+         "VALUES (:id, :name, datetime(:start), datetime(:end), :scoreboard_visible)"),
+        id=contest_id, name=contest_name, start=start, end=end,
+        scoreboard_visible=scoreboard_visible)
+
+    os.makedirs('metadata/contests/' + contest_id)
+    write_file('metadata/contests/' + contest_id + '/description.md', description)
+
+    flash('Contest successfully created', 'success')
+    return redirect("/contest/" + contest_id)
+
+
 @app.route("/contest/<contest_id>")
 @login_required
 def contest(contest_id):
@@ -574,6 +632,74 @@ def contest(contest_id):
 
     return render_template("contest/contest.html", title=title, scoreboard=scoreboard,
                            data=data)
+
+
+@app.route('/contest/<contest_id>/edit', methods=["GET", "POST"])
+@admin_required
+def editcontest(contest_id):
+    data = db.execute("SELECT * FROM contests WHERE id=:cid", cid=contest_id)
+
+    # Ensure contest exists
+    if len(data) == 0:
+        flash('That contest does not exist', 'danger')
+        return redirect("/contests")
+
+    if request.method == "GET":
+        return render_template('contest/edit.html', data=data[0])
+
+    # Reached via POST
+    new_name = request.form.get("name")
+    new_description = request.form.get("description").replace('\r', '')
+    start = request.form.get("start")
+    end = request.form.get("end")
+
+    if not new_name:
+        flash('Name cannot be empty', 'danger')
+        return render_template('contest/edit.html', data=data[0]), 400
+    if not new_description:
+        flash('Description cannot be empty', 'danger')
+        return render_template('contest/edit.html', data=data[0]), 400
+
+    # Ensure start and end dates are valid
+    check_start = datetime.strptime(start, "%Y-%m-%dT%H:%M:%S.%fZ")
+    check_end = datetime.strptime(end, "%Y-%m-%dT%H:%M:%S.%fZ")
+    if check_end < check_start:
+        flash('Contest cannot end before it starts!', 'danger')
+        return render_template("contest/edit.html"), 400
+
+    db.execute(("UPDATE contests SET name=:name, start=datetime(:start), "
+                "end=datetime(:end) WHERE id=:cid"),
+               name=new_name, start=start, end=end, cid=contest_id)
+
+    write_file(f'metadata/contests/{contest_id}/description.md', new_description)
+
+    flash('Contest successfully edited', 'success')
+    return redirect("/contests")
+
+
+@app.route("/contest/<contest_id>/delete", methods=["GET", "POST"])
+@admin_required
+def delete_contest(contest_id):
+    # Ensure contest exists
+    if not contest_exists(contest_id):
+        return render_template("contest/contest_noexist.html")
+
+    if request.method == "GET":
+        return render_template("contest/delete_confirm.html", data=contest_id)
+
+    # Reached using POST
+
+    db.execute("BEGIN")
+    db.execute("DELETE FROM contests WHERE id=:cid", cid=contest_id)
+    db.execute("DELETE FROM contest_users WHERE contest_id=:cid", cid=contest_id)
+    db.execute("DELETE FROM contest_solved WHERE contest_id=:cid", cid=contest_id)
+    db.execute("DELETE FROM contest_problems WHERE contest_id=:cid", cid=contest_id)
+    db.execute("COMMIT")
+
+    shutil.rmtree('metadata/contests/' + contest_id)
+
+    flash('Contest successfully deleted', 'success')
+    return redirect("/contests")
 
 
 @app.route("/contest/<contest_id>/notify", methods=['GET', 'POST'])
@@ -686,11 +812,6 @@ def contest_problem(contest_id, problem_id):
 
     flash('Congratulations! You have solved this problem!', 'success')
     return render_template("contest/contest_problem.html", data=check[0])
-
-
-@app.route("/docs")
-def docs():
-    return redirect(app.config['DOCS_URL'])
 
 
 @app.route("/contest/<contest_id>/problem/<problem_id>/publish", methods=["POST"])
@@ -1040,6 +1161,72 @@ def problems():
                            categories=categories, selected=category)
 
 
+@app.route("/problems/create", methods=["GET", "POST"])
+@admin_required
+def create_problem():
+    if request.method == "GET":
+        return render_template("problem/create.html")
+
+    # Reached via POST
+
+    problem_id = request.form.get("id")
+    name = request.form.get("name")
+    description = request.form.get("description")
+    hints = request.form.get("hints")
+    point_value = request.form.get("point_value")
+    category = request.form.get("category")
+    flag = request.form.get("flag")
+    draft = 1 if request.form.get("draft") else 0
+
+    if (not problem_id or not name or not description or not point_value
+            or not category or not flag):
+        flash('You have not entered all required fields', 'danger')
+        return render_template("problem/create.html"), 400
+
+    # Check if problem ID is valid
+    if not verify_text(problem_id):
+        flash('Invalid problem ID', 'danger')
+        return render_template("problem/create.html"), 400
+
+    # Check if flag is valid
+    if not verify_flag(flag):
+        flash('Invalid flag', 'danger')
+        return render_template("problem/create.html"), 400
+
+    description = description.replace('\r', '')
+    if not hints:
+        hints = ""
+
+    # Ensure problem does not already exist
+    problem_info = db.execute("SELECT * FROM problems WHERE id=:problem_id OR name=:name",
+                              problem_id=problem_id, name=name)
+    if len(problem_info) != 0:
+        flash('A problem with this name or ID already exists', 'danger')
+        return render_template("problem/create.html"), 409
+
+    # Check if file exists & upload if it does
+    file = request.files["file"]
+    if file.filename:
+        filename = problem_id + ".zip"
+        file.save("dl/" + filename)
+        description += f'\n\n[{filename}](/dl/{filename})'
+
+    # Modify problems table
+    db.execute(("INSERT INTO problems (id, name, point_value, category, flag, draft) "
+                "VALUES (:id, :name, :point_value, :category, :flag, :draft)"),
+               id=problem_id, name=name, point_value=point_value, category=category,
+               flag=flag, draft=draft)
+
+    os.makedirs('metadata/problems/' + problem_id)
+    write_file('metadata/problems/' + problem_id + '/description.md', description)
+    write_file('metadata/problems/' + problem_id + '/hints.md', hints)
+    open('metadata/problems/' + problem_id + '/editorial.md', 'w').close()
+
+    flash('Problem successfully created', 'success')
+    return redirect("/problem/" + problem_id)
+
+
+
 @app.route('/problems/draft')
 @admin_required
 def draft_problems():
@@ -1317,124 +1504,6 @@ def admin_users():
     return render_template("admin/users.html", data=data, length=-(-length // 50))
 
 
-@app.route("/admin/createcontest", methods=["GET", "POST"])
-@admin_required
-def admin_createcontest():
-    if request.method == "GET":
-        return render_template("contest/create.html")
-
-    # Reached using POST
-
-    contest_id = request.form.get("contest_id")
-
-    # Ensure contest ID is valid
-    if not contest_id or not verify_text(contest_id) or contest_id == "None":
-        flash('Invalid contest ID', 'danger')
-        return render_template("contest/create.html"), 400
-
-    contest_name = request.form.get("contest_name")
-
-    # Ensure contest doesn't already exist
-    check = db.execute("SELECT * FROM contests WHERE id=:cid OR name=:contest_name",
-                       cid=contest_id, contest_name=contest_name)
-    if len(check) != 0:
-        flash('A contest with that name or ID already exists', 'danger')
-        return render_template("contest/create.html"), 409
-
-    start = request.form.get("start")
-    end = request.form.get("end")
-
-    # Ensure start and end dates are valid
-    check_start = datetime.strptime(start, "%Y-%m-%dT%H:%M:%S.%fZ")
-    check_end = datetime.strptime(end, "%Y-%m-%dT%H:%M:%S.%fZ")
-    if check_end < check_start:
-        flash('Contest cannot end before it starts!', 'danger')
-        return render_template("contest/create.html"), 400
-
-    description = request.form.get("description").replace('\r', '')
-    scoreboard_visible = bool(request.form.get("scoreboard_visible"))
-    if not description:
-        flash('Description cannot be empty', 'danger')
-        return render_template("contest/create.html"), 400
-
-    db.execute(
-        ("INSERT INTO contests (id, name, start, end, scoreboard_visible) "
-         "VALUES (:id, :name, datetime(:start), datetime(:end), :scoreboard_visible)"),
-        id=contest_id, name=contest_name, start=start, end=end,
-        scoreboard_visible=scoreboard_visible)
-
-    os.makedirs('metadata/contests/' + contest_id)
-    write_file('metadata/contests/' + contest_id + '/description.md', description)
-
-    flash('Contest successfully created', 'success')
-    return redirect("/contest/" + contest_id)
-
-
-@app.route("/admin/createproblem", methods=["GET", "POST"])
-@admin_required
-def createproblem():
-    if request.method == "GET":
-        return render_template("problem/create.html")
-
-    # Reached via POST
-
-    problem_id = request.form.get("id")
-    name = request.form.get("name")
-    description = request.form.get("description")
-    hints = request.form.get("hints")
-    point_value = request.form.get("point_value")
-    category = request.form.get("category")
-    flag = request.form.get("flag")
-    draft = 1 if request.form.get("draft") else 0
-
-    if (not problem_id or not name or not description or not point_value
-            or not category or not flag):
-        flash('You have not entered all required fields', 'danger')
-        return render_template("problem/create.html"), 400
-
-    # Check if problem ID is valid
-    if not verify_text(problem_id):
-        flash('Invalid problem ID', 'danger')
-        return render_template("problem/create.html"), 400
-
-    # Check if flag is valid
-    if not verify_flag(flag):
-        flash('Invalid flag', 'danger')
-        return render_template("problem/create.html"), 400
-
-    description = description.replace('\r', '')
-    if not hints:
-        hints = ""
-
-    # Ensure problem does not already exist
-    problem_info = db.execute("SELECT * FROM problems WHERE id=:problem_id OR name=:name",
-                              problem_id=problem_id, name=name)
-    if len(problem_info) != 0:
-        flash('A problem with this name or ID already exists', 'danger')
-        return render_template("problem/create.html"), 409
-
-    # Check if file exists & upload if it does
-    file = request.files["file"]
-    if file.filename:
-        filename = problem_id + ".zip"
-        file.save("dl/" + filename)
-        description += f'\n\n[{filename}](/dl/{filename})'
-
-    # Modify problems table
-    db.execute(("INSERT INTO problems (id, name, point_value, category, flag, draft) "
-                "VALUES (:id, :name, :point_value, :category, :flag, :draft)"),
-               id=problem_id, name=name, point_value=point_value, category=category,
-               flag=flag, draft=draft)
-
-    os.makedirs('metadata/problems/' + problem_id)
-    write_file('metadata/problems/' + problem_id + '/description.md', description)
-    write_file('metadata/problems/' + problem_id + '/hints.md', hints)
-    open('metadata/problems/' + problem_id + '/editorial.md', 'w').close()
-
-    flash('Problem successfully created', 'success')
-    return redirect("/problem/" + problem_id)
-
-
 @app.route("/admin/ban", methods=["POST"])
 @admin_required
 def ban():
@@ -1568,31 +1637,6 @@ def delete_announcement():
     return redirect("/")
 
 
-@app.route("/admin/deletecontest/<contest_id>", methods=["GET", "POST"])
-@admin_required
-def delete_contest(contest_id):
-    # Ensure contest exists
-    if not contest_exists(contest_id):
-        return render_template("contest/contest_noexist.html")
-
-    if request.method == "GET":
-        return render_template("contest/delete_confirm.html", data=check[0])
-
-    # Reached using POST
-
-    db.execute("BEGIN")
-    db.execute("DELETE FROM contests WHERE id=:cid", cid=contest_id)
-    db.execute("DELETE FROM contest_users WHERE contest_id=:cid", cid=contest_id)
-    db.execute("DELETE FROM contest_solved WHERE contest_id=:cid", cid=contest_id)
-    db.execute("DELETE FROM contest_problems WHERE contest_id=:cid", cid=contest_id)
-    db.execute("COMMIT")
-
-    shutil.rmtree('metadata/contests/' + contest_id)
-
-    flash('Contest successfully deleted', 'success')
-    return redirect("/contests")
-
-
 @app.route('/admin/editannouncement/<aid>', methods=["GET", "POST"])
 @admin_required
 def editannouncement(aid):
@@ -1627,49 +1671,6 @@ def editannouncement(aid):
 
     flash('Announcement successfully edited', 'success')
     return redirect("/")
-
-
-@app.route('/admin/editcontest/<contest_id>', methods=["GET", "POST"])
-@admin_required
-def editcontest(contest_id):
-    data = db.execute("SELECT * FROM contests WHERE id=:cid", cid=contest_id)
-
-    # Ensure contest exists
-    if len(data) == 0:
-        flash('That contest does not exist', 'danger')
-        return redirect("/contests")
-
-    if request.method == "GET":
-        return render_template('contest/edit.html', data=data[0])
-
-    # Reached via POST
-    new_name = request.form.get("name")
-    new_description = request.form.get("description").replace('\r', '')
-    start = request.form.get("start")
-    end = request.form.get("end")
-
-    if not new_name:
-        flash('Name cannot be empty', 'danger')
-        return render_template('contest/edit.html', data=data[0]), 400
-    if not new_description:
-        flash('Description cannot be empty', 'danger')
-        return render_template('contest/edit.html', data=data[0]), 400
-
-    # Ensure start and end dates are valid
-    check_start = datetime.strptime(start, "%Y-%m-%dT%H:%M:%S.%fZ")
-    check_end = datetime.strptime(end, "%Y-%m-%dT%H:%M:%S.%fZ")
-    if check_end < check_start:
-        flash('Contest cannot end before it starts!', 'danger')
-        return render_template("contest/edit.html"), 400
-
-    db.execute(("UPDATE contests SET name=:name, start=datetime(:start), "
-                "end=datetime(:end) WHERE id=:cid"),
-               name=new_name, start=start, end=end, cid=contest_id)
-
-    write_file(f'metadata/contests/{contest_id}/description.md', new_description)
-
-    flash('Contest successfully edited', 'success')
-    return redirect("/contests")
 
 
 @app.route("/admin/maintenance", methods=["POST"])

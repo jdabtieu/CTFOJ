@@ -16,7 +16,7 @@ def test_contest(client, database):
          "datetime('now'), 1, 0, 1, 0, '00000000-0000-0000-0000-000000000000')"))
     client.post('/login', data={'username': 'admin', 'password': 'CTFOJadmin'})
 
-    result = client.post('/admin/createcontest', data={
+    result = client.post('/contests/create', data={
         'contest_id': 'testingcontest',
         'contest_name': 'Testing Contest',
         'start': datetime.strftime(datetime.now(), "%Y-%m-%dT%H:%M:%S.%fZ"),
@@ -27,7 +27,7 @@ def test_contest(client, database):
     assert result.status_code == 200
     assert b'Testing Contest' in result.data
 
-    result = client.post('/admin/editcontest/testingcontest', data={
+    result = client.post('/contest/testingcontest/edit', data={
         'name': 'Testing Contest',
         'start': datetime.strftime(datetime.now(), "%Y-%m-%dT%H:%M:%S.%fZ"),
         'end': datetime.strftime(datetime.now() + timedelta(600), "%Y-%m-%dT%H:%M:%S.%fZ"),  # noqa E501
@@ -47,7 +47,7 @@ def test_contest(client, database):
     result = client.get('/contests')
     assert result.status_code == 200
 
-    result = client.get('/admin/editcontest/noexist', follow_redirects=True)
+    result = client.get('/contest/noexist/edit', follow_redirects=True)
     assert b'does not exist' in result.data
 
     result = client.get('/contest/testingcontest/scoreboard')

@@ -14,11 +14,11 @@ def test_admin(client, database):
     assert result.status_code == 200
     assert b'Create Announcement' in result.data
 
-    result = client.get('/admin/createcontest')
+    result = client.get('/contests/create')
     assert result.status_code == 200
     assert b'Create Contest' in result.data
 
-    result = client.get('/admin/createproblem')
+    result = client.get('/problems/create')
     assert result.status_code == 200
     assert b'Create Problem' in result.data
 
