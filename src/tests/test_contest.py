@@ -194,7 +194,7 @@ def test_contest(client, database):
     result = client.get('/contest/testingcontest/problem/dynscore')
     assert b'500' in result.data
 
-    client.post('/admin/deletecontest/testingcontest', follow_redirects=True)
+    client.post('/contest/testingcontest/delete', follow_redirects=True)
     assert result.status_code == 200
 
     shutil.rmtree('dl')
