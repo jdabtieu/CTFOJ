@@ -4,6 +4,19 @@
 # This should be run using Git Bash on Windows by executing ./wintest.sh in the tests directory
 # Alternatively, you can test manually however you like.
 
+# Prechecks
+if [[ $(ls | grep wintest.sh | wc -c) -eq 0 ]]; then
+    echo "Make sure you run wintest.sh in the tests directory."
+    echo "**STOPPING**"
+    exit 1
+fi
+ls /tmp/CTFOJ 2>/dev/null
+if [[ $? -eq 0 ]]; then
+    echo "/tmp/CTFOJ directory exists! Delete it for this test to run."
+    echo "**STOPPING**"
+    exit 1
+fi
+
 # Checkout repo
 echo 'Checking out working directory into /tmp/CTFOJ...'
 cp -r .. /tmp/CTFOJ
