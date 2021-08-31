@@ -1,11 +1,61 @@
 #!/bin/bash
 
-python3 -m venv .
-. bin/activate
+echo "Starting precheck..."
+PYTH=$(which python3)
+PYTHPIP=$(which pip3)
+python3 --version
+if [[ $? != 0 ]]; then
+    python --version
+    if [[ $? != 0 ]]; then
+        echo "Python 3 not installed. Make sure you have Python 3 installed and available in PATH."
+        echo "**STOPPING**"
+        exit 1
+    fi
+    if [[ $(python --version | grep "Python 3" | wc -c) -eq 0 ]]; then
+        echo "Python 3 not installed. Make sure you have Python 3 installed and available in PATH."
+        echo "**STOPPING**"
+        exit 1
+    else
+        pip --version
+        if [[ $? != 0 ]]; then
+            echo "pip not installed. Make sure you have pip installed and available in PATH."
+            echo "**STOPPING**"
+            exit 1
+        fi
+        PYTH=$(which python)
+        PYTHPIP=$(which pip)
+    fi
+else
+    pip3 --version
+    if [[ $? != 0 ]]; then
+        echo "pip3 not installed. Make sure you have pip3 installed and available in PATH."
+        echo "**STOPPING**"
+        exit 1
+    fi
+fi
+
+if [[ $(which sqlite3 | wc -c) -eq 0 ]]; then
+    echo "sqlite3 not installed. Make sure it is installed and available in PATH."
+    echo "**STOPPING**"
+    exit 1
+fi
+if [[ $(which nano | wc -c) -eq 0 ]]; then
+    echo "nano not installed. Make sure it is installed and available in PATH."
+    echo "**STOPPING**"
+    exit 1
+fi
+"$PYTH" -m venv .
+if [[ $? != 0 ]]; then
+    echo "venv creation failed. Make sure you have Python 3 and the virtualenv package installed."
+    echo "**STOPPING**"
+    exit 1
+fi
+echo "Precheck complate!"
+. bin/activate || . Scripts/activate
 cd src
 echo "Installing dependencies..."
-pip3 install wheel
-pip3 install -r requirements.txt
+"$PYTHPIP" install wheel
+"$PYTHPIP" install -r requirements.txt
 echo "Creating database..."
 sqlite3 database.db << EOF
 CREATE TABLE 'users' ('id' integer PRIMARY KEY NOT NULL, 'username' varchar(20) NOT NULL, 'password' varchar(64) NOT NULL, 'email' varchar(128), 'join_date' datetime NOT NULL DEFAULT (0), 'admin' boolean NOT NULL DEFAULT (0), 'banned' boolean NOT NULL DEFAULT (0), 'verified' boolean NOT NULL DEFAULT (0), 'twofa' boolean NOT NULL DEFAULT (0), 'api' varchar(36));
@@ -22,7 +72,7 @@ EOF
 echo "Finishing setup..."
 mkdir logs dl metadata metadata/contests metadata/problems metadata/announcements
 chmod +x daily_tasks.py
-python3 daily_tasks.py
+"$PYTH" daily_tasks.py
 cp default_settings.py settings.py
 cp templates/default_homepage.html metadata/homepage.html
 echo "Configuring settings..."
@@ -34,5 +84,5 @@ EOF
 nano settings.py
 echo "Success! CTFOJ is now set up."
 echo "Running application as debug... You may exit anytime by hitting Ctrl+C"
-python3 application.py
+"$PYTH" application.py
 deactivate

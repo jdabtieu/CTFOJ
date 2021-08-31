@@ -19,10 +19,8 @@ from werkzeug.exceptions import HTTPException, InternalServerError, default_exce
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from helpers import *  # noqa
-from api import api
 
 app = Flask(__name__)
-app.register_blueprint(api, url_prefix="/api")
 
 try:
     app.config.from_object('settings')
@@ -34,6 +32,13 @@ app.jinja_env.globals['CLUB_NAME'] = app.config['CLUB_NAME']
 app.jinja_env.globals['USE_CAPTCHA'] = app.config['USE_CAPTCHA']
 
 # Configure logging
+LOG_HANDLER = logging.FileHandler(app.config['LOGGING_FILE_LOCATION'])
+LOG_HANDLER.setFormatter(
+    logging.Formatter(fmt="[CTFOJ] [{section}] [{levelname}] [{asctime}] {message}",
+                      style='{'))
+logger = logging.getLogger("CTFOJ")
+logger.addHandler(LOG_HANDLER)
+logger.propagate = False
 for handler in logging.root.handlers[:]:
     logging.root.removeHandler(handler)
 logging.basicConfig(
@@ -61,11 +66,18 @@ mail = Mail(app)
 csrf = CSRFProtect(app)
 csrf.init_app(app)
 
+# Load API
+from api import api  # noqa
+app.register_blueprint(api, url_prefix="/api")
+
 # Validate settings
 if not app.config['TESTING']:
     with app.app_context():
         try:
-            send_email('CTFOJ Email Setup', app.config['MAIL_DEFAULT_SENDER'], [app.config['MAIL_DEFAULT_SENDER']], 'This email tests your configured email settings for CTFOJ. Please ignore this email.', mail)
+            send_email('CTFOJ Email Setup', app.config['MAIL_DEFAULT_SENDER'],
+                       [app.config['MAIL_DEFAULT_SENDER']],
+                       ('This email tests your configured email settings for CTFOJ. '
+                        'Please ignore this email.'))
         except Exception as error:
             logging.warning("Settings validation: Email credentials invalid.")
             logging.warning(str(error))
@@ -86,6 +98,7 @@ if not app.config['TESTING']:
                 logging.debug("Settings validation: Homepage file exists.")
             else:
                 logging.warning("Settings validation: Homepage file nonexistent.")
+
 
 @app.before_request
 def check_for_maintenance():
@@ -198,10 +211,12 @@ def login():
 
         if not app.config['TESTING']:
             send_email('CTFOJ Login Confirmation',
-                       app.config['MAIL_DEFAULT_SENDER'], [email], text, mail)
+                       app.config['MAIL_DEFAULT_SENDER'], [email], text)
 
         flash(('A login confirmation email has been sent to the email address you '
                'provided. Be sure to check your spam folder!'), 'success')
+        logger.info((f"User #{rows[0]['id']} ({rows[0]['username']}) initiated 2FA "
+                     f"on IP {request.remote_addr}"), extra={"section": "auth"})
         return render_template("auth/login.html", site_key=app.config['HCAPTCHA_SITE'])
 
     # Remember which user has logged in
@@ -209,6 +224,8 @@ def login():
     session["username"] = rows[0]["username"]
     session["admin"] = rows[0]["admin"]
 
+    logger.info((f"User #{session['user_id']} ({session['username']}) logged in "
+                 f"on IP {request.remote_addr}"), extra={"section": "auth"})
     # Redirect user to next page
     next_url = request.form.get("next")
     if next_url and '//' not in next_url and ':' not in next_url:
@@ -281,10 +298,12 @@ def register():
                username=username, password=generate_password_hash(password), email=email)
     if not app.config['TESTING']:
         send_email('CTFOJ Signup Confirmation',
-                   app.config['MAIL_DEFAULT_SENDER'], [email], text, mail)
+                   app.config['MAIL_DEFAULT_SENDER'], [email], text)
 
     flash(('An account creation confirmation email has been sent to the email address '
            'you provided. Be sure to check your spam folder!'), 'success')
+    logger.info((f"User {username} ({email}) has initiated a registration request "
+                 f"on IP {request.remote_addr}"), extra={"section": "auth"})
     return render_template("auth/register.html", site_key=app.config['HCAPTCHA_SITE'])
 
 
@@ -314,6 +333,8 @@ def confirm_register(token):
     session["username"] = user["username"]
     session["admin"] = False  # ensure no one can get admin right after registering
 
+    logger.info((f"User #{session['user_id']} ({session['username']}) has successfully "
+                 f"registered on IP {request.remote_addr}"), extra={"section": "auth"})
     return redirect("/problem/helloworld")
 
 
@@ -329,8 +350,9 @@ def cancel_register(token):
         return redirect("/register")
     db.execute(
         "DELETE FROM users WHERE verified=0 and email=:email", email=token['email'])
-    flash("Your registration has been successfully removed from our database.",  # noqa
-            "success")
+    flash("Your registration has been successfully removed from our database.", "success")
+    logger.info((f"User #{session['user_id']} ({session['username']}) has cancelled "
+                 f"registration on IP {request.remote_addr}"), extra={"section": "auth"})
     return redirect("/register")
 
 
@@ -358,6 +380,8 @@ def confirm_login(token):
     session["username"] = user["username"]
     session["admin"] = user["admin"]
 
+    logger.info((f"User #{session['user_id']} ({session['username']}) logged in via 2FA "
+                 f"on IP {request.remote_addr}"), extra={"section": "auth"})
     return redirect("/")
 
 
@@ -399,6 +423,8 @@ def changepassword():
     db.execute("UPDATE users SET password=:new WHERE id=:id",
                new=generate_password_hash(new_password), id=session["user_id"])
 
+    logger.info((f"User #{session['user_id']} ({session['username']}) has changed "
+                 "their password"), extra={"section": "auth"})
     flash("Password change successful", "success")
     return redirect("/settings")
 
@@ -419,12 +445,14 @@ def toggle2fa():
         flash('Incorrect password', 'danger')
         return render_template("toggle2fa.html", status=user["twofa"]), 401
 
+    msg = "disabled" if user["twofa"] else "enabled"
     if user["twofa"]:
         db.execute("UPDATE users SET twofa=0 WHERE id=:id", id=session["user_id"])
-        flash("2FA successfully disabled", "success")
     else:
         db.execute("UPDATE users SET twofa=1 WHERE id=:id", id=session["user_id"])
-        flash("2FA successfully enabled", "success")
+    flash("2FA successfully " + msg, "success")
+    logger.info(f"User #{session['user_id']} ({session['username']}) {msg} 2FA",
+                extra={"section": "auth"})
     return redirect("/settings")
 
 
@@ -459,9 +487,12 @@ def forgotpassword():
         token = create_jwt({'user_id': rows[0]["id"]}, app.config['SECRET_KEY'])
         text = render_template('email/reset_password_text.txt',
                                username=rows[0]["username"], token=token)
+        logger.info((f"User #{rows[0]['id']} ({rows[0]['username']}) initiated a "
+                     f"password reset from IP {request.remote_addr}"),
+                    extra={"section": "auth"})
         if not app.config['TESTING']:
             send_email('CTFOJ Password Reset',
-                       app.config['MAIL_DEFAULT_SENDER'], [email], text, mail)
+                       app.config['MAIL_DEFAULT_SENDER'], [email], text)
 
     flash(('If there is an account associated with that email, a password reset email '
            'has been sent'), 'success')
@@ -497,6 +528,8 @@ def reset_password_user(token):
     db.execute("UPDATE users SET password=:new WHERE id=:id",
                new=generate_password_hash(password), id=user_id)
 
+    logger.info((f"User #{user_id} completed a password reset from "
+                 f"IP {request.remote_addr}"), extra={"section": "auth"})
     flash('Your password has been successfully reset', 'success')
     return redirect("/login")
 
@@ -564,6 +597,8 @@ def create_contest():
     os.makedirs('metadata/contests/' + contest_id)
     write_file('metadata/contests/' + contest_id + '/description.md', description)
 
+    logger.info((f"User #{session['user_id']} ({session['username']}) created "
+                 f"contest {contest_id}"), extra={"section": "contest"})
     flash('Contest successfully created', 'success')
     return redirect("/contest/" + contest_id)
 
@@ -673,6 +708,8 @@ def editcontest(contest_id):
 
     write_file(f'metadata/contests/{contest_id}/description.md', new_description)
 
+    logger.info((f"User #{session['user_id']} ({session['username']}) updated "
+                 f"contest {contest_id}"), extra={"section": "contest"})
     flash('Contest successfully edited', 'success')
     return redirect("/contests")
 
@@ -698,6 +735,8 @@ def delete_contest(contest_id):
 
     shutil.rmtree('metadata/contests/' + contest_id)
 
+    logger.info((f"User #{session['user_id']} ({session['username']}) deleted "
+                 f"contest {contest_id}"), extra={"section": "contest"})
     flash('Contest successfully deleted', 'success')
     return redirect("/contests")
 
@@ -722,8 +761,11 @@ def contest_notify(contest_id):
                       cid=contest_id)
     emails = [participant["email"] for participant in data]
     if not app.config['TESTING']:
-        send_email(subject, app.config['MAIL_DEFAULT_SENDER'], [], message, mail, emails)
+        send_email(subject, app.config['MAIL_DEFAULT_SENDER'], [], message, emails)
 
+    logger.info((f"User #{session['user_id']} ({session['username']}) sent a "
+                 f"notification email to participants of contest {contest_id}"),
+                extra={"section": "problem"})
     flash('Participants sucessfully notified', 'success')
     return redirect("/contest/" + contest_id)
 
@@ -832,6 +874,8 @@ def publish_contest_problem(contest_id, problem_id):
         "UPDATE contest_problems SET draft=0 WHERE problem_id=:pid AND contest_id=:cid",
         pid=problem_id, cid=contest_id)
 
+    logger.info((f"User #{session['user_id']} ({session['username']}) published "
+                 f"{problem_id} from contest {contest_id}"), extra={"section": "contest"})
     flash('Problem successfully published', 'success')
     return redirect("/contest/" + contest_id + "/problem/" + problem_id)
 
@@ -851,7 +895,7 @@ def edit_contest_problem(contest_id, problem_id):
         return render_template("contest/contest_problem_noexist.html"), 404
 
     if request.method == "GET":
-        return render_template('problem/edit_problem.html', data=data[0])
+        return render_template('contest/edit_problem.html', data=data[0])
 
     # Reached via POST
 
@@ -865,12 +909,12 @@ def edit_contest_problem(contest_id, problem_id):
     if (not new_name or not new_description or not new_category
             or (not new_points and data[0]["score_users"] == -1)):
         flash('You have not entered all required fields', 'danger')
-        return render_template('problem/edit_problem.html', data=data[0]), 400
+        return render_template('contest/edit_problem.html', data=data[0]), 400
 
     if new_flag:
         if not verify_flag(new_flag):
             flash('Invalid flag', 'danger')
-            return render_template('problem/edit_problem.html', data=data[0]), 400
+            return render_template('contest/edit_problem.html', data=data[0]), 400
         if request.form.get("rejudge"):
             rejudge_contest_problem(contest_id, problem_id, new_flag)
     else:
@@ -900,6 +944,9 @@ def edit_contest_problem(contest_id, problem_id):
         f'metadata/contests/{contest_id}/{problem_id}/description.md', new_description)
     write_file(f'metadata/contests/{contest_id}/{problem_id}/hints.md', new_hint)
 
+    logger.info((f"User #{session['user_id']} ({session['username']}) edited problem "
+                 f"{problem_id} in contest {contest_id}"),
+                extra={"section": "contest"})
     flash('Problem successfully edited', 'success')
     return redirect(request.path[:-5])
 
@@ -943,6 +990,9 @@ def contest_dq(contest_id):
         "UPDATE contest_users SET points=-999999 WHERE user_id=:uid AND contest_id=:cid",
         uid=user_id, cid=contest_id)
 
+    logger.info((f"User #{user_id} banned from contest {contest_id} by "
+                 f"user #{session['user_id']} ({session['username']})"),
+                extra={"section": "auth"})
     return redirect("/contest/" + contest_id + "/scoreboard")
 
 
@@ -1042,6 +1092,9 @@ def contest_add_problem(contest_id):
 
     # Go to contest page on success
     flash('Problem successfully created', 'success')
+    logger.info((f"User #{session['user_id']} ({session['username']}) added problem "
+                 f"{problem_id} to contest {contest_id}"),
+                extra={"section": "contest"})
     return redirect("/contest/" + contest_id + "/problem/" + problem_id)
 
 
@@ -1099,6 +1152,9 @@ def export_contest_problem(contest_id, problem_id):
                 'metadata/problems/' + new_id + '/hints.md')
     open('metadata/problems/' + new_id + '/editorial.md', 'w').close()
 
+    logger.info((f"User #{session['user_id']} ({session['username']}) exported problem "
+                 f"{problem_id} from contest {contest_id} to {new_id}"),
+                extra={"section": "problem"})
     flash('Problem successfully exported', 'success')
     return redirect("/problem/" + new_id)
 
@@ -1222,6 +1278,8 @@ def create_problem():
     write_file('metadata/problems/' + problem_id + '/hints.md', hints)
     open('metadata/problems/' + problem_id + '/editorial.md', 'w').close()
 
+    logger.info((f"User #{session['user_id']} ({session['username']}) created "
+                 f"problem {problem_id}"), extra={"section": "problem"})
     flash('Problem successfully created', 'success')
     return redirect("/problem/" + problem_id)
 
@@ -1301,6 +1359,8 @@ def publish_problem(problem_id):
 
     db.execute("UPDATE problems SET draft=0 WHERE id=:problem_id", problem_id=problem_id)
 
+    logger.info(f"User #{session['user_id']} ({session['username']}) published {problem_id}",  # noqa
+                extra={"section": "problem"})
     flash('Problem successfully published', 'success')
     return redirect("/problem/" + problem_id)
 
@@ -1371,6 +1431,8 @@ def editproblem(problem_id):
     write_file('metadata/problems/' + problem_id + '/description.md', new_description)
     write_file('metadata/problems/' + problem_id + '/hints.md', new_hint)
 
+    logger.info((f"User #{session['user_id']} ({session['username']}) updated problem "
+                 f"{problem_id}"), extra={"section": "problem"})
     flash('Problem successfully edited', 'success')
     return redirect("/problem/" + problem_id)
 
@@ -1399,6 +1461,8 @@ def problem_editeditorial(problem_id):
 
     write_file('metadata/problems/' + problem_id + '/editorial.md', new_editorial)
 
+    logger.info((f"User #{session['user_id']} ({session['username']}) updated the "
+                 f"editorial for problem {problem_id}"), extra={"section": "problem"})
     flash('Editorial successfully edited', 'success')
     return redirect("/problem/" + problem_id)
 
@@ -1418,6 +1482,8 @@ def delete_problem(problem_id):
     db.execute("COMMIT")
     shutil.rmtree(f"metadata/problems/{problem_id}")
 
+    logger.info((f"User #{session['user_id']} ({session['username']}) deleted "
+                 f"problem {problem_id}"), extra={"section": "problem"})
     flash('Problem successfully deleted', 'success')
     return redirect("/problems")
 
@@ -1532,11 +1598,11 @@ def ban():
     db.execute("UPDATE users SET banned=:status WHERE id=:id",
                status=not user["banned"], id=user_id)
 
-    if user["banned"]:
-        flash("Successfully unbanned " + user["username"], "success")
-    else:
-        flash("Successfully banned " + user["username"], "success")
-
+    msg = "unbanned" if user["banned"] else "banned"
+    flash(f"Successfully {msg} {user['username']}", "success")
+    logger.info((f"User #{user_id} ({user['username']}) {msg} by "
+                 f"user #{session['user_id']} ({session['username']})"),
+                extra={"section": "auth"})
     return redirect("/admin/users")
 
 
@@ -1560,6 +1626,9 @@ def reset_password():
 
     flash(f"Password for {user[0]['username']} resetted! Their new password is {password}",  # noqa
           "success")
+    logger.info((f"User #{user_id} ({user[0]['username']})'s password reset by "
+                 f"user #{session['user_id']} ({session['username']})"),
+                extra={"section": "auth"})
     return redirect("/admin/users")
 
 
@@ -1591,10 +1660,15 @@ def makeadmin():
     if admin_status and session["user_id"] == 1:
         db.execute("UPDATE users SET admin=0 WHERE id=:id", id=user_id)
         flash("Admin privileges for " + user[0]["username"] + " revoked", "success")
+        logger.info(f"Admin privileges for user #{user_id} ({user[0]['username']}) revoked",  # noqa
+                    extra={"section": "auth"})
         return redirect("/admin/users")
     else:
         db.execute("UPDATE users SET admin=1 WHERE id=:id", id=user_id)
         flash("Admin privileges for " + user[0]["username"] + " granted", "success")
+        logger.info((f"Admin privileges for user #{user_id} ({user[0]['username']}) "
+                     f"granted by user #{session['user_id']} ({session['username']})"),
+                    extra={"section": "auth"})
         return redirect("/admin/users")
 
 
@@ -1619,6 +1693,8 @@ def createannouncement():
 
     write_file('metadata/announcements/' + str(aid) + '.md', description)
 
+    logger.info((f"User #{session['user_id']} ({session['username']}) created "
+                 f"announcement {aid}"), extra={"section": "announcement"})
     flash('Announcement successfully created', 'success')
     return redirect("/")
 
@@ -1633,6 +1709,8 @@ def delete_announcement():
     db.execute("DELETE FROM announcements WHERE id=:id", id=aid)
     os.remove('metadata/announcements/' + aid + '.md')
 
+    logger.info((f"User #{session['user_id']} ({session['username']}) deleted "
+                 f"announcement {aid}"), extra={"section": "announcement"})
     flash('Announcement successfully deleted', 'success')
     return redirect("/")
 
@@ -1669,6 +1747,8 @@ def editannouncement(aid):
 
     write_file('metadata/announcements/' + aid + '.md', new_description)
 
+    logger.info((f"User #{session['user_id']} ({session['username']}) updated "
+                 f"announcement {aid}"), extra={"section": "announcement"})
     flash('Announcement successfully edited', 'success')
     return redirect("/")
 
@@ -1678,13 +1758,16 @@ def editannouncement(aid):
 def maintenance():
     maintenance_mode = os.path.exists('maintenance_mode')
 
+    msg = "Disabled" if maintenance_mode else "Enabled"
     if maintenance_mode:
         os.remove('maintenance_mode')
-        flash("Disabled maintenance mode", "success")
     else:
         write_file('maintenance_mode', '')
-        flash("Enabled maintenance mode", "success")
+    flash(msg + " maintenance mode", "success")
 
+    logger.info((f"{msg} maintenance mode by "
+                 f"user #{session['user_id']} ({session['username']})"),
+                extra={"section": "misc"})
     return redirect('/admin/console')
 
 
@@ -1709,6 +1792,8 @@ def edit_homepage():
 
     write_file(app.config['HOMEPAGE_FILE'], content)
 
+    logger.info(f"User #{session['user_id']} ({session['username']}) updated the homepage ",  # noqa
+                extra={"section": "announcement"})
     flash("You have successfully edited the homepage!", "success")
     return redirect("/admin/previewhomepage")
 

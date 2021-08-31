@@ -1,0 +1,94 @@
+{% extends "layout.html" %}
+
+{% block title %}Edit {{ data["name"] }}{% endblock %}
+
+{% block preload %}
+<link rel="preload" href="/api/contest/{{ request.path.split('/')[2] }}/problem/description/{{ request.path.split('/')[4] }}" as="fetch" crossorigin="anonymous">
+<link rel="preload" href="/api/contest/{{ request.path.split('/')[2] }}/problem/hints/{{ request.path.split('/')[4] }}" as="fetch" crossorigin="anonymous">
+{% endblock %}
+
+{% block main %}
+<h1>Edit {{ data["name"] }}</h1>
+<form autocomplete="off" method="post">
+    <input class="form-control mb-3"
+           name="name"
+           value="{{ data['name'] }}"
+           placeholder="Name"
+           required>
+    <div style="display: flex;">
+        <textarea class="form-control mb-3 md-preview"
+                  id="description"
+                  name="description"
+                  rows="20"
+                  placeholder="Description"
+                  required></textarea>
+        <div id="description-out" class="md-preview"></div>
+    </div>
+    <div style="display: flex;">
+        <textarea class="form-control mb-3 md-preview"
+                  id="hints"
+                  name="hints"
+                  rows="20"
+                  placeholder="Hints"></textarea>
+        <div id="hints-out" class="md-preview"></div>
+    </div>
+    <input class="form-control mb-3"
+           name="category"
+           value="{{ data['category'] }}"
+           placeholder="Category"
+           required>
+    <div style="position: relative;">
+        <input class="form-control mb-3" id="flag" name="flag" placeholder="New flag (optional)">
+        <div style="position: absolute; right: 0; top: 0; width: initial;" class="form-control">
+            <input type="checkbox" id="rejudge" name="rejudge">
+            <label for="rejudge">Rejudge?</label>
+        </div>
+    </div>
+    <input class="form-control mb-3"
+           type="number"
+           id="point_value"
+           name="point_value"
+           value="{{ data['point_value'] }}"
+           placeholder="Point Value"
+           {{ 'disabled' if data['score_users'] and data['score_users'] > 0 }}
+           required>
+    <input class="btn btn-primary" type="submit" id="submit" name="submit" value="Submit">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+</form>
+{% endblock %}
+{% block script %}
+<script>
+    const contestId = "{{ request.path.split('/')[2] }}";
+    const problemId = "{{ request.path.split('/')[4] }}";
+    const description = document.getElementById("description");
+    const hints = document.getElementById("hints");
+    document.getElementById("description-out").attachShadow({mode: "open"});
+    document.getElementById("hints-out").attachShadow({mode: "open"});
+
+    function updateDescription() {
+        const outputDiv = document.getElementById("description-out");
+        injectEditor(outputDiv, description.value);
+        description.style.height = outputDiv.offsetHeight + "px";
+    }
+    description.addEventListener('input', updateDescription);
+
+    function updateHints() {
+        const outputDiv = document.getElementById("hints-out");
+        injectEditor(outputDiv, hints.value);
+        hints.style.height = outputDiv.offsetHeight + "px";
+    }
+    hints.addEventListener('input', updateHints);
+
+    fetch(`/api/contest/${contestId}/problem/description/${problemId}`).then(b => b.text())
+        .then(b => {
+            description.value = b;
+            updateDescription();
+        });
+
+    fetch(`/api/contest/${contestId}/problem/description/${problemId}`).then(b => b.text())
+        .then(b => {
+            hints.value = b;
+            updateHints();
+        });
+</script>
+{% endblock %}
