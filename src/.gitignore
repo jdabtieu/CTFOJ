@@ -18,6 +18,7 @@
 /static/favicon.png
 /maintenance_mode
 /templates/unauth_index.html
+/session
 
 # Logs
 /logs/
