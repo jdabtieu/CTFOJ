@@ -85,7 +85,7 @@
             updateDescription();
         });
 
-    fetch(`/api/contest/${contestId}/problem/description/${problemId}`).then(b => b.text())
+    fetch(`/api/contest/${contestId}/problem/hints/${problemId}`).then(b => b.text())
         .then(b => {
             hints.value = b;
             updateHints();
