@@ -6,7 +6,6 @@ import sys
 import zipfile
 from datetime import datetime
 from io import BytesIO
-from tempfile import mkdtemp
 
 import jwt
 from cs50 import SQL
@@ -801,7 +800,7 @@ def contest_problem(contest_id, problem_id):
     check[0]["solved"] = len(db.execute(
         "SELECT * FROM contest_solved WHERE contest_id=:cid AND user_id=:uid",
         cid=contest_id, uid=session["user_id"])) == 1
-    
+
     if request.method == "GET":
         return render_template("contest/contest_problem.html", data=check[0])
 
@@ -1287,7 +1286,6 @@ def create_problem():
                  f"problem {problem_id}"), extra={"section": "problem"})
     flash('Problem successfully created', 'success')
     return redirect("/problem/" + problem_id)
-
 
 
 @app.route('/problems/draft')
