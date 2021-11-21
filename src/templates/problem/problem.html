@@ -8,7 +8,13 @@
 {% endblock %}
 
 {% block main %}
-<h1>{{ data["name"] }}</h1>
+<h1>
+    {% if data["solved"] %}
+        <img class="svg-green icon" src="/assets/images/check.svg"
+             alt="Solved" onerror="this.src='/assets/images/check.png'">
+    {% endif %}
+    {{ data["name"] }}
+</h1>
 {% if session["admin"] %}
     <div id="confirm" style="display: none;">
         <form method="post" style="margin-bottom: 1rem;" action="">
@@ -21,9 +27,9 @@
     <div style="flex: 3; padding: 4px; word-break: break-word; min-width: 0px;">
         <div id="problem-description" class="hidden"></div>
         <div id="hint-container">
-            <a class="btn btn-secondary" id="togglehint">
+            <btn class="btn btn-secondary" id="togglehint">
                 Show/Hide Hints
-            </a>
+            </btn>
             <div id="hint" class="card hidden"></div>
         </div>
     </div>

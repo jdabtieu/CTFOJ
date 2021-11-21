@@ -797,6 +797,12 @@ def contest_problem(contest_id, problem_id):
     if len(check) != 1 or (check[0]["draft"] and not session["admin"]):
         return render_template("contest/contest_problem_noexist.html"), 404
 
+    # Check if problem is solved
+    solved = len(db.execute(
+        "SELECT * FROM contest_solved WHERE contest_id=:cid AND user_id=:uid",
+        cid=contest_id, uid=session["user_id"]))
+    check[0]["solved"] = solved > 0
+    
     if request.method == "GET":
         return render_template("contest/contest_problem.html", data=check[0])
 
@@ -851,6 +857,7 @@ def contest_problem(contest_id, problem_id):
                         "points=points+:points WHERE contest_id=:cid AND user_id=:uid"),
                        cid=contest_id, points=points, uid=session["user_id"])
 
+    check[0]["solved"] = True
     flash('Congratulations! You have solved this problem!', 'success')
     return render_template("contest/contest_problem.html", data=check[0])
 
@@ -1310,7 +1317,9 @@ def problem(problem_id):
         return render_template("problem/problem_noexist.html"), 404
 
     data[0]["editorial"] = read_file(f"metadata/problems/{problem_id}/editorial.md")
-
+    data[0]["solved"] = len(
+        db.execute("SELECT * FROM problem_solved WHERE user_id=? AND problem_id=?",
+                   session["user_id"], problem_id)) == 1
     if request.method == "GET":
         return render_template('problem/problem.html', data=data[0])
 
@@ -1342,6 +1351,7 @@ def problem(problem_id):
         db.execute("INSERT INTO problem_solved(user_id, problem_id) VALUES(:uid, :pid)",
                    uid=session["user_id"], pid=problem_id)
 
+    data[0]["solved"] = True
     flash('Congratulations! You have solved this problem!', 'success')
     return render_template('problem/problem.html', data=data[0])
 
