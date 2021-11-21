@@ -22,7 +22,7 @@ SESSION_TYPE = "filesystem"
 SESSION_COOKIE_SAMESITE = "Strict"
 SESSION_COOKIE_HTTPONLY = True
 SESSION_FILE_DIR = "session"
-os.chmod(SESSION_FILE_DIR, 0o770)
+os.makedirs(SESSION_FILE_DIR, 0o770, True)
 
 # Configure your email settings here
 MAIL_SERVER = "smtp.gmail.com"
