@@ -257,17 +257,7 @@ body {
     background-color: #2f2f2f;
 }
 
-.dark .form-control:focus {
-    background-color: #2f2f2f;
-    color: #fff;
-}
-
-.dark .form-control {
-    background-color: #2f2f2f;
-    color: #fff;
-}
-
-.dark tr {
+.dark .form-control, .dark .form-control:focus, .dark tr {
     background-color: #2f2f2f;
     color: #fff;
 }
@@ -300,4 +290,8 @@ body {
 #hint-container {
     display: none;
     margin-top: 16px;
+}
+
+.dark a {
+    color: #3388ff;
 }
