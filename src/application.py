@@ -798,10 +798,9 @@ def contest_problem(contest_id, problem_id):
         return render_template("contest/contest_problem_noexist.html"), 404
 
     # Check if problem is solved
-    solved = len(db.execute(
+    check[0]["solved"] = len(db.execute(
         "SELECT * FROM contest_solved WHERE contest_id=:cid AND user_id=:uid",
-        cid=contest_id, uid=session["user_id"]))
-    check[0]["solved"] = solved > 0
+        cid=contest_id, uid=session["user_id"])) == 1
     
     if request.method == "GET":
         return render_template("contest/contest_problem.html", data=check[0])
