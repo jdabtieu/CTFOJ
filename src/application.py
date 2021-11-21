@@ -101,12 +101,15 @@ if not app.config['TESTING']:
 @app.before_request
 def check_for_maintenance():
     # Don't prevent login or getting assets
-    if request.path == '/login' or (request.path[0:8] == '/assets/'
+    if request.path == '/login' or (request.path[:8] == '/assets/'
                                     and '..' not in request.path):
         return
 
     maintenance_mode = bool(os.path.exists('maintenance_mode'))
     if maintenance_mode:
+        if request.path[:5] == '/api/':
+            return make_response(("The site is currrently undergoing maintenance", 503))
+
         # Prevent Internal Server error if session only contains CSRF token
         if not session or 'admin' not in session:
             return render_template("error/maintenance.html"), 503
