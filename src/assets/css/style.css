@@ -262,7 +262,7 @@ body {
     color: #fff;
 }
 
-.dark tr:hover {
+.dark tr:hover, .dark .navbar-dark .navbar-brand {
     color: #fff!important;
 }
 
@@ -292,6 +292,6 @@ body {
     margin-top: 16px;
 }
 
-.dark a {
+.dark a:not(.btn) {
     color: #3388ff;
 }
