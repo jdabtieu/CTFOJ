@@ -28,5 +28,13 @@ if (getCookie("darkMode") == 1) {
 
 document.querySelector(".dark-toggle").addEventListener("click", function() {
     document.body.classList.toggle("dark");
-    setCookie("darkMode", getCookie("darkMode") == 1 ? 0 : 1, 7);
+    setCookie("darkMode", getCookie("darkMode"), 30);
 });
+
+(function() {
+    const navbar = document.getElementById("navbar");
+    const txt = navbar.getAttribute("data-active");
+    if (txt === "") return;
+    document.evaluate(`//*[text()='${txt}']`, navbar, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null)
+            .singleNodeValue.classList.add("active");
+})();

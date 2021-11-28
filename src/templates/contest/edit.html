@@ -1,6 +1,7 @@
 {% extends "layout.html" %}
 
 {% block title %}Edit Contest{% endblock %}
+{% block active %}Contests{% endblock %}
 
 {% block preload %}
 <link rel="preload" href="/api/contest/{{ request.path.split('/')[2] }}" as="fetch" crossorigin="anonymous">

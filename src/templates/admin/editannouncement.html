@@ -1,6 +1,7 @@
 {% extends "layout.html" %}
 
 {% block title %}Edit Announcement{% endblock %}
+{% block active %}Admin Console{% endblock %}
 
 {% block preload %}
 <link rel="preload" href="/api/announcement/{{ request.path.split('/')[3] }}" as="fetch" crossorigin="anonymous">

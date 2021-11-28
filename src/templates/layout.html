@@ -23,7 +23,7 @@
                         aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="collapse navbar-collapse" id="navbar">
+                <div class="collapse navbar-collapse" id="navbar" data-active="{% block active %}{% endblock %}">
                     {% if session.user_id %}
                         <ul class="navbar-nav me-auto">
                             <li><a class="nav-link" href="/">Home</a></li>
@@ -83,7 +83,7 @@
             </p>
         </footer>
 
-        <script src="/assets/js/darkMode.js"></script>
+        <script src="/assets/js/nav.js"></script>
         <script src="/assets/js/showdown.min.js"></script>
         <script src="/assets/js/purify.min.js"></script>
         <script src="/assets/js/convertMD.js"></script>

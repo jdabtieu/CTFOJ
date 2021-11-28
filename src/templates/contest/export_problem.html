@@ -1,6 +1,7 @@
 {% extends "layout.html" %}
 
 {% block title %}Export {{ data["name"] }}{% endblock %}
+{% block active %}Contests{% endblock %}
 
 {% block main %}
 <h1>Export <a href="{{ request.path[:-7] }}">{{ data["name"] }}</a></h1>

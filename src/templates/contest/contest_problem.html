@@ -1,6 +1,7 @@
 {% extends "layout.html" %}
 
 {% block title %}{{ data["name"] }}{% endblock %}
+{% block active %}Contests{% endblock %}
 
 {% block preload %}
 <link rel="preload" href="/api/contest/{{ request.path.split('/')[2] }}/problem/description/{{ request.path.split('/')[4] }}" as="fetch" crossorigin="anonymous">
