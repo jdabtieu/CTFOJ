@@ -143,6 +143,10 @@ def test_contest(client, database):
     assert result.status_code == 200
     assert b'exported' in result.data
 
+    result = client.get('/admin/submissions')
+    assert result.status_code == 200
+    assert b'testingcontest-helloworldtesting' in result.data
+
     file = open("test_upload.txt", "w")
     file.write('ree')
     file.close()

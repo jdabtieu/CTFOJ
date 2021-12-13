@@ -1152,12 +1152,17 @@ def export_contest_problem(contest_id, problem_id):
                "FROM contest_solved WHERE contest_id=:cid AND problem_id=:pid",
                new_id=new_id, cid=contest_id, pid=problem_id)
 
-    os.makedirs('metadata/problems/' + new_id)
-    shutil.copy('metadata/contests/' + contest_id + '/' + problem_id + '/description.md',
-                'metadata/problems/' + new_id + '/description.md')
-    shutil.copy('metadata/contests/' + contest_id + '/' + problem_id + '/hints.md',
-                'metadata/problems/' + new_id + '/hints.md')
-    open('metadata/problems/' + new_id + '/editorial.md', 'w').close()
+    # Add duplicate submissions (allows rejudging and searching)
+    db.execute(("INSERT INTO submissions(date, user_id, problem_id, correct, submitted) "
+                "SELECT date, user_id, ?, correct, submitted FROM submissions WHERE "
+                "contest_id=? AND problem_id=?"), new_id, contest_id, problem_id)
+
+    os.makedirs(f'metadata/problems/{new_id}')
+    shutil.copy(f'metadata/contests/{contest_id}/{problem_id}/description.md',
+                f'metadata/problems/{new_id}/description.md')
+    shutil.copy(f'metadata/contests/{contest_id}/{problem_id}/hints.md',
+                f'metadata/problems/{new_id}/hints.md')
+    open(f'metadata/problems/{new_id}/editorial.md', 'w').close()
 
     logger.info((f"User #{session['user_id']} ({session['username']}) exported problem "
                  f"{problem_id} from contest {contest_id} to {new_id}"),

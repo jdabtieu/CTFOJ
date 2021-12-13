@@ -16,10 +16,6 @@ if confirm != 'y':
 
 db = cs50.SQL("sqlite:///database.db")
 
-db.execute("ALTER TABLE users ADD COLUMN 'api' varchar(36)")
-try:
-    shutil.move("templates/unauth_index.html", "metadata/homepage.html")
-except FileNotFoundError:
-    shutil.copy2("templates/default_homepage.html", "metadata/homepage.html")
+## TODO: add missing submissions from contest problem exports
 
 print('Migration completed.')
