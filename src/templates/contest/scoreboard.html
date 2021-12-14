@@ -7,7 +7,7 @@
 <h1><a href="{{ request.path[:-11] }}">{{ title }}</a></h1>
 {% if session["admin"] %}
     <div id="confirm" class="hidden">
-        <form method="post" style="margin-bottom: 1rem;" action="{{ request.path }}/ban">
+        <form method="post" style="margin-bottom: 1rem;">
             <input type="hidden" name="user_id">
             <input class="btn btn-danger" type="submit">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
@@ -47,6 +47,12 @@
                                  alt="Disqualify user"
                                  title="Disqualify user">
                         </a>
+                        <a href="#">
+                            <img src="/assets/images/ghost.svg"
+                                 class="icon scoreboard-hide"
+                                 alt="Hide user"
+                                 title="Hide user">
+                        </a>
                     </td>
                 {% endif %}
             </tr>
@@ -54,19 +60,95 @@
         </tbody>
     </table>
 </div>
+{% if hidden %}
+    <h1>Hidden Users</h1>
+    <div style="overflow-x: auto;">
+        <table class="table table-hover table-full-width">
+            <thead class="table-dark">
+                <tr>
+                    <th scope="col" style="width: 12%;">Rank</th>
+                    <th scope="col" style="width: 40%;">Username</th>
+                    <th scope="col" style="width: 18%;">Points</th>
+                    <th scope="col" style="width: 30%;">Most recent AC submission</th>
+                    {% if session["admin"] %}
+                        <th scope="col" style="width: 10%">Actions</th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for i in range(hidden | length) %}
+                <tr>
+                    <td>{{ i + 1 }}</td>
+                    <td class="username">{{ hidden[i]["username"] }}</td>
+                    <td>{{ hidden[i]["points"] }}</td>
+                    {% if hidden[i]["lastAC"] %}
+                        <td class="dt">{{ hidden[i]["lastAC"] }}</td>
+                    {% else %}
+                        <td>None</td>
+                    {% endif %}
+                    {% if session["admin"] %}
+                        <td data-id="{{ hidden[i]['user_id'] }}" data-username="{{ hidden[i]['username'] }}">
+                            <a href="#">
+                                <img src="/assets/images/restrict.svg"
+                                     onerror="this.src='/assets/images/restrict.png'"
+                                     class="svg-red icon scoreboard-dq"
+                                     alt="Disqualify user"
+                                     title="Disqualify user">
+                            </a>
+                            <a href="#">
+                                <img src="/assets/images/ghost.svg"
+                                     class="icon scoreboard-unhide"
+                                     alt="Unhide user"
+                                     title="Unhide user">
+                            </a>
+                        </td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endif %}
 {% endblock %}
 {% block script %}
 {% if session["admin"] %}
     <script>
+        const path = "{{ request.path }}";
+        const confirmDiv = document.getElementById("confirm");
         for (let node of document.getElementsByClassName("scoreboard-dq")) {
             node.parentElement.addEventListener("click", function() {
                 var username = this.parentElement.getAttribute("data-username");
                 var userId = this.parentElement.getAttribute("data-id");
-                document.getElementById("confirm").style.display = "block";
-                document.querySelector("#confirm .btn")
+                confirmDiv.style.display = "block";
+                confirmDiv.querySelector(".btn")
                         .setAttribute("value", `Are you sure you want to disqualify ${username}? ` +
                                                "This action is irreversible. Click here to confirm");
-                document.querySelector("#confirm input[name=user_id]").setAttribute("value", userId);
+                confirmDiv.querySelector("input[name=user_id]").setAttribute("value", userId);
+                confirmDiv.querySelector("form").setAttribute("action", path + "/ban");
+            });
+        }
+        for (let node of document.getElementsByClassName("scoreboard-hide")) {
+            node.parentElement.addEventListener("click", function() {
+                var username = this.parentElement.getAttribute("data-username");
+                var userId = this.parentElement.getAttribute("data-id");
+                confirmDiv.style.display = "block";
+                confirmDiv.querySelector(".btn")
+                        .setAttribute("value", `Are you sure you want to hide ${username}'s score? ` +
+                                               "Click here to confirm");
+                confirmDiv.querySelector("input[name=user_id]").setAttribute("value", userId);
+                confirmDiv.querySelector("form").setAttribute("action", path + "/hide");
+            });
+        }
+        for (let node of document.getElementsByClassName("scoreboard-unhide")) {
+            node.parentElement.addEventListener("click", function() {
+                var username = this.parentElement.getAttribute("data-username");
+                var userId = this.parentElement.getAttribute("data-id");
+                confirmDiv.style.display = "block";
+                confirmDiv.querySelector(".btn")
+                        .setAttribute("value", `Are you sure you want to unhide ${username}'s score? ` +
+                                               "Click here to confirm");
+                confirmDiv.querySelector("input[name=user_id]").setAttribute("value", userId);
+                confirmDiv.querySelector("form").setAttribute("action", path + "/unhide");
             });
         }
     </script>

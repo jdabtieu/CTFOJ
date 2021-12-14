@@ -971,14 +971,27 @@ def contest_scoreboard(contest_id):
         flash('You are not allowed to view the scoreboard!', 'danger')
         return redirect("/contest/" + contest_id)
 
-    # Render page
     data = db.execute(
         ("SELECT user_id, points, lastAC, username FROM contest_users "
-         "JOIN users on user_id=users.id WHERE contest_users.contest_id=:cid "
-         "ORDER BY points DESC, lastAC ASC"),
+         "JOIN users on user_id=users.id WHERE contest_users.contest_id=:cid AND "
+         "hidden=0 ORDER BY points DESC, lastAC ASC"),
         cid=contest_id)
+
+    if session["admin"]:
+        hidden = db.execute(
+            ("SELECT user_id, points, lastAC, username FROM contest_users "
+             "JOIN users on user_id=users.id WHERE contest_users.contest_id=:cid AND "
+             "hidden=1 ORDER BY points DESC, lastAC ASC"),
+            cid=contest_id)
+    else:
+        hidden = db.execute(
+            ("SELECT user_id, points, lastAC, username FROM contest_users "
+             "JOIN users on user_id=users.id WHERE contest_users.contest_id=:cid AND "
+             "hidden=1 AND user_id=:uid ORDER BY points DESC, lastAC ASC"),
+            cid=contest_id, uid=session["user_id"])
+
     return render_template("contest/scoreboard.html",
-                           title=contest_info[0]["name"], data=data)
+                           title=contest_info[0]["name"], data=data, hidden=hidden)
 
 
 @app.route("/contest/<contest_id>/scoreboard/ban", methods=["POST"])
@@ -999,7 +1012,51 @@ def contest_dq(contest_id):
 
     logger.info((f"User #{user_id} banned from contest {contest_id} by "
                  f"user #{session['user_id']} ({session['username']})"),
-                extra={"section": "auth"})
+                extra={"section": "contest"})
+    return redirect("/contest/" + contest_id + "/scoreboard")
+
+
+@app.route("/contest/<contest_id>/scoreboard/hide", methods=["POST"])
+@admin_required
+def contest_hide(contest_id):
+    # Ensure contest exists
+    if not contest_exists(contest_id):
+        return render_template("contest/contest_noexist.html"), 404
+
+    user_id = request.form.get("user_id")
+    if not user_id:
+        flash("No user ID specified, please try again", "danger")
+        return redirect("/contest/" + contest_id + "/scoreboard")
+
+    db.execute(
+        "UPDATE contest_users SET hidden=1 WHERE user_id=:uid AND contest_id=:cid",
+        uid=user_id, cid=contest_id)
+
+    logger.info((f"User #{user_id} hidden from contest {contest_id} by "
+                 f"user #{session['user_id']} ({session['username']})"),
+                extra={"section": "contest"})
+    return redirect("/contest/" + contest_id + "/scoreboard")
+
+
+@app.route("/contest/<contest_id>/scoreboard/unhide", methods=["POST"])
+@admin_required
+def contest_unhide(contest_id):
+    # Ensure contest exists
+    if not contest_exists(contest_id):
+        return render_template("contest/contest_noexist.html"), 404
+
+    user_id = request.form.get("user_id")
+    if not user_id:
+        flash("No user ID specified, please try again", "danger")
+        return redirect("/contest/" + contest_id + "/scoreboard")
+
+    db.execute(
+        "UPDATE contest_users SET hidden=0 WHERE user_id=:uid AND contest_id=:cid",
+        uid=user_id, cid=contest_id)
+
+    logger.info((f"User #{user_id} unhidden from contest {contest_id} by "
+                 f"user #{session['user_id']} ({session['username']})"),
+                extra={"section": "contest"})
     return redirect("/contest/" + contest_id + "/scoreboard")
 
 

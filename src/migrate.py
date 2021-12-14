@@ -17,5 +17,6 @@ if confirm != 'y':
 db = cs50.SQL("sqlite:///database.db")
 
 ## TODO: add missing submissions from contest problem exports
+db.execute("ALTER TABLE contest_users ADD COLUMN 'hidden' integer NOT NULL DEFAULT(0)")
 
 print('Migration completed.')
