@@ -13,7 +13,10 @@
 <br>
 <a class="btn btn-primary" href="#" id="btnApi" role="button">Generate New API Key</a>
 <br>
-<textarea disabled class="hidden apikey font-mono" cols="36" rows="1"></textarea>
+<div class="hidden">
+    <h3>Keep your API key safe. Do not share it with anyone!</h3>
+    <textarea disabled class="apikey font-mono" cols="36" rows="1"></textarea>
+</div>
 {% endblock %}
 {% block script %}
 <script>
@@ -26,7 +29,7 @@
         }).then(b => b.text()).then(b => {
             const outputDiv = document.querySelector(".apikey");
             outputDiv.value = b;
-            outputDiv.classList.remove("hidden");
+            outputDiv.parentElement.classList.remove("hidden");
         });
     });
 </script>
