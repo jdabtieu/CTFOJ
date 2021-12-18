@@ -161,7 +161,9 @@ def docs():
 
 @app.route("/assets/<path:filename>")
 def get_asset(filename):
-    return send_from_directory("assets/", filename)
+    resp = send_from_directory("assets/", filename)
+    resp.headers['Cache-Control'] = 'max-age=604800, must-revalidate'
+    return resp
 
 
 @app.route("/dl/<path:filename>")
