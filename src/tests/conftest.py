@@ -54,7 +54,7 @@ def database():
     db.execute(
         ("CREATE TABLE 'contest_users' ('contest_id' varchar(32) NOT NULL, "
          "'user_id' integer NOT NULL, 'points' integer NOT NULL DEFAULT(0), "
-         "'lastAC' datetime)"))
+         "'lastAC' datetime, 'hidden' integer NOT NULL DEFAULT(0))"))
     db.execute(
         ("CREATE TABLE 'contest_solved' ('contest_id' varchar(32) NOT NULL, "
          "'user_id' integer NOT NULL, 'problem_id' varchar(64) NOT NULL)"))

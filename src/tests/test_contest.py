@@ -89,6 +89,16 @@ def test_contest(client, database):
     assert result.status_code == 200
     assert b'published' in result.data
 
+    client.post('/contest/testingcontest/problem/helloworldtesting', data={
+        'flag': 'ctf{hello}'    
+    })
+
+    result = client.post('/contest/testingcontest/scoreboard/hide', data={
+        'user_id': 1    
+    }, follow_redirects=True)
+    assert result.status_code == 200
+    assert b'Hidden' in result.data
+
     result = client.post('/contest/testingcontest/notify', data={
         'subject': 'test subject',
         'message': 'test message'
@@ -131,6 +141,11 @@ def test_contest(client, database):
     }, follow_redirects=True)
     assert result.status_code == 200
     assert b'Congratulations' in result.data
+
+    result = client.get('/contest/testingcontest/scoreboard')
+    assert result.status_code == 200
+    assert b'Hidden' not in result.data
+
     client.get('/logout')
 
     result = client.get('/api/contest/testingcontest?key=00000000-0000-0000-0000-000000000001')  # noqa
@@ -142,6 +157,12 @@ def test_contest(client, database):
                          follow_redirects=True)
     assert result.status_code == 200
     assert b'exported' in result.data
+
+    result = client.post('/contest/testingcontest/scoreboard/hide', data={
+        'user_id': 2
+    }, follow_redirects=True)
+    assert result.status_code == 200
+    assert b'Hidden' in result.data
 
     result = client.get('/admin/submissions')
     assert result.status_code == 200
@@ -198,8 +219,29 @@ def test_contest(client, database):
     result = client.get('/contest/testingcontest/problem/dynscore')
     assert b'500' in result.data
 
+    client.get('/logout')
+
+
+    client.post('/login', data={
+        'username': 'normal_user',
+        'password': 'CTFOJadmin'
+    }, follow_redirects=True)
+
+    result = client.get('/contest/testingcontest/scoreboard')
+    assert result.status_code == 200
+    assert b'Hidden' in result.data
+    assert b'admin' not in result.data
+
+    client.get('/logout')
+
+    client.post('/login', data={
+        'username': 'admin',
+        'password': 'CTFOJadmin'
+    }, follow_redirects=True)
+
     client.post('/contest/testingcontest/delete', follow_redirects=True)
     assert result.status_code == 200
+
 
     shutil.rmtree('dl')
     os.mkdir('dl')
