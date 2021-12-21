@@ -795,6 +795,13 @@ def contest_problem(contest_id, problem_id):
     if not contest_exists(contest_id):
         return render_template("contest/contest_noexist.html"), 404
 
+    # Ensure contest started or user is admin
+    check = db.execute("SELECT * FROM contests WHERE id=?", contest_id)
+    start = datetime.strptime(check[0]["start"], "%Y-%m-%d %H:%M:%S")
+    if datetime.utcnow() < start and not session["admin"]:
+        flash('The contest has not started yet!', 'danger')
+        return redirect("/contests")
+    
     check = db.execute(("SELECT * FROM contest_problems WHERE contest_id=:cid AND "
                         "problem_id=:pid"),
                        cid=contest_id, pid=problem_id)
