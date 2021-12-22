@@ -20,7 +20,11 @@
                 {{ row["name"] }}
             </a></td>
             <td>{{ row["category"] }}</td>
-            <td>{{ row["point_value"] }}</td>
+            {% if row["dynamic"] %}
+                <td title="This problem is dynamically scored">{{ row["point_value"] }}D</td>
+            {% else %}
+                 <td>{{ row["point_value"] }}</td>
+            {% endif %}
         </tr>
         {% endfor %}
     </tbody>
