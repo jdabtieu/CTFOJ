@@ -24,11 +24,12 @@ function getCookie(name) {
 if (getCookie("darkMode") == 1) {
     document.body.classList.add("dark");
     document.querySelector(".dark-toggle").setAttribute("checked", "");
+    setCookie("darkMode", 1, 30);
 }
 
 document.querySelector(".dark-toggle").addEventListener("click", function() {
     document.body.classList.toggle("dark");
-    setCookie("darkMode", getCookie("darkMode"), 30);
+    setCookie("darkMode", getCookie("darkMode") == 1 ? 0 : 1, 30);
 });
 
 (function() {
