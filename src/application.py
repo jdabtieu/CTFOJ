@@ -801,7 +801,7 @@ def contest_problem(contest_id, problem_id):
     if datetime.utcnow() < start and not session["admin"]:
         flash('The contest has not started yet!', 'danger')
         return redirect("/contests")
-    
+
     check = db.execute(("SELECT * FROM contest_problems WHERE contest_id=:cid AND "
                         "problem_id=:pid"),
                        cid=contest_id, pid=problem_id)

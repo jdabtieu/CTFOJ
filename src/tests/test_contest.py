@@ -230,7 +230,6 @@ def test_contest(client, database):
 
     client.get('/logout')
 
-
     client.post('/login', data={
         'username': 'normal_user',
         'password': 'CTFOJadmin'
@@ -252,7 +251,7 @@ def test_contest(client, database):
     assert result.status_code == 200
     assert b'-999999' in result.data
 
-    result = client.get('/contest/testingcontest/problem/dynscore', follow_redirects=True)
+    result = client.get('/contest/testingcontest/problem/dynscore/download', follow_redirects=True)
     assert result.status_code == 200
 
     client.post('/contest/testingcontest/delete', follow_redirects=True)

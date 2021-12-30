@@ -1,5 +1,4 @@
 import cs50
-import shutil
 import sys
 
 msg = """Before migrating, please confirm the following:
