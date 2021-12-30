@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href="https://ctfmgci.pythonanywhere.com/assets/css/bootstrap.min.css" rel="stylesheet">
+        <link href="https://ctfmgci.pythonanywhere.com/assets/css/style.css" rel="stylesheet">
+    </head>
+    <body>
+        <main class="container">
+            <div class="card post-card">
+                <h1>CTFOJ Account Confirmation</h1>
+                <pre>
+Dear {{ username }},
+
+If you have recently tried to login to your CTFOJ account,click on the following link to confirm your login:
+
+{{ url_for('confirm_login', token=token, _external=True) }}
+
+Otherwise, your password has been compromised and you should change it immediately at the following link:
+
+{{ url_for('changepassword', _external=True) }}
+
+Regards,
+
+{{ CLUB_NAME }}
+                </pre>
+            </div>
+        </main>
+    </body>
+</html>
