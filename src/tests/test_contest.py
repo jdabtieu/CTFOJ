@@ -90,14 +90,23 @@ def test_contest(client, database):
     assert b'published' in result.data
 
     client.post('/contest/testingcontest/problem/helloworldtesting', data={
-        'flag': 'ctf{hello}'    
+        'flag': 'ctf{hello}'
     })
 
     result = client.post('/contest/testingcontest/scoreboard/hide', data={
-        'user_id': 1    
+        'user_id': 1
     }, follow_redirects=True)
     assert result.status_code == 200
     assert b'Hidden' in result.data
+
+    result = client.post('/contest/testingcontest/scoreboard/unhide', data={
+        'user_id': 1
+    }, follow_redirects=True)
+    assert result.status_code == 200
+    assert b'Hidden' not in result.data
+
+    client.post('/contest/testingcontest/scoreboard/hide', data={
+        'user_id': 1}, follow_redirects=True)
 
     result = client.post('/contest/testingcontest/notify', data={
         'subject': 'test subject',
@@ -239,9 +248,15 @@ def test_contest(client, database):
         'password': 'CTFOJadmin'
     }, follow_redirects=True)
 
-    client.post('/contest/testingcontest/delete', follow_redirects=True)
+    result = client.post('/contest/testingcontest/scoreboard/ban', follow_redirects=True, data={'user_id': 2})
+    assert result.status_code == 200
+    assert b'-999999' in result.data
+
+    result = client.get('/contest/testingcontest/problem/dynscore', follow_redirects=True)
     assert result.status_code == 200
 
+    client.post('/contest/testingcontest/delete', follow_redirects=True)
+    assert result.status_code == 200
 
     shutil.rmtree('dl')
     os.mkdir('dl')
