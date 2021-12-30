@@ -28,3 +28,13 @@ def test_homepage(client, database):
     result = client.get('/admin/previewhomepage', follow_redirects=True)
     assert result.status_code == 200
     assert b'Announcements' in result.data
+
+    result = client.get('/admin/edithomepage', follow_redirects=True)
+    assert result.status_code == 200
+    assert b'Edit' in result.data
+
+    result = client.post('/admin/edithomepage', follow_redirects=True)
+    assert b'required fields' in result.data
+
+    result = client.post('/admin/edithomepage', follow_redirects=True, data={"content": "some content"})
+    assert b'successfully' in result.data
