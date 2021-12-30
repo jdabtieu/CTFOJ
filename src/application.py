@@ -810,8 +810,9 @@ def contest_problem(contest_id, problem_id):
 
     # Check if problem is solved
     check[0]["solved"] = len(db.execute(
-        "SELECT * FROM contest_solved WHERE contest_id=:cid AND user_id=:uid",
-        cid=contest_id, uid=session["user_id"])) == 1
+        ("SELECT * FROM contest_solved WHERE contest_id=:cid AND "
+         "problem_id=:pid AND user_id=:uid"),
+        cid=contest_id, pid=problem_id, uid=session["user_id"])) == 1
 
     if request.method == "GET":
         return render_template("contest/contest_problem.html", data=check[0])
