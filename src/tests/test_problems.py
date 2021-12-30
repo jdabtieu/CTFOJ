@@ -92,6 +92,9 @@ def test_problem(client, database):
     client.get('/logout')
 
     client.post('/login', data={'username': 'admin', 'password': 'CTFOJadmin'})
+    result = client.get('/problem/helloworldtesting/download', follow_redirects=True)
+    assert result.status_code == 200
+
     result = client.post('/problem/helloworldtesting/delete', follow_redirects=True)
     assert result.status_code == 200
     assert b'helloworldtesting' not in result.data
