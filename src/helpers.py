@@ -98,7 +98,7 @@ def generate_password():
 
 def send_email(subject, sender, recipients, text, bcc=None):
     from application import mail
-    message = Message(subject, sender=sender, recipients=recipients, body=text, bcc=bcc)
+    message = Message(subject, sender=sender, recipients=recipients, html=text, bcc=bcc)
     mail.send(message)
 
 

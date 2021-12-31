@@ -74,7 +74,7 @@ if not app.config['TESTING']:
         try:
             send_email('CTFOJ Email Setup', app.config['MAIL_DEFAULT_SENDER'],
                        [app.config['MAIL_DEFAULT_SENDER']],
-                       ('This email tests your configured email settings for CTFOJ. '
+                       ('This email tests your configured email settings for CTFOJ. <b>Please note that HTML is supported.</b>'
                         'Please ignore this email.'))
         except Exception as error:
             logging.warning("Settings validation: Email credentials invalid.")
@@ -209,7 +209,7 @@ def login():
     if rows[0]["twofa"]:
         email = rows[0]["email"]
         token = create_jwt({'email': email}, app.config['SECRET_KEY'])
-        text = render_template('email/confirm_login_text.txt',
+        text = render_template('email/confirm_login.html',
                                username=request.form.get('username'), token=token)
 
         if not app.config['TESTING']:
@@ -293,14 +293,14 @@ def register():
                                site_key=app.config['HCAPTCHA_SITE']), 409
 
     token = create_jwt({'email': email}, app.config['SECRET_KEY'])
-    text = render_template('email/confirm_account_text.txt',
+    text = render_template('email/confirm_account.html',
                            username=username, token=token)
 
     db.execute(("INSERT INTO users(username, password, email, join_date) "
                 "VALUES(:username, :password, :email, datetime('now'))"),
                username=username, password=generate_password_hash(password), email=email)
     if not app.config['TESTING']:
-        send_email('CTFOJ Signup Confirmation',
+        send_email('CTFOJ Account Confirmation',
                    app.config['MAIL_DEFAULT_SENDER'], [email], text)
 
     flash(('An account creation confirmation email has been sent to the email address '
@@ -488,7 +488,7 @@ def forgotpassword():
 
     if len(rows) == 1:
         token = create_jwt({'user_id': rows[0]["id"]}, app.config['SECRET_KEY'])
-        text = render_template('email/reset_password_text.txt',
+        text = render_template('email/reset_password.html',
                                username=rows[0]["username"], token=token)
         logger.info((f"User #{rows[0]['id']} ({rows[0]['username']}) initiated a "
                      f"password reset from IP {request.remote_addr}"),
