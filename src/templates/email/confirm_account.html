@@ -96,13 +96,13 @@ body {
                 <pre>
 Dear {{ username }},
 
-If you have recently tried to login to your CTFOJ account,click on the following link to confirm your login:
+If you have recently registered for a CTFOJ account, click on the following link to confirm your registration:
 
-{{ url_for('confirm_login', token=token, _external=True) }}
+{{ url_for('confirm_register', token=token, _external=True) }}
 
-Otherwise, your password has been compromised and you should change it immediately at the following link:
+Otherwise, you can remove your email from our database with the following link:
 
-{{ url_for('changepassword', _external=True) }}
+{{ url_for('cancel_register', token=token, _external=True) }}
 
 Regards,
 
