@@ -74,7 +74,8 @@ if not app.config['TESTING']:
         try:
             send_email('CTFOJ Email Setup', app.config['MAIL_DEFAULT_SENDER'],
                        [app.config['MAIL_DEFAULT_SENDER']],
-                       ('This email tests your configured email settings for CTFOJ. <b>Please note that HTML is supported.</b>'
+                       ('This email tests your configured email settings for CTFOJ. '
+                        '<b>Please note that HTML is supported.</b> '
                         'Please ignore this email.'))
         except Exception as error:
             logging.warning("Settings validation: Email credentials invalid.")
