@@ -1701,6 +1701,11 @@ def reset_password():
         flash("That user doesn't exist", "danger")
         return redirect("/admin/users")
 
+    if user[0]["id"] == 1:
+        flash(("Cannot reset the super-admin password. "
+               "Use the forgot password page instead."), "danger")
+        return redirect("/admin/users")
+
     password = generate_password()
     db.execute("UPDATE users SET password=:p WHERE id=:id",
                p=generate_password_hash(password), id=user_id)
