@@ -132,4 +132,4 @@ def homepage():
 
 def _homepage():
     from application import app
-    return read_file(app.config['HOMEPAGE_FILE'])[2:]
+    return json_success({"data": read_file(app.config['HOMEPAGE_FILE'])[2:]})
