@@ -4,8 +4,7 @@
 {% block active %}Contests{% endblock %}
 
 {% block preload %}
-<link rel="preload" href="/api/contest/{{ request.path.split('/')[2] }}/problem/description/{{ request.path.split('/')[4] }}" as="fetch" crossorigin="anonymous">
-<link rel="preload" href="/api/contest/{{ request.path.split('/')[2] }}/problem/hints/{{ request.path.split('/')[4] }}" as="fetch" crossorigin="anonymous">
+<link rel="preload" href="/api/contest/problem?cid={{ request.path.split('/')[2] }}&pid={{ request.path.split('/')[4] }}" as="fetch" crossorigin="anonymous">
 {% endblock %}
 
 {% block main %}
@@ -72,16 +71,18 @@
 <script>
     const contestId = "{{ request.path.split('/')[2] }}";
     const problemId = "{{ request.path.split('/')[4] }}";
-    fetch(`/api/contest/${contestId}/problem/description/${problemId}`).then(b => b.text())
-        .then(b => inject(document.getElementById("problem-description"), b, true));
-    fetch(`/api/contest/${contestId}/problem/hints/${problemId}`).then(b => b.text())
-        .then(b => {
-                if (b.length > 0) {
-                    document.getElementById("hint-container").style.display = "block";
-                    inject(document.getElementById("hint"), b, false);
-                }
-            });
-
+    fetch("/api/contest/problem?cid=" + contestId + "&pid=" + problemId).then(b => b.text())
+            .then(b => JSON.parse(b)).then(b => {
+        if (b["status"] !== "success") {
+            console.log(`API fail: status: ${b["status"]}, message: ${b["message"]}`);
+            return;
+        }
+        inject(document.getElementById("problem-description"), b["description"], true)
+        if (b["hints"] != "") {
+            document.getElementById("hint-container").style.display = "block";
+            inject(document.getElementById("hint"), b["hints"], false);
+        }
+    });
     document.getElementById("togglehint").addEventListener("click", function() {
         document.getElementById("hint").classList.toggle("hidden");
     });

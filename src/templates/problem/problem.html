@@ -4,8 +4,7 @@
 {% block active %}Practice{% endblock %}
 
 {% block preload %}
-<link rel="preload" href="/api/problem/description/{{ request.path.split('/')[2] }}" as="fetch" crossorigin="anonymous">
-<link rel="preload" href="/api/problem/hints/{{ request.path.split('/')[2] }}" as="fetch" crossorigin="anonymous">
+<link rel="preload" href="/api/problem?id={{ request.path.split('/')[2] }}" as="fetch" crossorigin="anonymous">
 {% endblock %}
 
 {% block main %}
@@ -70,16 +69,18 @@
 {% block script %}
 <script>
     const problemId = "{{ request.path.split('/')[2] }}";
-    fetch("/api/problem/description/" + problemId).then(b => b.text())
-        .then(b => inject(document.getElementById("problem-description"), b, true));
-    fetch("/api/problem/hints/" + problemId).then(b => b.text())
-        .then(b => {
-                if (b.length > 0) {
-                    document.getElementById("hint-container").style.display = "block";
-                    inject(document.getElementById("hint"), b, false);
-                }
-            });
-
+    fetch("/api/problem?id=" + problemId).then(b => b.text())
+            .then(b => JSON.parse(b)).then(b => {
+        if (b["status"] !== "success") {
+            console.log(`API fail: status: ${b["status"]}, message: ${b["message"]}`);
+            return;
+        }
+        inject(document.getElementById("problem-description"), b["description"], true)
+        if (b["hints"] != "") {
+            document.getElementById("hint-container").style.display = "block";
+            inject(document.getElementById("hint"), b["hints"], false);
+        }
+    });
     document.getElementById("togglehint").addEventListener("click", function() {
         document.getElementById("hint").classList.toggle("hidden");
     });
@@ -94,7 +95,10 @@
                     .setAttribute("value", "Are you sure you want to delete this problem? " +
                                            "Click here to confirm.");
         });
-
+    </script>
+{% endif %}
+{% if data["draft"] %}
+    <script>
         document.querySelector(".btn-publish").addEventListener("click", function () {
             document.getElementById("confirm").style.display = "";
             document.querySelector("#confirm form")

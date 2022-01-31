@@ -27,90 +27,97 @@ def get_api_key():
     return new_key
 
 
-@api.route("/problem/description/<problem_id>")
+@api.route("/problem")
 @api_login_required
-def problem_description(problem_id):
+def problem():
+    if "id" not in request.args:
+        return make_response((json_fail_msg("Must provide problem ID"), 400))
+    problem_id = request.args["id"]
+
     from application import db
     data = db.execute("SELECT * FROM problems WHERE id=:pid", pid=problem_id)
-    if len(data) == 0 or (data[0]["draft"] and not session["admin"]):
-        return make_response(("Problem not found", 404))
-    return send_from_directory(f"metadata/problems/{problem_id}", "description.md")
+    if len(data) == 0 or (data[0]["draft"] and not api_admin()):
+        return make_response((json_fail_msg("Problem not found"), 404))
+
+    description = read_file(f"metadata/problems/{problem_id}/description.md")
+    hints = read_file(f"metadata/problems/{problem_id}/hints.md")
+    editorial = read_file(f"metadata/problems/{problem_id}/editorial.md")
+
+    returns = {
+        "description": description,
+        "hints": hints,
+        "editorial": editorial,
+    }
+    return json_success(returns)
 
 
-@api.route("/problem/hints/<problem_id>")
+@api.route("/contest/problem")
 @api_login_required
-def problem_hint(problem_id):
+def contest_problem():
+    if "cid" not in request.args:
+        return make_response((json_fail_msg("Must provide contest ID"), 400))
+    if "pid" not in request.args:
+        return make_response((json_fail_msg("Must provide problem ID"), 400))
+    contest_id = request.args["cid"]
+    problem_id = request.args["pid"]
+
     from application import db
-    data = db.execute("SELECT * FROM problems WHERE id=:pid", pid=problem_id)
-    if len(data) == 0 or (data[0]["draft"] and not session["admin"]):
-        return make_response(("Problem not found", 404))
-    return send_from_directory(f"metadata/problems/{problem_id}", "hints.md")
-
-
-@api.route("/problem/editorial/<problem_id>")
-@api_login_required
-def problem_editorial(problem_id):
-    from application import db
-    data = db.execute("SELECT * FROM problems WHERE id=:pid", pid=problem_id)
-    if len(data) == 0 or (data[0]["draft"] and not session["admin"]):
-        return make_response(("Problem not found", 404))
-    return send_from_directory(f"metadata/problems/{problem_id}", "editorial.md")
-
-
-@api.route("/contest/<contest_id>/problem/description/<problem_id>")
-@api_login_required
-def contest_problem_description(contest_id, problem_id):
-    from application import db
+    contest = db.execute("SELECT * FROM contests WHERE id=?", contest_id)
+    if len(contest) != 1:
+        return make_response((json_fail_msg("Contest not found"), 404))
+    start = datetime.strptime(contest[0]["start"], "%Y-%m-%d %H:%M:%S")
+    if datetime.utcnow() < start and not api_admin():
+        return make_response((json_fail_msg("The contest has not started"), 403))
     data = db.execute(("SELECT * FROM contest_problems WHERE "
                        "contest_id=:cid AND problem_id=:pid"),
                       cid=contest_id, pid=problem_id)
-    if len(data) == 0 or (data[0]["draft"] and not session["admin"]):
-        return make_response(("Problem not found", 404))
-    return send_from_directory(f"metadata/contests/{contest_id}/{problem_id}",
-                               "description.md")
+    if len(data) == 0 or (data[0]["draft"] and not api_admin()):
+        return make_response((json_fail_msg("Problem not found"), 404))
+
+    description = read_file(f"metadata/contests/{contest_id}/{problem_id}/description.md")
+    hints = read_file(f"metadata/contests/{contest_id}/{problem_id}/hints.md")
+
+    returns = {
+        "description": description,
+        "hints": hints,
+    }
+    return json_success(returns)
 
 
-@api.route("/contest/<contest_id>/problem/hints/<problem_id>")
+@api.route("/contests")
 @api_login_required
-def contest_problem_hint(contest_id, problem_id):
+def contests():
+    if "id" not in request.args:
+        return make_response((json_fail_msg("Must specify ids"), 400))
+    ids = request.args["id"].split(",")
     from application import db
-    data = db.execute(("SELECT * FROM contest_problems WHERE "
-                       "contest_id=:cid AND problem_id=:pid"),
-                      cid=contest_id, pid=problem_id)
-    if len(data) == 0 or (data[0]["draft"] and not session["admin"]):
-        return make_response(("Problem not found", 404))
-    return send_from_directory(f"metadata/contests/{contest_id}/{problem_id}",
-                               "hints.md")
+    res = db.execute("SELECT * FROM contests WHERE id IN (?)", ids)
+    returns = {}
+    for item in res:
+        returns[item["id"]] = read_file(f"metadata/contests/{item['id']}/description.md")
+    return json_success(returns)
 
 
-@api.route("/contest/<contest_id>")
-@api_login_required
-def contest_description(contest_id):
-    from application import db
-    if len(db.execute("SELECT * FROM contests WHERE id=:cid", cid=contest_id)) == 0:
-        return make_response(("Contest not found", 404))
-    return send_from_directory(f"metadata/contests/{contest_id}", "description.md")
-
-
-@api.route("/announcement/<announcement_id>")
-def announcement(announcement_id):
+@api.route("/announcements")
+def announcement():
     from application import app
     if app.config["USE_HOMEPAGE"] and read_file(app.config['HOMEPAGE_FILE'])[0] == '2':
-        return _announcement(announcement_id)
-    return login_announcement(announcement_id)
+        return _announcement()
+    elif not api_logged_in():
+        return make_response((json_fail_msg("Unauthorized"), 401))
+    return _announcement()
 
 
-@api_login_required
-def login_announcement(announcement_id):
-    return _announcement(announcement_id)
-
-
-def _announcement(announcement_id):
+def _announcement():
+    if "id" not in request.args:
+        return make_response((json_fail_msg("Must specify ids"), 400))
+    nums = [int(e) for e in request.args["id"].split(",") if e.isdigit()][:10]
     from application import db
-    if len(db.execute(
-            "SELECT * FROM announcements WHERE id=:aid", aid=announcement_id)) == 0:
-        return make_response(("Announcement not found", 404))
-    return send_from_directory("metadata/announcements", f"{announcement_id}.md")
+    res = db.execute("SELECT * FROM announcements WHERE id IN (?)", nums)
+    returns = {}
+    for item in res:
+        returns[item["id"]] = read_file(f"metadata/announcements/{item['id']}.md")
+    return json_success(returns)
 
 
 @api.route("/homepage")
@@ -118,11 +125,8 @@ def homepage():
     from application import app
     if app.config["USE_HOMEPAGE"]:
         return _homepage()
-    return admin_homepage()
-
-
-@api_admin_required
-def admin_homepage():
+    elif not api_admin():
+        return make_response((json_fail_msg("Unauthorized"), 401))
     return _homepage()
 
 
