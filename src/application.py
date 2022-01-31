@@ -1251,7 +1251,7 @@ def download_contest_problem(contest_id, problem_id):
     zf.close()
     temp_zipfile.seek(0)
     return send_file(temp_zipfile, mimetype='zip',
-                     attachment_filename=f'{problem_id}.zip', as_attachment=True)
+                     download_name=f'{problem_id}.zip', as_attachment=True)
 
 
 @app.route('/problems')
@@ -1582,7 +1582,7 @@ def download_problem(problem_id):
     zf.close()
     temp_zipfile.seek(0)
     return send_file(temp_zipfile, mimetype='zip',
-                     attachment_filename=f'{problem_id}.zip', as_attachment=True)
+                     download_name=f'{problem_id}.zip', as_attachment=True)
 
 
 @app.route("/admin/console")
