@@ -1,3 +1,5 @@
+import json
+
 def test_admin(client, database):
     '''Test that non-admins are barred from admin pages, and admins can access them.'''
     # Admins should be able to view the page
@@ -98,9 +100,9 @@ def test_admin(client, database):
     assert result.status_code == 200
     assert b'successfully edited' in result.data
 
-    result = client.get('/api/announcement/1')
-    assert result.status_code == 200
-    assert b'new testing announcement' == result.data
+    result = client.get('/api/announcements?id=1')
+    assert json.loads(result.data)['status'] == 'success'
+    assert json.loads(result.data)['1'] == 'new testing announcement'
 
     # For some reason Windows locks the announcement file, preventing it from being
     # deleted in the next test

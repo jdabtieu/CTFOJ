@@ -1,4 +1,6 @@
-def test_assets(client, database):
+import json
+
+def test_api(client, database):
     '''Test to ensure api functions.'''
     database.execute(
         ("INSERT INTO 'users' VALUES(1, 'admin', 'pbkdf2:sha256:150000$XoLKRd3I$"
@@ -10,3 +12,9 @@ def test_assets(client, database):
 
     result = client.get('/api')
     assert result.status_code == 308
+
+    client.get('/logout')
+
+    result = client.get('/api/problem?id=anything')
+    assert result.status_code == 401
+    assert json.loads(result.data)['status'] == 'fail'
