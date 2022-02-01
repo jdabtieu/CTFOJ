@@ -86,19 +86,6 @@ def api_admin() -> bool:
     return len(user) == 1
 
 
-def api_admin_required(f):
-    """
-    Decorate API routes to require admin login.
-    """
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if api_logged_in():
-            return f(*args, **kwargs)
-        else:
-            return json_fail("Unauthorized", 401)
-    return decorated_function
-
-
 def login_required(f):
     """
     Decorate routes to require login.
