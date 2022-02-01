@@ -13,7 +13,13 @@
 {% endblock %}
 {% block script %}
 <script>
-    const homeDiv = document.getElementById("home");
-    fetch("/api/homepage").then(b => b.text()).then(b => inject(homeDiv, b, true));
+    fetch("/api/homepage").then(b => b.text())
+            .then(b => JSON.parse(b)).then(b => {
+        if (b["status"] !== "success") {
+            console.log(`API fail: status: ${b["status"]}, message: ${b["message"]}`);
+            return;
+        }
+        inject(document.getElementById("home"), b["data"]["data"], true)
+    });
 </script>
 {% endblock %}

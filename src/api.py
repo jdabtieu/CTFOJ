@@ -1,4 +1,4 @@
-from flask import Blueprint, make_response, send_from_directory, redirect
+from flask import Blueprint, redirect
 import uuid
 import logging
 
@@ -31,13 +31,13 @@ def get_api_key():
 @api_login_required
 def problem():
     if "id" not in request.args:
-        return make_response((json_fail_msg("Must provide problem ID"), 400))
+        return json_fail("Must provide problem ID", 400)
     problem_id = request.args["id"]
 
     from application import db
     data = db.execute("SELECT * FROM problems WHERE id=:pid", pid=problem_id)
     if len(data) == 0 or (data[0]["draft"] and not api_admin()):
-        return make_response((json_fail_msg("Problem not found"), 404))
+        return json_fail("Problem not found", 404)
 
     description = read_file(f"metadata/problems/{problem_id}/description.md")
     hints = read_file(f"metadata/problems/{problem_id}/hints.md")
@@ -55,24 +55,24 @@ def problem():
 @api_login_required
 def contest_problem():
     if "cid" not in request.args:
-        return make_response((json_fail_msg("Must provide contest ID"), 400))
+        return json_fail("Must provide contest ID", 400)
     if "pid" not in request.args:
-        return make_response((json_fail_msg("Must provide problem ID"), 400))
+        return json_fail("Must provide problem ID", 400)
     contest_id = request.args["cid"]
     problem_id = request.args["pid"]
 
     from application import db
     contest = db.execute("SELECT * FROM contests WHERE id=?", contest_id)
     if len(contest) != 1:
-        return make_response((json_fail_msg("Contest not found"), 404))
+        return json_fail("Contest not found", 404)
     start = datetime.strptime(contest[0]["start"], "%Y-%m-%d %H:%M:%S")
     if datetime.utcnow() < start and not api_admin():
-        return make_response((json_fail_msg("The contest has not started"), 403))
+        return json_fail("The contest has not started", 403)
     data = db.execute(("SELECT * FROM contest_problems WHERE "
                        "contest_id=:cid AND problem_id=:pid"),
                       cid=contest_id, pid=problem_id)
     if len(data) == 0 or (data[0]["draft"] and not api_admin()):
-        return make_response((json_fail_msg("Problem not found"), 404))
+        return json_fail("Problem not found", 404)
 
     description = read_file(f"metadata/contests/{contest_id}/{problem_id}/description.md")
     hints = read_file(f"metadata/contests/{contest_id}/{problem_id}/hints.md")
@@ -88,7 +88,7 @@ def contest_problem():
 @api_login_required
 def contests():
     if "id" not in request.args:
-        return make_response((json_fail_msg("Must specify ids"), 400))
+        return json_fail("Must specify ids", 400)
     ids = request.args["id"].split(",")
     from application import db
     res = db.execute("SELECT * FROM contests WHERE id IN (?)", ids)
@@ -104,13 +104,13 @@ def announcement():
     if app.config["USE_HOMEPAGE"] and read_file(app.config['HOMEPAGE_FILE'])[0] == '2':
         return _announcement()
     elif not api_logged_in():
-        return make_response((json_fail_msg("Unauthorized"), 401))
+        return json_fail("Unauthorized", 401)
     return _announcement()
 
 
 def _announcement():
     if "id" not in request.args:
-        return make_response((json_fail_msg("Must specify ids"), 400))
+        return json_fail("Must specify ids", 400)
     nums = [int(e) for e in request.args["id"].split(",") if e.isdigit()][:10]
     from application import db
     res = db.execute("SELECT * FROM announcements WHERE id IN (?)", nums)
@@ -126,7 +126,7 @@ def homepage():
     if app.config["USE_HOMEPAGE"]:
         return _homepage()
     elif not api_admin():
-        return make_response((json_fail_msg("Unauthorized"), 401))
+        return json_fail("Unauthorized", 401)
     return _homepage()
 
 

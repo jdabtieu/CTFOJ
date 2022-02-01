@@ -77,10 +77,10 @@
             console.log(`API fail: status: ${b["status"]}, message: ${b["message"]}`);
             return;
         }
-        inject(document.getElementById("problem-description"), b["description"], true)
-        if (b["hints"] != "") {
+        inject(document.getElementById("problem-description"), b["data"]["description"], true)
+        if (b["data"]["hints"] != "") {
             document.getElementById("hint-container").style.display = "block";
-            inject(document.getElementById("hint"), b["hints"], false);
+            inject(document.getElementById("hint"), b["data"]["hints"], false);
         }
     });
     document.getElementById("togglehint").addEventListener("click", function() {

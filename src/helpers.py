@@ -13,19 +13,18 @@ from flask_mail import Message
 from werkzeug.security import check_password_hash
 
 
-def json_fail_msg(message: str) -> str:
+def json_fail(message: str, http_code: int):
     """
-    Return the fail message as a JSON object
+    Return the fail message as a JSON response with the specified http code
     """
-    return json.dumps({"status": "fail", "message": message})
+    return make_response((json.dumps({"status": "fail", "message": message}), http_code))
 
 
 def json_success(data: dict) -> str:
     """
     Return the requested information with status: success
     """
-    data["status"] = "success"
-    return json.dumps(data)
+    return json.dumps({"status": "success", "data": data})
 
 
 def api_logged_in() -> bool:
@@ -60,7 +59,7 @@ def api_login_required(f):
         if api_logged_in():
             return f(*args, **kwargs)
         else:
-            return make_response((json_fail_msg("Unauthorized"), 401))
+            return json_fail("Unauthorized", 401)
     return decorated_function
 
 
@@ -96,7 +95,7 @@ def api_admin_required(f):
         if api_logged_in():
             return f(*args, **kwargs)
         else:
-            return make_response((json_fail_msg("Unauthorized"), 401))
+            return json_fail("Unauthorized", 401)
     return decorated_function
 
 

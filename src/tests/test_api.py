@@ -1,5 +1,6 @@
 import json
 
+
 def test_api(client, database):
     '''Test to ensure api functions.'''
     database.execute(
@@ -18,3 +19,12 @@ def test_api(client, database):
     result = client.get('/api/problem?id=anything')
     assert result.status_code == 401
     assert json.loads(result.data)['status'] == 'fail'
+    assert 'data' not in json.loads(result.data)
+    assert 'message' in json.loads(result.data)
+
+    database.execute("UPDATE users SET api='00000000-0000-0000-0000-000000000000'")
+    result = client.get('/api/contests?id=successful&key=00000000-0000-0000-0000-000000000000')
+    assert result.status_code == 200
+    assert json.loads(result.data)['status'] == 'success'
+    assert 'data' in json.loads(result.data)
+    assert 'message' not in json.loads(result.data)

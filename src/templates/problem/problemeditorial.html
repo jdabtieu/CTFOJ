@@ -21,8 +21,8 @@
             console.log(`API fail: status: ${b["status"]}, message: ${b["message"]}`);
             return;
         }
-        if (b["editorial"] != "") {
-            inject(editorial, b["editorial"], false);
+        if (b["data"]["editorial"] != "") {
+            inject(editorial, b["data"]["editorial"], false);
         } else {
             editorial.innerHTML =
                 `This problem does not have an editorial.

@@ -119,7 +119,7 @@
             return;
         }
         for (let id of idList) {
-            inject(document.getElementById("contest-" + id), b[id], true);
+            inject(document.getElementById("contest-" + id), b["data"][id], true);
         }
         seeMore();
     });

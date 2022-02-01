@@ -40,7 +40,7 @@ def test_contest(client, database):
 
     result = client.get('/api/contests?id=testingcontest,nonexistent')
     assert json.loads(result.data)['status'] == 'success'
-    assert json.loads(result.data)['testingcontest'] == 'testing contest description'
+    assert json.loads(result.data)['data']['testingcontest'] == 'testing contest description'
     assert 'nonexistent' not in json.loads(result.data)
 
     result = client.get('/contests')
@@ -132,12 +132,12 @@ def test_contest(client, database):
 
     result = client.get('/api/contests?id=testingcontest')
     assert json.loads(result.data)['status'] == 'success'
-    assert json.loads(result.data)['testingcontest'] == 'testing contest description'
+    assert json.loads(result.data)['data']['testingcontest'] == 'testing contest description'
 
     result = client.get('/api/contest/problem?cid=testingcontest&pid=helloworldtesting')
     assert json.loads(result.data)['status'] == 'success'
-    assert json.loads(result.data)['description'] == 'a short fun problem 2'
-    assert json.loads(result.data)['hints'] == 'try looking at the title 2'
+    assert json.loads(result.data)['data']['description'] == 'a short fun problem 2'
+    assert json.loads(result.data)['data']['hints'] == 'try looking at the title 2'
 
     result = client.get('/api/contest/problem?cid=testingcontest&pid=boo')
     assert result.status_code == 404
@@ -157,7 +157,7 @@ def test_contest(client, database):
 
     result = client.get('/api/contests?id=testingcontest&key=00000000-0000-0000-0000-000000000001')  # noqa
     assert json.loads(result.data)['status'] == 'success'
-    assert json.loads(result.data)['testingcontest'] == 'testing contest description'
+    assert json.loads(result.data)['data']['testingcontest'] == 'testing contest description'
 
     client.post('/login', data={'username': 'admin', 'password': 'CTFOJadmin'})
     result = client.post('/contest/testingcontest/problem/helloworldtesting/export',

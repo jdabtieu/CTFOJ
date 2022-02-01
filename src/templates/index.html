@@ -59,7 +59,7 @@
             return;
         }
         for (let id of idList) {
-            inject(document.getElementById("announcement-" + id), b[id], true);
+            inject(document.getElementById("announcement-" + id), b["data"][id], true);
         }
         seeMore();
     });

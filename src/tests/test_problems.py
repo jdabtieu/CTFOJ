@@ -67,9 +67,9 @@ def test_problem(client, database):
 
     result = client.get('/api/problem?id=helloworldtesting')
     assert json.loads(result.data)['status'] == 'success'
-    assert json.loads(result.data)['description'] == 'a short fun problem 2'
-    assert json.loads(result.data)['hints'] == 'try looking at the title 2'
-    assert json.loads(result.data)['editorial'] == 'sample editorial'
+    assert json.loads(result.data)['data']['description'] == 'a short fun problem 2'
+    assert json.loads(result.data)['data']['hints'] == 'try looking at the title 2'
+    assert json.loads(result.data)['data']['editorial'] == 'sample editorial'
 
     result = client.get('/problem/helloworldtesting/editorial')
     assert result.status_code == 200
