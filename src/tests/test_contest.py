@@ -1,3 +1,4 @@
+import json
 import os
 import shutil
 
@@ -37,12 +38,10 @@ def test_contest(client, database):
     assert result.status_code == 200
     assert b'Testing Contest' in result.data
 
-    result = client.get('/api/contest/testingcontest')
-    assert result.status_code == 200
-    assert b'testing contest description' == result.data
-
-    result = client.get('/api/contest/nonexistent')
-    assert result.status_code == 404
+    result = client.get('/api/contests?id=testingcontest,nonexistent')
+    assert json.loads(result.data)['status'] == 'success'
+    assert json.loads(result.data)['data']['testingcontest'] == 'testing contest description'
+    assert 'nonexistent' not in json.loads(result.data)
 
     result = client.get('/contests')
     assert result.status_code == 200
@@ -116,8 +115,9 @@ def test_contest(client, database):
     assert b'sucessfully notified' in result.data
     client.get('/logout')
 
-    result = client.get('/api/contest/testingcontest')
+    result = client.get('/api/contests?id=testingcontest')
     assert result.status_code == 401
+    assert json.loads(result.data)['status'] == 'fail'
 
     database.execute(
         ("INSERT INTO 'users' VALUES(2, 'normal_user', 'pbkdf2:sha256:150000$XoLKRd3I$"
@@ -130,20 +130,18 @@ def test_contest(client, database):
     result = client.get('/contest/testingcontest/problem/helloworldtesting')
     assert result.status_code == 200
 
-    result = client.get('/api/contest/testingcontest')
-    assert result.status_code == 200
-    assert b'testing contest description' == result.data
+    result = client.get('/api/contests?id=testingcontest')
+    assert json.loads(result.data)['status'] == 'success'
+    assert json.loads(result.data)['data']['testingcontest'] == 'testing contest description'
 
-    result = client.get('/api/contest/testingcontest/problem/description/helloworldtesting')  # noqa E501
-    assert result.status_code == 200
-    assert b'a short fun problem 2' == result.data
+    result = client.get('/api/contest/problem?cid=testingcontest&pid=helloworldtesting')
+    assert json.loads(result.data)['status'] == 'success'
+    assert json.loads(result.data)['data']['description'] == 'a short fun problem 2'
+    assert json.loads(result.data)['data']['hints'] == 'try looking at the title 2'
 
-    result = client.get('/api/contest/testingcontest/problem/hints/helloworldtesting')
-    assert result.status_code == 200
-    assert b'try looking at the title 2' == result.data
-
-    result = client.get('/api/contest/testingcontest/problem/hints/boo')
+    result = client.get('/api/contest/problem?cid=testingcontest&pid=boo')
     assert result.status_code == 404
+    assert json.loads(result.data)['status'] == 'fail'
 
     result = client.post('/contest/testingcontest/problem/helloworldtesting', data={
         'flag': 'ctf{hello}'
@@ -157,9 +155,9 @@ def test_contest(client, database):
 
     client.get('/logout')
 
-    result = client.get('/api/contest/testingcontest?key=00000000-0000-0000-0000-000000000001')  # noqa
-    assert result.status_code == 200
-    assert b'testing contest description' == result.data
+    result = client.get('/api/contests?id=testingcontest&key=00000000-0000-0000-0000-000000000001')  # noqa
+    assert json.loads(result.data)['status'] == 'success'
+    assert json.loads(result.data)['data']['testingcontest'] == 'testing contest description'
 
     client.post('/login', data={'username': 'admin', 'password': 'CTFOJadmin'})
     result = client.post('/contest/testingcontest/problem/helloworldtesting/export',

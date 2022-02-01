@@ -12,7 +12,6 @@
 </div>
 <h2>Announcements</h2>
 {% for announcement in data %}
-    <link rel="preload" href="/api/announcement/{{ announcement['id'] }}" as="fetch" crossorigin="anonymous">
     <div class="card post-card">
         <div class="see-more-wrapper">
             <a href="#" class="see-more" style="margin-left: 8px;">See More</a>
@@ -26,12 +25,28 @@
 {% endblock %}
 {% block script %}
 <script>
+    fetch("/api/homepage").then(b => b.text())
+            .then(b => JSON.parse(b)).then(b => {
+        if (b["status"] !== "success") {
+            console.log(`API fail: status: ${b["status"]}, message: ${b["message"]}`);
+            return;
+        }
+        inject(document.getElementById("home"), b["data"]["data"], true)
+    });
+    const idList = []
     {% for announcement in data %}
-        fetch("/api/announcement/{{ announcement['id'] }}").then(b => b.text())
-            .then(b => inject(document.getElementById("announcement-{{ announcement['id'] }}"), b, true));
+        idList.push({{ announcement['id'] }})
     {% endfor %}
-
-    const homeDiv = document.getElementById("home");
-    fetch("/api/homepage").then(b => b.text()).then(b => inject(homeDiv, b, true));
+    fetch("/api/announcements?id=" + idList).then(b => b.text())
+            .then(b => JSON.parse(b)).then(b => {
+        if (b["status"] !== "success") {
+            console.log(`API fail: status: ${b["status"]}, message: ${b["message"]}`);
+            return;
+        }
+        for (let id of idList) {
+            inject(document.getElementById("announcement-" + id), b["data"][id], true);
+        }
+        seeMore();
+    });
 </script>
 {% endblock %}

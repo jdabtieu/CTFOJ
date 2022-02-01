@@ -17,7 +17,6 @@
     </div>
 {% endif %}
 {% for announcement in data %}
-    <link rel="preload" href="/api/announcement/{{ announcement['id'] }}" as="fetch" crossorigin="anonymous">
     <div class="card post-card">
         <div class="see-more-wrapper">
             <a href="#" class="see-more" style="margin-left: 8px;">See More</a>
@@ -49,10 +48,21 @@
 {% endblock %}
 {% block script %}
 <script>
+    const idList = []
     {% for announcement in data %}
-        fetch("/api/announcement/{{ announcement['id'] }}").then(b => b.text())
-            .then(b => inject(document.getElementById("announcement-{{ announcement['id'] }}"), b, true));
+        idList.push({{ announcement['id'] }})
     {% endfor %}
+    fetch("/api/announcements?id=" + idList).then(b => b.text())
+            .then(b => JSON.parse(b)).then(b => {
+        if (b["status"] !== "success") {
+            console.log(`API fail: status: ${b["status"]}, message: ${b["message"]}`);
+            return;
+        }
+        for (let id of idList) {
+            inject(document.getElementById("announcement-" + id), b["data"][id], true);
+        }
+        seeMore();
+    });
     for (let node of document.getElementsByClassName("btn-delete")) {
         node.addEventListener("click", function() {
             let id = this.getAttribute("data-id");
@@ -60,6 +70,5 @@
             document.querySelector("#confirm input[name='aid']").setAttribute("value", id);
         });
     }
-    
 </script>
 {% endblock %}

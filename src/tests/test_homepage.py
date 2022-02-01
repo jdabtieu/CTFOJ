@@ -1,3 +1,6 @@
+import json
+
+
 def test_homepage(client, database):
     """
     Test that admins can create contests and contest problems,
@@ -11,9 +14,10 @@ def test_homepage(client, database):
 
     with open('metadata/homepage.html', 'w') as file:
         file.write("1\nThis is the homepage<p>HTML should render too</p>")
+
     result = client.get('/api/homepage')
-    assert result.status_code == 200
-    assert b'This is the homepage<p>HTML should render too</p>' == result.data
+    assert json.loads(result.data)['status'] == 'success'
+    assert json.loads(result.data)['data']['data'] == 'This is the homepage<p>HTML should render too</p>'
 
     result = client.get('/admin/previewhomepage', follow_redirects=True)
     assert result.status_code == 200
@@ -21,9 +25,10 @@ def test_homepage(client, database):
 
     with open('metadata/homepage.html', 'w') as file:
         file.write("2\nThis is the homepage<p>HTML should render too</p>")
+
     result = client.get('/api/homepage')
-    assert result.status_code == 200
-    assert b'This is the homepage<p>HTML should render too</p>' == result.data
+    assert json.loads(result.data)['status'] == 'success'
+    assert json.loads(result.data)['data']['data'] == 'This is the homepage<p>HTML should render too</p>'
 
     result = client.get('/admin/previewhomepage', follow_redirects=True)
     assert result.status_code == 200

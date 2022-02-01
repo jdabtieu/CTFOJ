@@ -1,3 +1,4 @@
+import json
 import os
 import shutil
 
@@ -51,7 +52,7 @@ def test_problem(client, database):
     client.get('/logout')
 
     # make sure api_login_required is working properly
-    result = client.get('/api/problem/description/helloworldtesting')
+    result = client.get('/api/problem?id=helloworldtesting')
     assert result.status_code == 401
 
     # test if normal users can view the problem
@@ -64,20 +65,14 @@ def test_problem(client, database):
     result = client.get('/problem/helloworldtesting')
     assert result.status_code == 200
 
-    result = client.get('/api/problem/description/helloworldtesting')
-    assert result.status_code == 200
-    assert b'a short fun problem 2' == result.data
-
-    result = client.get('/api/problem/hints/helloworldtesting')
-    assert result.status_code == 200
-    assert b'try looking at the title 2' == result.data
+    result = client.get('/api/problem?id=helloworldtesting')
+    assert json.loads(result.data)['status'] == 'success'
+    assert json.loads(result.data)['data']['description'] == 'a short fun problem 2'
+    assert json.loads(result.data)['data']['hints'] == 'try looking at the title 2'
+    assert json.loads(result.data)['data']['editorial'] == 'sample editorial'
 
     result = client.get('/problem/helloworldtesting/editorial')
     assert result.status_code == 200
-
-    result = client.get('/api/problem/editorial/helloworldtesting')
-    assert result.status_code == 200
-    assert b'sample editorial' == result.data
 
     # test if normal users can submit to the problem
     result = client.post('/problem/helloworldtesting',

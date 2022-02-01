@@ -9,7 +9,6 @@
 	There are no future contests.
 {% endif %}
 {% for contest in future %}
-    <link rel="preload" href="/api/contest/{{ contest['id'] }}" as="fetch" crossorigin="anonymous">
     <div class="card post-card" style="max-height: 600px;">
         <div class="see-more-wrapper">
             <a href="#" class="see-more" style="margin-left: 8px;">See More</a>
@@ -42,7 +41,6 @@
 	There are no ongoing contests.
 {% endif %}
 {% for contest in current %}
-    <link rel="preload" href="/api/contest/{{ contest['id'] }}" as="fetch" crossorigin="anonymous">
     <div class="card post-card" style="max-height: 600px;">
         <div class="see-more-wrapper">
             <a href="#" class="see-more" style="margin-left: 8px;">See More</a>
@@ -75,7 +73,6 @@
 	There are no past contests.
 {% endif %}
 {% for contest in past %}
-    <link rel="preload" href="/api/contest/{{ contest['id'] }}" as="fetch" crossorigin="anonymous">
     <div class="card post-card" style="max-height: 600px;">
         <div class="see-more-wrapper">
             <a href="#" class="see-more" style="margin-left: 8px;">See More</a>
@@ -105,17 +102,33 @@
 {% endblock %}
 {% block script %}
 <script>
+    const idList = []
     {% for contest in future %}
-        fetch("/api/contest/{{ contest['id'] }}").then(b => b.text())
-            .then(b => inject(document.getElementById("contest-{{ contest['id'] }}"), b, true));
+        idList.push("{{ contest['id'] }}");
     {% endfor %}
     {% for contest in current %}
-        fetch("/api/contest/{{ contest['id'] }}").then(b => b.text())
-            .then(b => inject(document.getElementById("contest-{{ contest['id'] }}"), b, true));
+        idList.push("{{ contest['id'] }}");
     {% endfor %}
     {% for contest in past %}
-        fetch("/api/contest/{{ contest['id'] }}").then(b => b.text())
-            .then(b => inject(document.getElementById("contest-{{ contest['id'] }}"), b, true));
+        idList.push("{{ contest['id'] }}");
     {% endfor %}
+    fetch("/api/contests?id=" + idList).then(b => b.text())
+            .then(b => JSON.parse(b)).then(b => {
+        if (b["status"] !== "success") {
+            console.log(`API fail: status: ${b["status"]}, message: ${b["message"]}`);
+            return;
+        }
+        for (let id of idList) {
+            inject(document.getElementById("contest-" + id), b["data"][id], true);
+        }
+        seeMore();
+    });
+    for (let node of document.getElementsByClassName("btn-delete")) {
+        node.addEventListener("click", function() {
+            let id = this.getAttribute("data-id");
+            document.getElementById("confirm").style.display = "block";
+            document.querySelector("#confirm input[name='aid']").setAttribute("value", id);
+        });
+    }
 </script>
 {% endblock %}

@@ -137,7 +137,7 @@ def index():
 
     if not session or 'username' not in session:
         template = read_file(app.config['HOMEPAGE_FILE'])
-        template_type = template[0]
+        template_type = int(template[0])
         return render_template(f"home_fragment/home{template_type}.html",
                                data=data,
                                length=-(-length // 10))

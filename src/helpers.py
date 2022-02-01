@@ -1,3 +1,4 @@
+import json
 import jwt
 import logging
 import math
@@ -12,50 +13,77 @@ from flask_mail import Message
 from werkzeug.security import check_password_hash
 
 
+def json_fail(message: str, http_code: int):
+    """
+    Return the fail message as a JSON response with the specified http code
+    """
+    return make_response((json.dumps({"status": "fail", "message": message}), http_code))
+
+
+def json_success(data: dict) -> str:
+    """
+    Return the requested information with status: success
+    """
+    return json.dumps({"status": "success", "data": data})
+
+
+def api_logged_in() -> bool:
+    """
+    Check whether the user is logged in, using API key or session
+    """
+    # Check session
+    if session and "user_id" in session and session["user_id"] > 0:
+        return True
+
+    # Get API key
+    key = None
+    if request.method == "GET" and "key" in request.args:
+        key = request.args["key"]
+    if request.method == "POST" and "key" in request.form:
+        key = request.form["key"]
+    if key is None:
+        return False
+
+    # Check API key
+    from application import db
+    user = db.execute("SELECT * FROM users WHERE api=?", request.args["key"])
+    return len(user) == 1
+
+
 def api_login_required(f):
     """
     Decorate API routes to require login.
     """
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if session and "user_id" in session and session.get("user_id") is not None:
+        if api_logged_in():
             return f(*args, **kwargs)
-        if request.method == "GET" and request.args.get("key"):
-            from application import db
-            user = db.execute("SELECT * FROM users WHERE api=?", request.args.get("key"))
-            if len(user) == 1:
-                return f(*args, **kwargs)
-        if request.method == "POST" and request.form.get("key"):
-            from application import db
-            user = db.execute("SELECT * FROM users WHERE api=?", request.form.get("key"))
-            if len(user) == 1:
-                return f(*args, **kwargs)
-        return make_response(("Unauthorized", 401))
+        else:
+            return json_fail("Unauthorized", 401)
     return decorated_function
 
 
-def api_admin_required(f):
+def api_admin() -> bool:
     """
-    Decorate API routes to require adminlogin.
+    Check whether the user is an admin, using API key or session
     """
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if session and "admin" in session and session.get("admin") == 1:
-            return f(*args, **kwargs)
-        if request.method == "GET" and request.args.get("key"):
-            from application import db
-            user = db.execute("SELECT * FROM users WHERE api=? AND admin=1",
-                              request.args.get("key"))
-            if len(user) == 1:
-                return f(*args, **kwargs)
-        if request.method == "POST" and request.form.get("key"):
-            from application import db
-            user = db.execute("SELECT * FROM users WHERE api=? AND admin=1",
-                              request.form.get("key"))
-            if len(user) == 1:
-                return f(*args, **kwargs)
-        return make_response(("Unauthorized", 401))
-    return decorated_function
+    # Check session
+    if session and "admin" in session and session["admin"] == 1:
+        return True
+
+    # Get API key
+    key = None
+    if request.method == "GET" and "key" in request.args:
+        key = request.args["key"]
+    if request.method == "POST" and "key" in request.form:
+        key = request.form["key"]
+    if key is None:
+        return False
+
+    # Check API key
+    from application import db
+    user = db.execute("SELECT * FROM users WHERE api=? AND admin=1", request.args["key"])
+    return len(user) == 1
 
 
 def login_required(f):
