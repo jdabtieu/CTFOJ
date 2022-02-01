@@ -4,7 +4,7 @@
 {% block active %}Practice{% endblock %}
 
 {% block preload %}
-<link rel="preload" href="/api/problem/editorial/{{ request.path.split('/')[2] }}" as="fetch" crossorigin="anonymous">
+<link rel="preload" href="/api/problem?id={{ request.path.split('/')[2] }}" as="fetch" crossorigin="anonymous">
 {% endblock %}
 
 {% block main %}
@@ -33,10 +33,14 @@
     }
     editorialBox.addEventListener('input', update);
 
-    fetch("/api/problem/editorial/" + problemId).then(b => b.text())
-        .then(b => {
-            editorialBox.value = b;
-            update();
-        });
+    fetch("/api/problem?id=" + problemId).then(b => b.text())
+            .then(b => JSON.parse(b)).then(b => {
+        if (b["status"] !== "success") {
+            console.log(`API fail: status: ${b["status"]}, message: ${b["message"]}`);
+            return;
+        }
+        editorialBox.value = b["data"]["editorial"];
+        update();
+    });
 </script>
 {% endblock %}

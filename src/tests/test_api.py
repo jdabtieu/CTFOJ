@@ -28,3 +28,9 @@ def test_api(client, database):
     assert json.loads(result.data)['status'] == 'success'
     assert 'data' in json.loads(result.data)
     assert 'message' not in json.loads(result.data)
+
+    result = client.get('/api/nonexistent')
+    assert result.status_code == 404
+    assert json.loads(result.data)['status'] == 'fail'
+    assert 'data' not in json.loads(result.data)
+    assert 'message' in json.loads(result.data)

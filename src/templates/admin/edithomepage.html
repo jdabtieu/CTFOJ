@@ -63,9 +63,13 @@
     content.addEventListener("input", update);
 
     fetch("/api/homepage").then(b => b.text())
-        .then(b => {
-            content.value = b;
-            update();
-        });
+            .then(b => JSON.parse(b)).then(b => {
+        if (b["status"] !== "success") {
+            console.log(`API fail: status: ${b["status"]}, message: ${b["message"]}`);
+            return;
+        }
+        content.value = b["data"]["data"];
+        update();
+    });
 </script>
 {% endblock %}

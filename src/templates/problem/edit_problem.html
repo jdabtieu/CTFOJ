@@ -4,8 +4,7 @@
 {% block active %}Practice{% endblock %}
 
 {% block preload %}
-<link rel="preload" href="/api/problem/description/{{ request.path.split('/')[2] }}" as="fetch" crossorigin="anonymous">
-<link rel="preload" href="/api/problem/hints/{{ request.path.split('/')[2] }}" as="fetch" crossorigin="anonymous">
+<link rel="preload" href="/api/problem?id={{ request.path.split('/')[2] }}" as="fetch" crossorigin="anonymous">
 {% endblock %}
 
 {% block main %}
@@ -78,17 +77,17 @@
         hints.style.height = outputDiv.offsetHeight + "px";
     }
     hints.addEventListener('input', updateHints);
-
-    fetch("/api/problem/description/" + problemId).then(b => b.text())
-        .then(b => {
-            description.value = b;
-            updateDescription();
-        });
-
-    fetch("/api/problem/hints/" + problemId).then(b => b.text())
-        .then(b => {
-            hints.value = b;
-            updateHints();
-        });
+    
+    fetch("/api/problem?id=" + problemId).then(b => b.text())
+            .then(b => JSON.parse(b)).then(b => {
+        if (b["status"] !== "success") {
+            console.log(`API fail: status: ${b["status"]}, message: ${b["message"]}`);
+            return;
+        }
+        description.value = b["data"]["description"];
+        updateDescription();
+        hints.value = b["data"]["hints"];
+        updateHints();
+    });
 </script>
 {% endblock %}

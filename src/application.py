@@ -1907,6 +1907,8 @@ def preview_homepage():
 def errorhandler(e):
     if not isinstance(e, HTTPException):
         e = InternalServerError()
+    if request.path.startswith('/api/'):
+        return json_fail(e.description, e.code)
     if e.code == 404:
         return render_template("error/404.html"), 404
     if e.code == 500:
