@@ -82,6 +82,9 @@
             document.getElementById("hint-container").style.display = "block";
             inject(document.getElementById("hint"), b["data"]["hints"], false);
         }
+        if (b["data"]["flag_hint"]) {
+            document.querySelector("input[name=flag]").setAttribute("placeholder", b["data"]["flag_hint"])
+        }
     });
     document.getElementById("togglehint").addEventListener("click", function() {
         document.getElementById("hint").classList.toggle("hidden");

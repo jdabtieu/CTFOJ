@@ -196,6 +196,21 @@ body {
     min-height: 100vh;
 }
 
+.toggle-input {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    column-gap: 12px;
+}
+
+.toggle-input > div {
+    display: inline-flex;
+}
+
+.toggle-input > div > span:first-child {
+    padding-right: 8px;
+}
+
 /****************** COLOURS **********************************/
 .white {
     color: #ffffff!important;
@@ -294,4 +309,8 @@ body {
 
 .dark a:not(.btn) {
     color: #3388ff;
+}
+
+.dark .form-control:disabled, .dark .form-control[readonly] {
+    background-color: #3f3f3f;
 }

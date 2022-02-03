@@ -44,6 +44,16 @@
             <label for="rejudge">Rejudge?</label>
         </div>
     </div>
+    <div class="mb-3 toggle-input">
+        <div>
+            <span>Manual</span>
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="toggle-flag-hint" checked>
+            </div>
+            <span>Automatic</span>
+        </div>
+        <input class="form-control" name="flag-hint" placeholder="Flag Hint" readonly>
+    </div>
     <input class="form-control mb-3"
            type="number"
            id="point_value"
@@ -58,6 +68,24 @@
 {% endblock %}
 {% block script %}
 <script>
+    let autoFlagHint = true;
+    function updateFlagHint() {
+        if (!autoFlagHint) return;
+        let flag = document.querySelector("input[name=flag]").value;
+        const regex = /^(.*\{).+\}$/;
+        if (regex.test(flag)) {
+            document.querySelector("input[name=flag-hint]").value = flag.replace(regex, "$1...}");
+        } else {
+            document.querySelector("input[name=flag-hint]").value = "";
+        }
+    }
+    document.getElementById("toggle-flag-hint").addEventListener("input", function() {
+        autoFlagHint = !autoFlagHint;
+        document.querySelector("input[name=flag-hint]").toggleAttribute("readonly");
+        updateFlagHint();
+    });
+    document.querySelector("input[name=flag]").addEventListener("input", updateFlagHint);
+    
     const contestId = "{{ request.path.split('/')[2] }}";
     const problemId = "{{ request.path.split('/')[4] }}";
     const description = document.getElementById("description");

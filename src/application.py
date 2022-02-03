@@ -923,6 +923,7 @@ def edit_contest_problem(contest_id, problem_id):
     new_category = request.form.get("category")
     new_points = request.form.get("point_value")
     new_flag = request.form.get("flag")
+    new_flag_hint = request.form.get("flag-hint")
 
     if (not new_name or not new_description or not new_category
             or (not new_points and data[0]["score_users"] == -1)):
@@ -937,6 +938,7 @@ def edit_contest_problem(contest_id, problem_id):
             rejudge_contest_problem(contest_id, problem_id, new_flag)
     else:
         new_flag = data[0]["flag"]
+        new_flag_hint = data[0]["flag_hint"]
 
     new_description = new_description.replace('\r', '')
     if not new_hint:
@@ -953,10 +955,10 @@ def edit_contest_problem(contest_id, problem_id):
                     "AND problem_id=:pid"),
                    pv=int(new_points), cid=contest_id, pid=problem_id)
 
-    db.execute(("UPDATE contest_problems SET name=:name, category=:category, flag=:flag "
-                "WHERE contest_id=:cid AND problem_id=:pid"),
+    db.execute(("UPDATE contest_problems SET name=:name, category=:category, flag=:flag, "
+                "flag_hint=:fhint WHERE contest_id=:cid AND problem_id=:pid"),
                name=new_name, category=new_category, flag=new_flag, cid=contest_id,
-               pid=problem_id)
+               pid=problem_id, fhint=new_flag_hint)
 
     write_file(
         f'metadata/contests/{contest_id}/{problem_id}/description.md', new_description)
@@ -1097,6 +1099,7 @@ def contest_add_problem(contest_id):
     category = request.form.get("category")
     flag = request.form.get("flag")
     draft = 1 if request.form.get("draft") else 0
+    flag_hint = request.form.get("flag-hint")
 
     if not problem_id or not name or not description or not category or not flag:
         flash('You have not entered all required fields', 'danger')
@@ -1134,10 +1137,10 @@ def contest_add_problem(contest_id):
 
         # Modify problems table
         db.execute(("INSERT INTO contest_problems VALUES(:cid, :pid, :name, :pv, "
-                    ":category, :flag, :draft, :min, :max, :users)"),
+                    ":category, :flag, :draft, :min, :max, :users, :fhint)"),
                    cid=contest_id, pid=problem_id, name=name, pv=max_points,
                    category=category, flag=flag, draft=draft, min=min_points,
-                   max=max_points, users=users_decay)
+                   max=max_points, users=users_decay, fhint=flag_hint)
     else:  # assume static
         point_value = request.form.get("point_value")
         if not point_value:
@@ -1146,10 +1149,10 @@ def contest_add_problem(contest_id):
 
         # Modify problems table
         db.execute(("INSERT INTO contest_problems(contest_id, problem_id, name, "
-                    "point_value, category, flag, draft) "
-                    "VALUES(:cid, :pid, :name, :pv, :category, :flag, :draft)"),
+                    "point_value, category, flag, draft, flag_hint) "
+                    "VALUES(:cid, :pid, :name, :pv, :category, :flag, :draft, :fhint)"),
                    cid=contest_id, pid=problem_id, name=name, pv=point_value,
-                   category=category, flag=flag, draft=draft)
+                   category=category, flag=flag, draft=draft, fhint=flag_hint)
 
     # Check if file exists & upload if it does
     file = request.files["file"]

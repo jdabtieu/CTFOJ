@@ -31,3 +31,7 @@ for sub in exportable:
                 sub['correct'], sub['submitted'])
 
 print('Migration completed.')
+
+
+# ALTER TABLE contest_problems ADD 'flag_hint' varchar(256) NOT NULL DEFAULT('');
+# ALTER TABLE problems ADD 'flag_hint' varchar(256) NOT NULL DEFAULT('');
