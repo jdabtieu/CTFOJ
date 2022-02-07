@@ -3,6 +3,6 @@ Flask-Session==0.4.0
 Flask-WTF==1.0.0
 Flask==2.0.2
 Werkzeug==2.0.2
-cs50==8.0.1
+cs50==9.0.0
 pyjwt==2.3.0
 requests==2.27.1
