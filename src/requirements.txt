@@ -5,4 +5,4 @@ Flask==2.1.1
 Werkzeug==2.1.1
 cs50==9.0.0
 pyjwt==2.3.0
-requests==2.27.1
+requests==2.28.0
