@@ -4,7 +4,8 @@ Prerequisites: Python 3, SQLite 3
 For updating instructions, click [here](#updating).
 
 Although CTFOJ can run on Linux, Windows, and MacOS, it is recommended to run it
-on a modern Linux distribution such as Ubuntu 20.04 LTS.
+on a modern Linux distribution such as Ubuntu 22.04 LTS. This guide assumes that
+you are running Linux.
 
 # Step 0 - Getting a copy of CTFOJ
 The best way to get a copy of CTFOJ is to clone the repository at the version
@@ -17,10 +18,10 @@ $ cd CTFOJ
 ```
 
 # Installation Instructions
-It is recommended to use the provided INSTALL.sh script if you are running a
-Linux-based system, MacOS, WSL, msys2, or Git Bash. If you wish to install
-manually, or are using another operating system, please keep reading.If you use
-the INSTALL.sh script, skip to
+It is recommended to use the provided INSTALL.sh script if you are have bash
+available (Linux/MacOS based, msys, etc.). If you wish to install manually,
+or are using another operating system, please keep reading.If you use the
+INSTALL.sh script, skip to
 [Logging in for the first time](#step-6---logging-in-for-the-first-time)
 
 ## Manual Installation
@@ -31,12 +32,6 @@ choice, and then type the following command:
 ```bash
 $ python3 -m venv .
 $ . bin/activate
-```
-
-If you are using Windows, run the following commands instead:
-```cmd
-> python -m venv .
-> Scripts\activate
 ```
 
 ### Step 2 - Installing Dependencies
@@ -75,13 +70,14 @@ $ cp templates/default_homepage.html metadata/homepage.html
 $ nano settings.py
 ```
 In settings.py, you should add your email credentials as indicated by
-default_settings.py. Additionally, you may change the other email settings if
-you use a SMTP provider other than Gmail. Next, you should choose whether to use
-a CAPTCHA or not, and add your hCaptcha site and secret keys if you are using a
-CAPTCHA. After that, you should add a custom name for your club and change any
-other settings that you wish to change. Finally, you should choose whether to
-enable a homepage. If you decide to do so, make sure to specify the location of
-the homepage.
+default_settings.py. **If you are using Gmail, use an app password instead of
+your account password. For more info, see
+[here](https://support.google.com/accounts/answer/185833).**
+Next, you should choose whether to use a CAPTCHA or not, and add your hCaptcha
+site and secret keys if you are using a CAPTCHA. After that, you should add a
+custom name for your club and change any other settings that you wish to change.
+Finally, you should choose whether to enable a homepage. If you decide to do so,
+make sure to specify the location of the homepage.
 
 Then, you should change the admin email manually so that you can reset your
 password in the future through the CTFOJ app.
