@@ -50,7 +50,7 @@ if [[ $? != 0 ]]; then
     echo "**STOPPING**"
     exit 1
 fi
-echo "Precheck complate!"
+echo "Precheck complete!"
 . bin/activate || . Scripts/activate
 cd src
 echo "Installing dependencies..."
