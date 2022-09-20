@@ -112,7 +112,7 @@ def test_contest(client, database):
         'message': 'test message'
     }, follow_redirects=True)
     assert result.status_code == 200
-    assert b'sucessfully notified' in result.data
+    assert b'successfully notified' in result.data
     client.get('/logout')
 
     result = client.get('/api/contests?id=testingcontest')
