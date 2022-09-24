@@ -65,7 +65,8 @@ def database():
          "'flag' varchar(256) NOT NULL, 'draft' boolean NOT NULL DEFAULT(0), "
          "'score_min' integer NOT NULL DEFAULT(0), "
          "'score_max' integer NOT NULL DEFAULT(0), "
-         "'score_users' integer NOT NULL DEFAULT(-1))"))
+         "'score_users' integer NOT NULL DEFAULT(-1), "
+         "'flag_hint' varchar(256) NOT NULL DEFAULT(''))"))
     db.execute(
         ("CREATE TABLE 'problem_solved' ('user_id' integer NOT NULL, "
          "'problem_id' varchar(64) NOT NULL)"))

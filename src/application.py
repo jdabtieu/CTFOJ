@@ -924,6 +924,8 @@ def edit_contest_problem(contest_id, problem_id):
     new_points = request.form.get("point_value")
     new_flag = request.form.get("flag")
     new_flag_hint = request.form.get("flag-hint")
+    if not new_flag_hint:
+        new_flag_hint = ""
 
     if (not new_name or not new_description or not new_category
             or (not new_points and data[0]["score_users"] == -1)):
@@ -1100,6 +1102,8 @@ def contest_add_problem(contest_id):
     flag = request.form.get("flag")
     draft = 1 if request.form.get("draft") else 0
     flag_hint = request.form.get("flag-hint")
+    if not flag_hint:
+        flag_hint = ""
 
     if not problem_id or not name or not description or not category or not flag:
         flash('You have not entered all required fields', 'danger')
