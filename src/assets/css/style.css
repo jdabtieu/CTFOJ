@@ -311,6 +311,10 @@ body {
     color: #3388ff;
 }
 
+.dark a.dropdown-item {
+    color: black;
+}
+
 .dark .form-control:disabled, .dark .form-control[readonly] {
     background-color: #3f3f3f;
 }
