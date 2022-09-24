@@ -15,6 +15,6 @@ if confirm != 'y':
 
 db = cs50.SQL("sqlite:///database.db")
 
-db.execute('ALTER TABLE contest_problems ADD COLUMN "flag_hint" varchar(256) NOT NULL DEFAULT("")')
+db.execute("ALTER TABLE contest_problems ADD COLUMN 'flag_hint' varchar(256) NOT NULL DEFAULT('')")
 
 print('Migration completed.')
