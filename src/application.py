@@ -109,7 +109,7 @@ def check_for_maintenance():
     maintenance_mode = bool(os.path.exists('maintenance_mode'))
     if maintenance_mode:
         if request.path[:5] == '/api/':
-            return make_response(("The site is currrently undergoing maintenance", 503))
+            return make_response(("The site is currently undergoing maintenance", 503))
 
         # Prevent Internal Server error if session only contains CSRF token
         if not session or 'admin' not in session:
@@ -770,7 +770,7 @@ def contest_notify(contest_id):
     logger.info((f"User #{session['user_id']} ({session['username']}) sent a "
                  f"notification email to participants of contest {contest_id}"),
                 extra={"section": "problem"})
-    flash('Participants sucessfully notified', 'success')
+    flash('Participants successfully notified', 'success')
     return redirect("/contest/" + contest_id)
 
 
@@ -1714,7 +1714,7 @@ def reset_password():
     db.execute("UPDATE users SET password=:p WHERE id=:id",
                p=generate_password_hash(password), id=user_id)
 
-    flash(f"Password for {user[0]['username']} resetted! Their new password is {password}",  # noqa
+    flash(f"Password for {user[0]['username']} was reset! Their new password is {password}",  # noqa
           "success")
     logger.info((f"User #{user_id} ({user[0]['username']})'s password reset by "
                  f"user #{session['user_id']} ({session['username']})"),

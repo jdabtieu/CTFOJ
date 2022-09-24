@@ -77,7 +77,7 @@ def test_admin(client, database):
     # Test password reset feature
     result = client.post('/admin/resetpass', data={'user_id': 2}, follow_redirects=True)
     assert result.status_code == 200
-    assert b'resetted' in result.data
+    assert b'was reset' in result.data
 
     # Test make admin feature
     result = client.post('/admin/makeadmin', data={'user_id': 2}, follow_redirects=True)
