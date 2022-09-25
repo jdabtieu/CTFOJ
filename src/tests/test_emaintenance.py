@@ -1,4 +1,4 @@
-def test_maintenance(client, database):
+def test_emaintenance(client, database):
     '''Test the maintenance mode.'''
     database.execute(
         ("INSERT INTO 'users' VALUES(1, 'admin', 'pbkdf2:sha256:150000$XoLKRd3I$"
