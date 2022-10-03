@@ -4,6 +4,14 @@
 {% block active %}Admin Console{% endblock %}
 
 {% block main %}
+<div class="alert alert-dismissible fade show hidden" id="vercheck" role="alert">
+    <div>
+        You are not up-to-date! Please notify the site administrator. 
+        <span></span>
+        Upgrade <a href="https://github.com/jdabtieu/CTFOJ/releases">here</a>.
+    </div>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
 <h1>Admin Console</h1>
 <div class="row">
     <div class="col-sm-6 admin-card">
@@ -71,4 +79,26 @@
     {% endif %}
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 </form>
+{% endblock %}
+{% block script %}
+<script>
+    let ver = "{{ ver }}";
+    fetch("https://api.github.com/repos/jdabtieu/CTFOJ/releases/latest").then(response => {
+        if (response.ok) return response.json();
+        throw new Error();
+    }).then(data => {
+        let latest_ver = data["tag_name"];
+        if (latest_ver !== ver) {
+            let alert = document.querySelector("#vercheck");
+            alert.classList.add("alert-danger");
+            alert.querySelector("span").innerText = `Current version: ${ver}, Latest version: ${latest_ver}.`
+            alert.classList.remove("hidden");
+        }
+    }).catch(error => {
+        let alert = document.querySelector("#vercheck");
+            alert.classList.add("alert-warning");
+        alert.querySelector("div").innerText = "Latest version could not be detected. Please make sure https://api.github.com isn't blocked by a firewall.";
+        alert.classList.remove("hidden");
+    });
+</script>
 {% endblock %}

@@ -170,27 +170,6 @@ def check_captcha(secret, response, sitekey):
     return True
 
 
-def check_version():
-    """
-    Checks if CTFOJ is up to date with the latest version on GitHub
-    """
-    curr_version = "v3.2.1"
-    try:
-        latest_version = requests.get(
-            "https://api.github.com/repos/jdabtieu/CTFOJ/releases/latest").json()["name"]
-        if curr_version != latest_version:
-            message = Markup((
-                "You are not up-to-date! Please notify the site administrator. "
-                f"Current version: {curr_version}, Latest version: {latest_version}. "
-                 "Upgrade <a href=\"https://github.com/jdabtieu/CTFOJ/releases\">here</a>."))  # noqa
-            flash(message, "danger")
-
-    except Exception:
-        flash(("Latest version could not be detected. Please make sure "
-               "https://api.github.com isn't blocked by a firewall."), "warning")
-    return
-
-
 def create_jwt(data, secret_key, time=1800):
     """
     Creates a JWT token containing data and encrypted using secret_key

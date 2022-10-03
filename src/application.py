@@ -1597,8 +1597,7 @@ def download_problem(problem_id):
 @app.route("/admin/console")
 @admin_required
 def admin_console():
-    check_version()
-    return render_template("admin/console.html",
+    return render_template("admin/console.html", ver="v3.2.1",
                            maintenance_mode=os.path.exists('maintenance_mode'))
 
 
