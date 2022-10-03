@@ -692,6 +692,7 @@ def editcontest(contest_id):
     new_description = request.form.get("description").replace('\r', '')
     start = request.form.get("start")
     end = request.form.get("end")
+    scoreboard_visible = bool(request.form.get("scoreboard_visible"))
 
     if not new_name:
         flash('Name cannot be empty', 'danger')
@@ -707,9 +708,9 @@ def editcontest(contest_id):
         flash('Contest cannot end before it starts!', 'danger')
         return render_template("contest/edit.html"), 400
 
-    db.execute(("UPDATE contests SET name=:name, start=datetime(:start), "
-                "end=datetime(:end) WHERE id=:cid"),
-               name=new_name, start=start, end=end, cid=contest_id)
+    db.execute(("UPDATE contests SET name=?, start=datetime(?), end=datetime(?), "
+                "scoreboard_visible=? WHERE id=?"),
+               new_name, start, end, scoreboard_visible, contest_id)
 
     write_file(f'metadata/contests/{contest_id}/description.md', new_description)
 

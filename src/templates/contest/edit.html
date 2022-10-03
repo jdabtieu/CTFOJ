@@ -38,6 +38,10 @@
            placeholder="End Date & Time"
            value="{{ data['end'] }}"
            required>
+    <div class="form-control mb-3" style="border: 0;">
+        <input type="checkbox" id="scoreboard_visible" name="scoreboard_visible" {% if data['scoreboard_visible'] %}checked{% endif %}>
+        <label for="scoreboard_visible">Scoreboard Visible?</label>
+    </div>
     <input class="btn btn-primary" type="submit" id="submit" name="submit" value="Edit">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 </form>
