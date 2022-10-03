@@ -649,9 +649,10 @@ def contest(contest_id):
         cid=contest_id)
 
     solve_count = dict()
-    for row in db.execute(("SELECT problem_id, COUNT(user_id) AS solves "
-                           "FROM contest_solved WHERE contest_id=:cid "
-                           "GROUP BY problem_id"), cid=contest_id):
+    for row in db.execute(("SELECT problem_id, COUNT(user_id) AS solves FROM "
+                           "contest_solved WHERE contest_id=:cid AND user_id NOT IN ("
+                           "SELECT user_id FROM contest_users WHERE contest_id=:cid AND "
+                           "hidden=1) GROUP BY problem_id"), cid=contest_id):
         if row["problem_id"] is None:
             continue
         solve_count[row["problem_id"]] = row["solves"]
@@ -691,6 +692,7 @@ def editcontest(contest_id):
     new_description = request.form.get("description").replace('\r', '')
     start = request.form.get("start")
     end = request.form.get("end")
+    scoreboard_visible = bool(request.form.get("scoreboard_visible"))
 
     if not new_name:
         flash('Name cannot be empty', 'danger')
@@ -706,9 +708,9 @@ def editcontest(contest_id):
         flash('Contest cannot end before it starts!', 'danger')
         return render_template("contest/edit.html"), 400
 
-    db.execute(("UPDATE contests SET name=:name, start=datetime(:start), "
-                "end=datetime(:end) WHERE id=:cid"),
-               name=new_name, start=start, end=end, cid=contest_id)
+    db.execute(("UPDATE contests SET name=?, start=datetime(?), end=datetime(?), "
+                "scoreboard_visible=? WHERE id=?"),
+               new_name, start, end, scoreboard_visible, contest_id)
 
     write_file(f'metadata/contests/{contest_id}/description.md', new_description)
 

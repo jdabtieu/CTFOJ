@@ -98,11 +98,19 @@ def test_contest(client, database):
     assert result.status_code == 200
     assert b'Hidden' in result.data
 
+    result = client.get('/contest/testingcontest')
+    assert result.status_code == 200
+    assert b'0' in result.data  # 0 non-hidden solves
+
     result = client.post('/contest/testingcontest/scoreboard/unhide', data={
         'user_id': 1
     }, follow_redirects=True)
     assert result.status_code == 200
     assert b'Hidden' not in result.data
+
+    result = client.get('/contest/testingcontest')
+    assert result.status_code == 200
+    assert b'1' in result.data  # 1 non-hidden solves
 
     client.post('/contest/testingcontest/scoreboard/hide', data={
         'user_id': 1}, follow_redirects=True)
