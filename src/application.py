@@ -649,9 +649,10 @@ def contest(contest_id):
         cid=contest_id)
 
     solve_count = dict()
-    for row in db.execute(("SELECT problem_id, COUNT(user_id) AS solves "
-                           "FROM contest_solved WHERE contest_id=:cid "
-                           "GROUP BY problem_id"), cid=contest_id):
+    for row in db.execute(("SELECT problem_id, COUNT(user_id) AS solves FROM "
+                           "contest_solved WHERE contest_id=:cid AND user_id NOT IN ("
+                           "SELECT user_id FROM contest_users WHERE contest_id=:cid AND "
+                           "hidden=1) GROUP BY problem_id"), cid=contest_id):
         if row["problem_id"] is None:
             continue
         solve_count[row["problem_id"]] = row["solves"]
