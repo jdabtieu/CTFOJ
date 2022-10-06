@@ -178,6 +178,7 @@ def dl(filename):
 def login():
     # Forget user id
     session.clear()
+    session.permanent = True  # Have to re-set this after clear
 
     if request.method == "GET":
         return render_template("auth/login.html", site_key=app.config['HCAPTCHA_SITE'])
@@ -463,8 +464,6 @@ def toggle2fa():
 @csrf.exempt
 @app.route("/forgotpassword", methods=["GET", "POST"])
 def forgotpassword():
-    session.clear()
-
     if request.method == "GET":
         return render_template("auth/forgotpassword.html",
                                site_key=app.config['HCAPTCHA_SITE'])
