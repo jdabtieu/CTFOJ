@@ -8,10 +8,10 @@ Please refer to the chart below for versions with security support
 | ----------- | ------------------ |
 | Prereleases | :x:                |
 | Betas       | :x:                |
-| 3.2.1       | :white_check_mark: |
+| >= 3.2.1    | :white_check_mark: |
 | < 3.2.1     | :x:                |
 
-As you can tell, it is strongly recommended to always be on the latest stable version. It is strongly recommended to run the application on a modern Linux distribution with Python >=3.8.
+As you can tell, it is strongly recommended to always be on the latest stable major release. It is strongly recommended to run the application on a modern Linux distribution with Python >=3.8.
 
 ## Reporting a Vulnerability
 
