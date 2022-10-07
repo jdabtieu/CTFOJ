@@ -4,9 +4,7 @@ converter.setOption('strikethrough', true);
 
 function addCSS(content) {
     let style = `
-        <link rel="stylesheet"
-              href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css"
-              crossorigin="anonymous">
+        <link rel="stylesheet" href="/assets/css/bootstrap.min.css">
         <link href="/assets/css/style.css" rel="stylesheet">`;
     return style + content;
 }

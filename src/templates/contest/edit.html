@@ -10,11 +10,15 @@
 {% block main %}
 <h1>Edit Contest</h1>
 <form autocomplete="off" method="post">
-    <input class="form-control mb-3"
+    <div class="form-floating">
+        <input class="form-control mb-3"
            name="name"
-           placeholder="Name"
+           id="name"
+           placeholder="Contest Name"
            value="{{ data['name'] }}"
            required>
+        <label for="name">Contest Name</label>
+    </div>
     <div style="display: flex;">
         <textarea class="form-control mb-3 md-preview"
                   id="description"
@@ -24,20 +28,26 @@
                   required></textarea>
         <div id="description-out" class="md-preview"></div>
     </div>
-    <input class="form-control mb-3 dtl"
-           type="datetime-local"
-           id="start"
-           name="start"
-           placeholder="Start Date & Time"
-           value="{{ data['start'] }}"
-           required>
-    <input class="form-control mb-3 dtl"
-           type="datetime-local"
-           id="end"
-           name="end"
-           placeholder="End Date & Time"
-           value="{{ data['end'] }}"
-           required>
+    <div class="form-floating">
+        <input class="form-control mb-3 dtl"
+               type="datetime-local"
+               id="start"
+               name="start"
+               placeholder="Start Date & Time"
+               value="{{ data['start'] }}"
+               required>
+        <label for="start">Start Date & Time</label>
+    </div>
+    <div class="form-floating">
+        <input class="form-control mb-3 dtl"
+               type="datetime-local"
+               id="end"
+               name="end"
+               placeholder="End Date & Time"
+               value="{{ data['end'] }}"
+               required>
+        <label for="end">End Date & Time</label>
+    </div>
     <div class="form-control mb-3" style="border: 0;">
         <input type="checkbox" id="scoreboard_visible" name="scoreboard_visible" {% if data['scoreboard_visible'] %}checked{% endif %}>
         <label for="scoreboard_visible">Scoreboard Visible?</label>
