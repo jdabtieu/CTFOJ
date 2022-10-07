@@ -211,6 +211,13 @@ body {
     padding-right: 8px;
 }
 
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active{
+    -webkit-background-clip: text;
+}
+
 /****************** COLOURS **********************************/
 .white {
     color: #ffffff!important;
@@ -317,4 +324,8 @@ body {
 
 .dark .form-control:disabled, .dark .form-control[readonly] {
     background-color: #3f3f3f;
+}
+
+.dark input:-webkit-autofill{
+    -webkit-text-fill-color: white;
 }

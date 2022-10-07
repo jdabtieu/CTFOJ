@@ -5,9 +5,15 @@
 
 {% block main %}
 <h1>Create Problem</h1>
-<form autocomplete="off" method="post" enctype=multipart/form-data>
-    <input class="form-control mb-3" id="id" name="id" placeholder="ID" required>
-    <input class="form-control mb-3" id="name" name="name" placeholder="Name" required>
+<form autocomplete="off" method="post" enctype="multipart/form-data">
+    <div class="form-floating">
+        <input class="form-control mb-3" type="text" id="id" name="id" placeholder="Problem ID" required>
+        <label for="id">Problem ID</label>
+    </div>
+    <div class="form-floating">
+        <input class="form-control mb-3" type="text" id="name" name="name" placeholder="Problem Name" required>
+        <label for="name">Problem Name</label>
+    </div>
     <div style="display: flex;">
         <textarea class="form-control mb-3 md-preview"
                   id="description"
@@ -42,28 +48,50 @@
         <label for="score_type_dynamic">Dynamic</label>
     </div>
     <div id="score-static">
-        <input class="form-control mb-3"
-               type="number"
-               name="point_value"
-               placeholder="Point Value"
-               required>
+        <div class="form-floating">
+            <input class="form-control mb-3"
+                   type="number"
+                   name="point_value"
+                   id="point_value"
+                   placeholder="Point Value"
+                   required>
+            <label for="point_value">Point Value</label>
+        </div>
     </div>
     <div id="score-dynamic" style="display: none">
-        <input class="form-control mb-3"
-               type="number"
-               name="min_point_value"
-               placeholder="Min Point Value">
-        <input class="form-control mb-3"
-               type="number"
-               name="max_point_value"
-               placeholder="Max Point Value">
-        <input class="form-control mb-3"
-               type="number"
-               name="users_point_value"
-               placeholder="Users Before Decay">
+        <div class="form-floating">
+            <input class="form-control mb-3"
+                   type="number"
+                   id="min_point_value"
+                   name="min_point_value"
+                   placeholder="Min Point Value">
+            <label for="min_point_value">Min Point Value</label>
+        </div>
+        <div class="form-floating">
+            <input class="form-control mb-3"
+                   type="number"
+                   id="max_point_value"
+                   name="max_point_value"
+                   placeholder="Max Point Value">
+            <label for="max_point_value">Max Point Value</label>
+        </div>
+        <div class="form-floating">
+            <input class="form-control mb-3"
+                   type="number"
+                   id="users_point_value"
+                   name="users_point_value"
+                   placeholder="Users Before Decay">
+            <label for="users_point_value">Users Before Decay</label>
+        </div>
     </div>
-    <input class="form-control mb-3" name="category" placeholder="Category" required>
-    <input class="form-control mb-3" name="flag" placeholder="Flag" required>
+    <div class="form-floating">
+        <input class="form-control mb-3" type="text" name="category" id="category" placeholder="Category" required>
+        <label for="category">Category</label>
+    </div>
+    <div class="form-floating">
+        <input class="form-control mb-3" type="text" name="flag" id="flag" placeholder="Flag" required>
+        <label for="category">Flag</label>
+    </div>
     <div class="mb-3 toggle-input">
         <div>
             <span>Manual</span>
