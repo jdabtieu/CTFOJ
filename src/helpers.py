@@ -159,6 +159,9 @@ def check_captcha(secret, response, sitekey):
     """
     Verify the site captcha
     """
+    if not response:  # No captcha, possibly if the request is made by a naive script
+        flash('CAPTCHA invalid', 'danger')
+        return False
     captcha = requests.post('https://hcaptcha.com/siteverify', data={
         'secret': secret,
         'response': response,
