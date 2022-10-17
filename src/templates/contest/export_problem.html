@@ -9,7 +9,10 @@
 	Are you sure you want to export {{ data["name"] }} to the Practice tab?
 </p>
 <form method="post">
-    <input class="form-control mb-3" type="number" name="point_value" placeholder="New Point Value: (Empty to Keep Original)">
+    <div class="form-floating">
+        <input class="form-control mb-3" id="pv" type="number" name="point_value" placeholder="New Point Value: (Empty to Keep Original)">
+        <label for="pv">New Point Value: (Empty to Keep Original)</label>
+    </div>
     <input class="btn btn-primary" type="submit" value="Confirm">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 </form>

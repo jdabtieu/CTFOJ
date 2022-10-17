@@ -6,7 +6,15 @@
 {% block main %}
 <h1>Create Announcement</h1>
 <form autocomplete="off" method="post" id="create" name="create">
-    <input class="form-control mb-3" type="text" id="name" name="name" placeholder="Name" required>
+    <div class="form-floating">
+        <input autofocus
+               class="form-control mb-3"
+               name="name"
+               id="name"
+               placeholder="Name"
+               required>
+        <label for="name">Name</label>
+    </div>
     <div style="display: flex;">
         <textarea class="form-control mb-3 md-preview"
                   id="description"
