@@ -356,7 +356,7 @@ def cancel_register(token):
     db.execute(
         "DELETE FROM users WHERE verified=0 and email=:email", email=token['email'])
     flash("Your registration has been successfully removed from our database.", "success")
-    logger.info((f"User #{session['user_id']} ({session['username']}) has cancelled "
+    logger.info((f"User with email {token['email']} has cancelled "
                  f"registration on IP {request.remote_addr}"), extra={"section": "auth"})
     return redirect("/register")
 
