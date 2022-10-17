@@ -173,7 +173,6 @@ def dl(filename):
     return send_from_directory("dl/", filename, as_attachment=True)
 
 
-@csrf.exempt
 @app.route("/login", methods=["GET", "POST"])
 def login():
     # Forget user id
@@ -244,7 +243,6 @@ def logout():
     return redirect("/")
 
 
-@csrf.exempt
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "GET":
@@ -461,7 +459,6 @@ def toggle2fa():
     return redirect("/settings")
 
 
-@csrf.exempt
 @app.route("/forgotpassword", methods=["GET", "POST"])
 def forgotpassword():
     if request.method == "GET":
@@ -1600,7 +1597,6 @@ def admin_console():
                            maintenance_mode=os.path.exists('maintenance_mode'))
 
 
-@csrf.exempt
 @app.route("/admin/submissions")
 @admin_required
 def admin_submissions():

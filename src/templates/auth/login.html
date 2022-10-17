@@ -6,6 +6,7 @@
 {% block main %}
 <h1 class="text-center">Log In</h1>
 <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
     <div class="form-floating">
         <input autofocus
                class="form-control mb-3"

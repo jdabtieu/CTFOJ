@@ -6,6 +6,7 @@
 {% block main %}
 <h1 class="text-center">Register</h1>
 <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
     <input autocomplete="off"
            autofocus class="form-control mb-3"
            name="username"
