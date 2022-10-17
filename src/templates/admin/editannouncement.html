@@ -10,11 +10,16 @@
 {% block main %}
 <h1>Edit Announcement</h1>
 <form autocomplete="off" method="post">
-    <input class="form-control mb-3"
-           name="name"
-           placeholder="Name"
+    <div class="form-floating">
+        <input autofocus
+               class="form-control mb-3"
+               name="name"
+               id="name"
+               placeholder="Name"
            value="{{ data['name'] }}"
-           required>
+               required>
+        <label for="name">Name</label>
+    </div>
     <div style="display: flex;">
         <textarea class="form-control mb-3 md-preview"
                   id="description"
