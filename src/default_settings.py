@@ -34,7 +34,7 @@ MAIL_DEFAULT_SENDER = ("sender name", "sender email")
 
 # Configure your hcaptcha settings here
 USE_CAPTCHA = False
-HCAPTCHA_SECRET = 0xdeadbeef
+HCAPTCHA_SECRET = "0xdeADbeEf"
 HCAPTCHA_SITE = "site_key"
 
 # Configure other settings here
