@@ -25,11 +25,23 @@ if (getCookie("darkMode") == 1) {
     document.body.classList.add("dark");
     document.querySelector(".dark-toggle").setAttribute("checked", "");
     setCookie("darkMode", 1, 30);
+    for (let el of document.querySelectorAll(".smarkdown")) {
+        el.shadowRoot.firstChild.classList.add("dark");
+    }
 }
 
 document.querySelector(".dark-toggle").addEventListener("click", function() {
     document.body.classList.toggle("dark");
     setCookie("darkMode", getCookie("darkMode") == 1 ? 0 : 1, 30);
+    if (getCookie("darkMode") == 1) {
+        for (let el of document.querySelectorAll(".smarkdown")) {
+            el.shadowRoot.firstChild.classList.add("dark");
+        }
+    } else {
+        for (let el of document.querySelectorAll(".smarkdown")) {
+            el.shadowRoot.firstChild.classList.remove("dark");
+        }
+    }
 });
 
 (function() {
