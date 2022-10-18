@@ -14,6 +14,9 @@ function convertMD(toConvert) {
 
 function _inject(shadow, content, editing) {
     let container = document.createElement("div");
+    if (getCookie("darkMode") == 1) {
+        container.classList.add("dark");
+    }
     container.innerHTML = addCSS(convertMD(content));
     shadow.replaceChildren(container);
     container.querySelectorAll("*").forEach(e => {
