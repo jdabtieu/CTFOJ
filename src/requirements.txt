@@ -4,5 +4,5 @@ Flask-WTF==1.0.1
 Flask==2.2.2
 Werkzeug==2.2.2
 cs50==9.2.2
-pyjwt==2.5.0
+pyjwt==2.6.0
 requests==2.28.1
