@@ -629,7 +629,7 @@ def contest(contest_id):
         "SELECT * FROM contest_users WHERE contest_id=:cid AND user_id=:uid",
         cid=contest_id, uid=session["user_id"])
 
-    if len(user_info) == 0:
+    if len(user_info) == 0 and datetime.utcnow() < datetime.strptime(contest_info[0]["end"], "%Y-%m-%d %H:%M:%S"):
         db.execute("INSERT INTO contest_users (contest_id, user_id) VALUES(:cid, :uid)",
                    cid=contest_id, uid=session["user_id"])
 
