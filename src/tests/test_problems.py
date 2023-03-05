@@ -50,7 +50,6 @@ def test_problem(client, database):
     assert b'edited' in result.data
 
     result = client.post('/problem/helloworldtesting/edit', data={
-        'name': 'hello world 2',
         'description': 'a short fun problem 2',
         'hints': 'try looking at the title 2',
         'point_value': 2,
@@ -58,6 +57,31 @@ def test_problem(client, database):
         'category': 'web',
         'flag': 'ctf{hello}'
     })
+    assert result.status_code == 400
+    assert b'required' in result.data
+
+    result = client.post('/problem/helloworldtesting/edit', data={
+        'name': 'hello world 2',
+        'description': 'a short fun problem 2',
+        'hints': 'try looking at the title 2',
+        'point_value': 2,
+        'rejudge': True,
+        'category': 'web',
+        'flag': '\x2f\x10'
+    })
+    assert result.status_code == 400
+    assert b'Invalid' in result.data
+
+    result = client.post('/problem/helloworldtesting/edit', data={
+        'name': 'hello world 2',
+        'description': 'a short fun problem 2',
+        'hints': 'try looking at the title 2',
+        'point_value': 2,
+        'rejudge': True,
+        'category': 'web',
+        'flag': 'ctf{hello}'
+    }, follow_redirects=True)
+    assert result.status_code == 200
 
     result = client.get('/users/admin/profile')
     assert result.status_code == 200
