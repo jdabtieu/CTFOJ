@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# Make sure important tools are installed
 echo "Starting precheck..."
 PYTH=$(which python3)
 PYTHPIP=$(which pip3)
@@ -44,6 +45,8 @@ if [[ $(which nano | wc -c) -eq 0 ]]; then
     echo "**STOPPING**"
     exit 1
 fi
+
+# Create virtualenv to isolate dependencies
 "$PYTH" -m venv .
 if [[ $? != 0 ]]; then
     echo "venv creation failed. Make sure you have Python 3 and the virtualenv package installed."
@@ -56,6 +59,12 @@ cd src
 echo "Installing dependencies..."
 "$PYTHPIP" install wheel
 "$PYTHPIP" install -r requirements.txt
+echo "Data directory (if using Docker, enter the directory that the volume is bound to): "
+echo "This directory can be absolute or relative to the src directory"
+read DATA_DIR
+mkdir "$DATA_DIR"
+touch "$DATA_DIR/database.db"
+ln -s "$DATA_DIR/database.db" database.db
 echo "Creating database..."
 sqlite3 database.db << EOF
 CREATE TABLE 'users' ('id' integer PRIMARY KEY NOT NULL, 'username' varchar(20) NOT NULL, 'password' varchar(64) NOT NULL, 'email' varchar(128), 'join_date' datetime NOT NULL DEFAULT (0), 'admin' boolean NOT NULL DEFAULT (0), 'banned' boolean NOT NULL DEFAULT (0), 'verified' boolean NOT NULL DEFAULT (0), 'twofa' boolean NOT NULL DEFAULT (0), 'api' varchar(36));
@@ -69,8 +78,13 @@ CREATE TABLE 'contest_problems' ('contest_id' varchar(32) NOT NULL, 'problem_id'
 CREATE TABLE 'problem_solved' ('user_id' integer NOT NULL, 'problem_id' varchar(64) NOT NULL);
 INSERT INTO 'users' VALUES(1, 'admin', 'pbkdf2:sha256:150000\$XoLKRd3I\$2dbdacb6a37de2168298e419c6c54e768d242aee475aadf1fa9e6c30aa02997f', 'e', datetime('now'), 1, 0, 1, 0, NULL);
 EOF
+mkdir -p "$DATA_DIR/logs" "$DATA_DIR/dl" "$DATA_DIR/backups" "$DATA_DIR/metadata/contests"
+mkdir -p "$DATA_DIR/metadata/problems" "$DATA_DIR/metadata/announcements"
 echo "Finishing setup..."
-mkdir logs dl metadata metadata/contests metadata/problems metadata/announcements
+ln -s "$DATA_DIR/logs" logs
+ln -s "$DATA_DIR/dl" dl
+ln -s "$DATA_DIR/metadata" metadata
+ln -s "$DATA_DIR/backups" backups
 chmod +x daily_tasks.py
 "$PYTH" daily_tasks.py
 cp default_settings.py settings.py

@@ -2,4 +2,7 @@
 /lib
 /lib64
 /share
+/Scripts
+/Include
+/data
 pyvenv.cfg

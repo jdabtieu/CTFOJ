@@ -92,11 +92,11 @@ body {
     <body>
         <main class="container">
             <div class="card post-card">
-                <h1>CTFOJ Account Confirmation</h1>
+                <h1>{{ CLUB_NAME }} Account Confirmation</h1>
                 <pre>
 Dear {{ username }},
 
-If you have recently registered for a CTFOJ account, click on the following link to confirm your registration:
+If you have recently registered for a {{ CLUB_NAME }} account, click on the following link to confirm your registration:
 
 {{ url_for('confirm_register', token=token, _external=True) }}
 

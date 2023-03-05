@@ -19,6 +19,7 @@
 /maintenance_mode
 /templates/unauth_index.html
 /session
+/backups
 
 # Logs
 /logs/

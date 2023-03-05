@@ -3,9 +3,11 @@ Prerequisites: Python 3, SQLite 3
 
 For updating instructions, click [here](#updating).
 
-Although CTFOJ can run on Linux, Windows, and MacOS, it is recommended to run it
+Although CTFOJ can run on Linux and Windows, it is recommended to run it
 on a modern Linux distribution such as Ubuntu 22.04 LTS. This guide assumes that
-you are running Linux.
+you are running Linux. If you're running on Windows, your user account must
+be able to create symlinks. For instructions on enabling this, visit
+[this article](https://portal.perforce.com/s/article/3472)
 
 # Step 0 - Getting a copy of CTFOJ
 The best way to get a copy of CTFOJ is to clone the repository at the version
@@ -18,60 +20,31 @@ $ cd CTFOJ
 ```
 
 # Installation Instructions
-It is recommended to use the provided INSTALL.sh script if you are have bash
-available (Linux/MacOS based, msys, etc.). If you wish to install manually,
-or are using another operating system, please keep reading.If you use the
-INSTALL.sh script, skip to
-[Logging in for the first time](#step-6---logging-in-for-the-first-time)
+To install CTFOJ, you must have bash or another shell interpreter installed. For
+Windows, this means [Git Bash](https://git-scm.com/downloads) or even better,
+use WSL2.
 
-## Manual Installation
-### Step 1 - Setting up the environment
-We'll need to create a virtualenv to isolate CTFOJ's dependencies from the rest
-of your system. Navigate to the CTFOJ root folder through your terminal of
-choice, and then type the following command:
+## Step 0
+Install Python, pip, virtualenv, nano, sqlite<br>
+If you are running Windows, your user account must be able to create symlinks.
+For instructions on enabling this, visit
+[this article](https://portal.perforce.com/s/article/3472).
+
+## Step 1
+Run INSTALL.sh
 ```bash
-$ python3 -m venv .
-$ . bin/activate
+$ chmod +x INSTALL.sh
+$ ./INSTALL.sh
 ```
 
-### Step 2 - Installing Dependencies
-We'll now install the dependencies that CTFOJ relies on.
-```bash
-$ cd src
-$ pip3 install -r requirements.txt
-```
-
-### Step 3 - Setting up the database
-We'll now set up the database and create the required tables for CTFOJ to work.
-```sql
-$ sqlite3 database.db
-sqlite3>
-CREATE TABLE 'users' ('id' integer PRIMARY KEY NOT NULL, 'username' varchar(20) NOT NULL, 'password' varchar(64) NOT NULL, 'email' varchar(128), 'join_date' datetime NOT NULL DEFAULT (0), 'admin' boolean NOT NULL DEFAULT (0), 'banned' boolean NOT NULL DEFAULT (0), 'verified' boolean NOT NULL DEFAULT (0), 'twofa' boolean NOT NULL DEFAULT (0), 'api' varchar(36));
-CREATE TABLE 'submissions' ('sub_id' integer PRIMARY KEY NOT NULL, 'date' datetime NOT NULL,'user_id' integer NOT NULL,'problem_id' varchar(32) NOT NULL,'contest_id' varchar(32), 'correct' boolean NOT NULL, 'submitted' text NOT NULL DEFAULT(''));
-CREATE TABLE 'problems' ('id' varchar(64) NOT NULL, 'name' varchar(256) NOT NULL, 'point_value' integer NOT NULL DEFAULT (0), 'category' varchar(64), 'flag' varchar(256) NOT NULL, 'draft' boolean NOT NULL DEFAULT(0));
-CREATE TABLE 'contests' ('id' varchar(32) NOT NULL, 'name' varchar(256) NOT NULL, 'start' datetime NOT NULL, 'end' datetime NOT NULL, 'scoreboard_visible' boolean NOT NULL DEFAULT (1));
-CREATE TABLE 'announcements' ('id' integer PRIMARY KEY NOT NULL, 'name' varchar(256) NOT NULL, 'date' datetime NOT NULL);
-CREATE TABLE 'contest_users' ('contest_id' varchar(32) NOT NULL, 'user_id' integer NOT NULL, 'points' integer NOT NULL DEFAULT (0) , 'lastAC' datetime, 'hidden' NOT NULL DEFAULT(0));
-CREATE TABLE 'contest_solved' ('contest_id' varchar(32) NOT NULL, 'user_id' integer NOT NULL, 'problem_id' varchar(64) NOT NULL);
-CREATE TABLE 'contest_problems' ('contest_id' varchar(32) NOT NULL, 'problem_id' varchar(64) NOT NULL, 'name' varchar(256) NOT NULL, 'point_value' integer NOT NULL DEFAULT(0), 'category' varchar(64), 'flag' varchar(256) NOT NULL, 'draft' boolean NOT NULL DEFAULT(0), 'score_min' integer NOT NULL DEFAULT(0), 'score_max' integer NOT NULL DEFAULT(0), 'score_users' integer NOT NULL DEFAULT(-1), 'flag_hint' varchar(256) NOT NULL DEFAULT(''));
-CREATE TABLE 'problem_solved' ('user_id' integer NOT NULL, 'problem_id' varchar(64) NOT NULL);
-INSERT INTO 'users' VALUES(1, 'admin', 'pbkdf2:sha256:150000$XoLKRd3I$2dbdacb6a37de2168298e419c6c54e768d242aee475aadf1fa9e6c30aa02997f', 'e', datetime('now'), 1, 0, 1, 0, NULL);
-```
-
-### Step 4 - Configuring the filesystem and configuration
-CTFOJ also relies on certain folders - for example, the metadata folder to store
-problem statements. We'll be creating them now.
-```bash
-$ mkdir logs dl metadata metadata/contests metadata/problems metadata/announcements
-$ chmod +x daily_tasks.py
-$ python3 daily_tasks.py
-$ cp default_settings.py settings.py
-$ cp templates/default_homepage.html metadata/homepage.html
-$ nano settings.py
-```
-In settings.py, you should add your email credentials as indicated by
-default_settings.py. **If you are using Gmail, use an app password instead of
-your account password. For more info, see
+The installer will prompt you three times:
+1. For the data directory, this is where persistent files will be stored
+(metadata, database, etc.). If you are running Docker, you should point this to
+the bind point of a volume. Otherwise, `../data` will suffice.
+2. For an admin email. This email will be associated with the admin email.
+3. To configure settings. In settings.py, you should add your email credentials
+as indicated by default_settings.py. **If you are using Gmail, use an app
+password instead of your account password. For more info, see
 [here](https://support.google.com/accounts/answer/185833).**
 Next, you should choose whether to use a CAPTCHA or not, and add your hCaptcha
 site and secret keys if you are using a CAPTCHA. After that, you should add a
@@ -79,23 +52,12 @@ custom name for your club and change any other settings that you wish to change.
 Finally, you should choose whether to enable a homepage. If you decide to do so,
 make sure to specify the location of the homepage.
 
-Then, you should change the admin email manually so that you can reset your
-password in the future through the CTFOJ app.
-```sql
-$ sqlite3 database.db
-sqlite3> UPDATE 'users' SET email='YOUR EMAIL HERE' WHERE id=1;
-```
+If everything went well, the installer will now run the app in debug mode. You
+can access it at <http://localhost:5000>. Make sure it loads after 10-20 seconds
+and then you can kill it with Ctrl+C.
 
-### Step 5 - Running in Debug Mode
-To run the application in debug mode, you can use the following command. Note
-that you should never expose the app to the web using debug mode. You should run
-the app through a WSGI application, such as Gunicorn or uWSGI.
-```bash
-$ python3 application.py
-```
-
-### Step 6 - Logging in for the first time
-An admin account has been created in step 2. You can log in to it using the
+## Step 2 - Logging in for the first time
+An admin account has been created in step 1. You can log in to it using the
 credentials `admin:CTFOJadmin`. Make sure you change your password immediately
 after logging in. Enabling 2FA is also recommended for the admin account. You
 can change your password and enable 2FA through the settings page.
@@ -110,6 +72,20 @@ helloworld problem:
 **Welcome to CTF Club!** In each problem, you must find a flag hidden somewhere on the problem page.
 
 The flag for this problem is: `CTF{your_first_ctf_flag}`
+```
+
+### Step 3 - Running CTFOJ
+To run the application in debug mode, you can use the following command while in
+the src directory. This is for development purposes. You should never expose the
+app to the web using debug mode. You should run the app through a WSGI
+application, such as Gunicorn or uWSGI.
+```bash
+$ python3 application.py
+```
+
+To run though Gunicorn, for example, the following command can be used inside the src directory:
+```bash
+$ gunicorn --bind 0.0.0.0:80 --log-file gunicorn.log --capture-output -w 4 wsgi:app
 ```
 
 # Optional Steps
