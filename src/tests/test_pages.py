@@ -114,3 +114,12 @@ def test_pages(client, database):
     }, follow_redirects=True)
     assert result.status_code == 200
     assert b'Welcome' in result.data
+
+    result = client.get('/users/normal_user/profile')
+    assert result.status_code == 200
+    assert b'User Info' in result.data
+    assert b'0 Points' in result.data
+
+    result = client.get('/ranking')
+    assert result.status_code == 200
+    

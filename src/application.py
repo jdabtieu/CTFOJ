@@ -1500,7 +1500,7 @@ def editproblem(problem_id):
     new_description = request.form.get("description")
     new_hint = request.form.get("hints")
     new_category = request.form.get("category")
-    new_points = request.form.get("point_value")
+    new_points = int(request.form.get("point_value"))
     new_flag = request.form.get("flag")
 
     if not new_name or not new_description or not new_category or not new_points:
@@ -1514,9 +1514,25 @@ def editproblem(problem_id):
         if request.form.get("rejudge"):
             db.execute("UPDATE submissions SET correct=0 WHERE problem_id=:pid",
                        pid=problem_id)
+            db.execute(
+                ("UPDATE users SET total_points=total_points-:pv, "
+                 "problems_solved=problems_solved-1 WHERE id IN "
+                 "(SELECT user_id FROM problem_solved WHERE problem_id=:pid)"),
+                 pv=data[0]["point_value"], pid=problem_id
+            )
+            db.execute("DELETE FROM problem_solved WHERE problem_id=:pid", pid=problem_id)
             db.execute(("UPDATE submissions SET correct=1 WHERE "
                         "problem_id=:pid AND submitted=:flag"),
                        pid=problem_id, flag=new_flag)
+            db.execute(("INSERT INTO problem_solved (user_id, problem_id) "
+                        "SELECT DISTINCT user_id, problem_id FROM submissions WHERE "
+                        "problem_id=:pid AND correct=1"), pid=problem_id)
+            db.execute(
+                ("UPDATE users SET total_points=total_points+:pv, "
+                 "problems_solved=problems_solved+1 WHERE id IN "
+                 "(SELECT user_id FROM problem_solved WHERE problem_id=:pid)"),
+                 pv=data[0]["point_value"], pid=problem_id
+            )
     else:
         new_flag = data[0]["flag"]
 
@@ -1528,6 +1544,11 @@ def editproblem(problem_id):
                 "flag=:flag WHERE id=:problem_id"),
                name=new_name, category=new_category, pv=new_points,
                problem_id=problem_id, flag=new_flag)
+    db.execute(
+        ("UPDATE users SET total_points=total_points+:dpv WHERE id IN "
+         "(SELECT user_id FROM problem_solved WHERE problem_id=:pid)"),
+         dpv=new_points - data[0]["point_value"], pid=problem_id
+    )
     write_file('metadata/problems/' + problem_id + '/description.md', new_description)
     write_file('metadata/problems/' + problem_id + '/hints.md', new_hint)
 
@@ -1578,6 +1599,12 @@ def delete_problem(problem_id):
 
     db.execute("BEGIN")
     db.execute("DELETE FROM problems WHERE id=:pid", pid=problem_id)
+    db.execute(
+        ("UPDATE users SET total_points=total_points-:pv, "
+         "problems_solved=problems_solved-1 WHERE id IN "
+         "(SELECT user_id FROM problem_solved WHERE problem_id=:pid)"),
+         pv=data[0]["point_value"], pid=problem_id
+    )
     db.execute("DELETE FROM problem_solved WHERE problem_id=:pid", pid=problem_id)
     db.execute("COMMIT")
     shutil.rmtree(f"metadata/problems/{problem_id}")
