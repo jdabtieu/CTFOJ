@@ -632,6 +632,8 @@ def contest(contest_id):
     if len(user_info) == 0 and datetime.utcnow() < datetime.strptime(contest_info[0]["end"], "%Y-%m-%d %H:%M:%S"):
         db.execute("INSERT INTO contest_users (contest_id, user_id) VALUES(:cid, :uid)",
                    cid=contest_id, uid=session["user_id"])
+        db.execute("UPDATE users SET contests_completed=contests_completed+1 WHERE id=?",
+                   session["user_id"])
 
     solved_info = db.execute(
         "SELECT problem_id FROM contest_solved WHERE contest_id=:cid AND user_id=:uid",
@@ -1233,6 +1235,12 @@ def export_contest_problem(contest_id, problem_id):
                 "SELECT date, user_id, ?, correct, submitted FROM submissions WHERE "
                 "contest_id=? AND problem_id=?"), new_id, contest_id, problem_id)
 
+    # Update global user stats
+    db.execute(("UPDATE users SET total_points=total_points+:nv, "
+                "problems_solved=problems_solved+1 WHERE id IN (SELECT user_id FROM "
+                "contest_solved WHERE contest_id=:cid AND problem_id=:pid)"),
+                nv=new_points, cid=contest_id, pid=problem_id)
+
     os.makedirs(f'metadata/problems/{new_id}')
     shutil.copy(f'metadata/contests/{contest_id}/{problem_id}/description.md',
                 f'metadata/problems/{new_id}/description.md')
@@ -1431,6 +1439,11 @@ def problem(problem_id):
     if len(check) == 0:
         db.execute("INSERT INTO problem_solved(user_id, problem_id) VALUES(:uid, :pid)",
                    uid=session["user_id"], pid=problem_id)
+
+        # Update total points and problems solved
+        db.execute(("UPDATE users SET total_points=total_points+:pv, "
+                    "problems_solved=problems_solved+1 WHERE id=:uid"),
+                   pv=data[0]["point_value"], uid=session["user_id"])
 
     data[0]["solved"] = True
     flash('Congratulations! You have solved this problem!', 'success')
@@ -1908,6 +1921,22 @@ def preview_homepage():
     return render_template(f"home_fragment/home{template_type}.html",
                            data=data,
                            length=-(-length // 10))
+
+
+@app.route("/users/<username>/profile")
+@login_required
+def profile(username):
+    user_info = db.execute("SELECT * FROM users WHERE username=:username", username=username)
+    if len(user_info) == 0:
+        return render_template("error/404.html"), 404
+    return render_template("profile/profile.html", user_data=user_info[0])
+
+
+@app.route("/ranking")
+@login_required
+def ranking():
+    user_info = db.execute("SELECT * FROM users WHERE verified=1 ORDER BY total_points DESC")
+    return render_template("ranking.html", user_data=user_info)
 
 
 # Error handling

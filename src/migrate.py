@@ -27,5 +27,10 @@ db = cs50.SQL("sqlite:///database.db")
 
 db.execute("ALTER TABLE users ADD COLUMN 'total_points' integer NOT NULL DEFAULT(0)")
 db.execute("ALTER TABLE users ADD COLUMN 'contests_completed' integer NOT NULL DEFAULT(0)")
+db.execute("ALTER TABLE users ADD COLUMN 'problems_solved' integer NOT NULL DEFAULT(0)")
+
+# TODO: Populate total_points
+# TODO: Populate contests_completed
+# TODO: Populate problems_solved
 
 print('Migration completed.')

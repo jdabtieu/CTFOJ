@@ -31,7 +31,12 @@
                 <td class="username
                            {{ 'user-ban' if row['banned'] }}
                            {{ 'user-admin' if row['admin'] }}">
-                    {{ row["username"] }}
+                    <a href="/users/{{ row['username'] }}/profile"
+                       class="username
+                              {{ 'user-ban' if row['banned'] }}
+                              {{ 'user-admin' if row['admin'] }}">
+                        {{ row["username"] }}
+                    </a>
                 </td>
                 <td>{{ row["email"] }}</td>
                 <td class="dt">{{ row["join_date"] }}</td>

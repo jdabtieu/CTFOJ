@@ -29,6 +29,7 @@
                             <li><a class="nav-link" href="/">Home</a></li>
                             <li><a class="nav-link" href="/problems">Practice</a></li>
                             <li><a class="nav-link" href="/contests">Contests</a></li>
+                            <li><a class="nav-link" href="/ranking">Ranking</a></li>
                             {% if session.admin %}
                                 <li><a class="nav-link" href="/admin/console">Admin Console</a></li>
                             {% endif %}
@@ -39,6 +40,7 @@
                                        type="checkbox">
                             </div>
                             <li class="nav-link white">Welcome, {{ session.username }}</li>
+                            <li><a class="nav-link" href="/users/{{ session.username }}/profile">Profile</a></li>
                             <li><a class="nav-link" href="/settings">Settings</a></li>
                             <li><a class="nav-link" href="/logout">Log Out</a></li>
                         </ul>
