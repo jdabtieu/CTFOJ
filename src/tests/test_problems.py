@@ -31,6 +31,15 @@ def test_problem(client, database):
     os.remove('test_upload.txt')
     assert result.status_code == 302
 
+    result = client.post('/problem/helloworldtesting',
+                         data={'flag': 'ctf{hello}'}, follow_redirects=True)
+    assert result.status_code == 200
+    assert b'Congratulations' in result.data
+
+    result = client.get('/users/admin/profile')
+    assert result.status_code == 200
+    assert b'1 Point' in result.data
+
     result = client.post('/problem/helloworldtesting/publish', follow_redirects=True)
     assert result.status_code == 200
     assert b'published' in result.data
@@ -45,10 +54,15 @@ def test_problem(client, database):
         'description': 'a short fun problem 2',
         'hints': 'try looking at the title 2',
         'point_value': 2,
+        'rejudge': True,
         'category': 'web',
         'flag': 'ctf{hello}'
     })
-    assert result.status_code == 302
+
+    result = client.get('/users/admin/profile')
+    assert result.status_code == 200
+    assert b'2 Points' in result.data
+
     client.get('/logout')
 
     # make sure api_login_required is working properly
