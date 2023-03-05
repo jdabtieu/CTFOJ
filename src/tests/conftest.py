@@ -1,16 +1,17 @@
 import os
+from pathlib import Path
 import pytest
 
 from cs50 import SQL
 
 
-os.mkdir("logs")
-os.mkdir("dl")
-os.mkdir("metadata")
-os.mkdir("metadata/contests")
-os.mkdir("metadata/problems")
-os.mkdir("metadata/announcements")
-os.mkdir("backups")
+Path("logs").mkdir(parents=True, exist_ok=True)
+Path("dl").mkdir(parents=True, exist_ok=True)
+Path("metadata").mkdir(parents=True, exist_ok=True)
+Path("metadata/contests").mkdir(parents=True, exist_ok=True)
+Path("metadata/problems").mkdir(parents=True, exist_ok=True)
+Path("metadata/announcements").mkdir(parents=True, exist_ok=True)
+Path("backups").mkdir(parents=True, exist_ok=True)
 
 from application import app  # noqa
 

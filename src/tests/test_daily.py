@@ -11,7 +11,7 @@ def test_daily(client):
     Test if daily_tasks.py runs properly and users aren't able to access the secret files.
     """
     assert os.path.exists('secret_key.txt')
-    assert os.path.exists('database.db.bak')
+    assert os.path.exists('backups/database.db.bak')
 
     result = client.get('/logs/application.log')
     assert result.status_code == 404
