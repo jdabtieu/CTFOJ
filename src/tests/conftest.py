@@ -10,6 +10,7 @@ os.mkdir("metadata")
 os.mkdir("metadata/contests")
 os.mkdir("metadata/problems")
 os.mkdir("metadata/announcements")
+os.mkdir("backups")
 
 from application import app  # noqa
 
