@@ -123,6 +123,10 @@
     font-weight: bold;
 }
 
+.username > a.username:not(.btn) {
+    color: inherit;
+}
+
 /****************** OTHER PAGES ******************************/
 .profileDiv {
     border-style: solid;
