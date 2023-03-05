@@ -271,6 +271,13 @@ def register():
         return render_template("auth/register.html",
                                site_key=app.config['HCAPTCHA_SITE']), 400
 
+    # Ensure email is valid
+    if "+" in email:
+        flash('Plus character not allowed in email', 'danger')
+        return render_template("auth/register.html",
+                               site_key=app.config['HCAPTCHA_SITE']), 400
+    email = email.lower()
+    
     # Ensure captcha is valid
     if app.config['USE_CAPTCHA']:
         if not check_captcha(app.config['HCAPTCHA_SECRET'],
@@ -278,7 +285,7 @@ def register():
                              app.config['HCAPTCHA_SITE']):
             return render_template("auth/register.html",
                                    site_key=app.config['HCAPTCHA_SITE']), 400
-
+    
     # Ensure username and email do not already exist
     rows = db.execute("SELECT * FROM users WHERE username = :username", username=username)
     if len(rows) > 0:
