@@ -5,15 +5,21 @@
 
 {% block main %}
 <h1>Create Problem</h1>
-<form autocomplete="off" method="post" id="create" name="create" enctype=multipart/form-data>
-    <input class="form-control mb-3" type="text" id="id" name="id" placeholder="ID" required>
-    <input class="form-control mb-3" type="text" id="name" name="name" placeholder="Name" required>
+<form autocomplete="off" method="post" id="create" name="create" enctype="multipart/form-data">
+    <div class="form-floating">
+        <input class="form-control mb-3" type="text" id="id" name="id" placeholder="Problem ID" required>
+        <label for="id">Problem ID</label>
+    </div>
+    <div class="form-floating">
+        <input class="form-control mb-3" type="text" id="name" name="name" placeholder="Problem Name" required>
+        <label for="name">Problem Name</label>
+    </div>
     <div style="display: flex;">
         <textarea class="form-control mb-3 md-preview"
                   id="description"
                   name="description"
-                  rows="20"
-                  placeholder="Description"
+                  style="height: 400px;"
+                  placeholder="Problem Description"
                   required></textarea>
         <div id="description-out" class="md-preview"></div>
     </div>
@@ -21,17 +27,27 @@
         <textarea class="form-control mb-3 md-preview"
                   id="hints"
                   name="hints"
-                  rows="20"
-                  placeholder="Hints"></textarea>
+                  placeholder="Hints"
+                  style="height: 400px;"></textarea>
         <div id="hints-out" class="md-preview"></div>
     </div>
-    <input class="form-control mb-3"
-           type="number"
-           name="point_value"
-           placeholder="Point Value"
-           required>
-    <input class="form-control mb-3" type="text" name="category" placeholder="Category" required>
-    <input class="form-control mb-3" type="text" name="flag" placeholder="Flag" required>
+    <div class="form-floating">
+        <input class="form-control mb-3"
+               type="number"
+               name="point_value"
+               id="point_value"
+               placeholder="Point Value"
+               required>
+        <label for="point_value">Point Value</label>
+    </div>
+    <div class="form-floating">
+        <input class="form-control mb-3" type="text" name="category" id="category" placeholder="Category" required>
+        <label for="category">Category</label>
+    </div>
+    <div class="form-floating">
+        <input class="form-control mb-3" type="text" name="flag" id="flag" placeholder="Flag" required>
+        <label for="category">Flag</label>
+    </div>
     <input class="form-control mb-3" type="file" name="file" accept=".zip">
     <div class="form-control mb-3" style="border: 0;">
         <input type="checkbox" id="draft" name="draft">

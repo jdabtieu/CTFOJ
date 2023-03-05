@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ user_data["username"] }}{% endblock %}
+
+{% block active %}Profile{% endblock %}
+
+{% block main %}
+<div class="profileDiv">
+    <h1>{{ user_data["username"] }}</h1>
+    <hr>
+    {% if session.username == user_data["username"] or session.admin %}
+        <details>
+            <summary>User Info</summary>
+            <div>Email: {{ user_data["email"] }}</div>
+            <div>Banned: {{ user_data["banned"] == 1 }}</div>
+            <div>Verified: {{ user_data["verified"] == 1 }}</div>
+        </details>
+        <br>
+    {% endif %}
+    📅 Joined {{ user_data["join_date"] }}
+    <br>
+    <br>
+    🎯 Collected {{ user_data["total_points"] }} {{ 'Point' if user_data["total_points"] == 1 else 'Points' }}
+    <br>
+    <br>
+    🚩 Captured {{ user_data["problems_solved"] }} {{ 'Flag' if user_data["problems_solved"] == 1 else 'Flags' }}
+    <br>
+    <br>
+    🏆 Participated in {{ user_data["contests_completed"] }} {{ 'Contest' if user_data["contests_completed"] == 1 else 'Contests' }}
+</div>
+{% endblock %}

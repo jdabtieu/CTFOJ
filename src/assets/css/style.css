@@ -102,7 +102,7 @@
     right: 4px;
 }
 
-/****************** ADMIN PAGE LAYOUT **********************/
+/****************** ADMIN PAGE LAYOUT ************************/
 .admin-card {
     padding: calc(var(--bs-gutter-x)/ 2);
 }
@@ -121,6 +121,20 @@
 
 .user-admin {
     font-weight: bold;
+}
+
+.username > a.username:not(.btn) {
+    color: inherit;
+}
+
+/****************** OTHER PAGES ******************************/
+.profileDiv {
+    border-style: solid;
+    border-width: thin;
+    padding: 30px;
+    border-radius: 5px;
+    border-color: lightgray;
+    overflow-wrap: break-word;
 }
 
 /****************** MD LIVE PREVIEW **************************/
@@ -209,6 +223,13 @@ body {
 
 .toggle-input > div > span:first-child {
     padding-right: 8px;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active{
+    -webkit-background-clip: text;
 }
 
 /****************** COLOURS **********************************/
@@ -317,4 +338,8 @@ body {
 
 .dark .form-control:disabled, .dark .form-control[readonly] {
     background-color: #3f3f3f;
+}
+
+.dark input:-webkit-autofill{
+    -webkit-text-fill-color: white;
 }

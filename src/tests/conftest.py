@@ -12,6 +12,8 @@ Path("metadata/contests").mkdir(parents=True, exist_ok=True)
 Path("metadata/problems").mkdir(parents=True, exist_ok=True)
 Path("metadata/announcements").mkdir(parents=True, exist_ok=True)
 Path("backups").mkdir(parents=True, exist_ok=True)
+with open("secret_key.txt", "w") as file:
+    file.write("testing_secret_key")
 
 from application import app  # noqa
 
@@ -35,7 +37,9 @@ def database():
          "'email' varchar(128), 'join_date' datetime NOT NULL DEFAULT (0), "
          "'admin' boolean NOT NULL DEFAULT (0), 'banned' boolean NOT NULL DEFAULT (0), "
          "'verified' boolean NOT NULL DEFAULT (0), 'twofa' boolean NOT NULL DEFAULT (0), "
-         "'api' varchar(36))"))
+         "'api' varchar(36), 'total_points' integer NOT NULL DEFAULT(0), "
+         "'contests_completed' integer NOT NULL DEFAULT(0), "
+         "'problems_solved' integer NOT NULL DEFAULT(0))"))
     db.execute(
         ("CREATE TABLE 'submissions' ('sub_id' integer PRIMARY KEY NOT NULL, "
          "'date' datetime NOT NULL, 'user_id' integer NOT NULL, "

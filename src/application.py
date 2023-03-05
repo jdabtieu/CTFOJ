@@ -173,7 +173,6 @@ def dl(filename):
     return send_from_directory("dl/", filename, as_attachment=True)
 
 
-@csrf.exempt
 @app.route("/login", methods=["GET", "POST"])
 def login():
     # Forget user id
@@ -244,7 +243,6 @@ def logout():
     return redirect("/")
 
 
-@csrf.exempt
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "GET":
@@ -461,7 +459,6 @@ def toggle2fa():
     return redirect("/settings")
 
 
-@csrf.exempt
 @app.route("/forgotpassword", methods=["GET", "POST"])
 def forgotpassword():
     if request.method == "GET":
@@ -632,6 +629,8 @@ def contest(contest_id):
     if len(user_info) == 0 and datetime.utcnow() < datetime.strptime(contest_info[0]["end"], "%Y-%m-%d %H:%M:%S"):
         db.execute("INSERT INTO contest_users (contest_id, user_id) VALUES(:cid, :uid)",
                    cid=contest_id, uid=session["user_id"])
+        db.execute("UPDATE users SET contests_completed=contests_completed+1 WHERE id=?",
+                   session["user_id"])
 
     solved_info = db.execute(
         "SELECT problem_id FROM contest_solved WHERE contest_id=:cid AND user_id=:uid",
@@ -1233,6 +1232,12 @@ def export_contest_problem(contest_id, problem_id):
                 "SELECT date, user_id, ?, correct, submitted FROM submissions WHERE "
                 "contest_id=? AND problem_id=?"), new_id, contest_id, problem_id)
 
+    # Update global user stats
+    db.execute(("UPDATE users SET total_points=total_points+:nv, "
+                "problems_solved=problems_solved+1 WHERE id IN (SELECT user_id FROM "
+                "contest_solved WHERE contest_id=:cid AND problem_id=:pid)"),
+                nv=new_points, cid=contest_id, pid=problem_id)
+
     os.makedirs(f'metadata/problems/{new_id}')
     shutil.copy(f'metadata/contests/{contest_id}/{problem_id}/description.md',
                 f'metadata/problems/{new_id}/description.md')
@@ -1432,6 +1437,11 @@ def problem(problem_id):
         db.execute("INSERT INTO problem_solved(user_id, problem_id) VALUES(:uid, :pid)",
                    uid=session["user_id"], pid=problem_id)
 
+        # Update total points and problems solved
+        db.execute(("UPDATE users SET total_points=total_points+:pv, "
+                    "problems_solved=problems_solved+1 WHERE id=:uid"),
+                   pv=data[0]["point_value"], uid=session["user_id"])
+
     data[0]["solved"] = True
     flash('Congratulations! You have solved this problem!', 'success')
     return render_template('problem/problem.html', data=data[0])
@@ -1490,7 +1500,7 @@ def editproblem(problem_id):
     new_description = request.form.get("description")
     new_hint = request.form.get("hints")
     new_category = request.form.get("category")
-    new_points = request.form.get("point_value")
+    new_points = int(request.form.get("point_value"))
     new_flag = request.form.get("flag")
 
     if not new_name or not new_description or not new_category or not new_points:
@@ -1504,9 +1514,25 @@ def editproblem(problem_id):
         if request.form.get("rejudge"):
             db.execute("UPDATE submissions SET correct=0 WHERE problem_id=:pid",
                        pid=problem_id)
+            db.execute(
+                ("UPDATE users SET total_points=total_points-:pv, "
+                 "problems_solved=problems_solved-1 WHERE id IN "
+                 "(SELECT user_id FROM problem_solved WHERE problem_id=:pid)"),
+                 pv=data[0]["point_value"], pid=problem_id
+            )
+            db.execute("DELETE FROM problem_solved WHERE problem_id=:pid", pid=problem_id)
             db.execute(("UPDATE submissions SET correct=1 WHERE "
                         "problem_id=:pid AND submitted=:flag"),
                        pid=problem_id, flag=new_flag)
+            db.execute(("INSERT INTO problem_solved (user_id, problem_id) "
+                        "SELECT DISTINCT user_id, problem_id FROM submissions WHERE "
+                        "problem_id=:pid AND correct=1"), pid=problem_id)
+            db.execute(
+                ("UPDATE users SET total_points=total_points+:pv, "
+                 "problems_solved=problems_solved+1 WHERE id IN "
+                 "(SELECT user_id FROM problem_solved WHERE problem_id=:pid)"),
+                 pv=data[0]["point_value"], pid=problem_id
+            )
     else:
         new_flag = data[0]["flag"]
 
@@ -1518,6 +1544,11 @@ def editproblem(problem_id):
                 "flag=:flag WHERE id=:problem_id"),
                name=new_name, category=new_category, pv=new_points,
                problem_id=problem_id, flag=new_flag)
+    db.execute(
+        ("UPDATE users SET total_points=total_points+:dpv WHERE id IN "
+         "(SELECT user_id FROM problem_solved WHERE problem_id=:pid)"),
+         dpv=new_points - data[0]["point_value"], pid=problem_id
+    )
     write_file('metadata/problems/' + problem_id + '/description.md', new_description)
     write_file('metadata/problems/' + problem_id + '/hints.md', new_hint)
 
@@ -1568,6 +1599,12 @@ def delete_problem(problem_id):
 
     db.execute("BEGIN")
     db.execute("DELETE FROM problems WHERE id=:pid", pid=problem_id)
+    db.execute(
+        ("UPDATE users SET total_points=total_points-:pv, "
+         "problems_solved=problems_solved-1 WHERE id IN "
+         "(SELECT user_id FROM problem_solved WHERE problem_id=:pid)"),
+         pv=data[0]["point_value"], pid=problem_id
+    )
     db.execute("DELETE FROM problem_solved WHERE problem_id=:pid", pid=problem_id)
     db.execute("COMMIT")
     shutil.rmtree(f"metadata/problems/{problem_id}")
@@ -1600,7 +1637,6 @@ def admin_console():
                            maintenance_mode=os.path.exists('maintenance_mode'))
 
 
-@csrf.exempt
 @app.route("/admin/submissions")
 @admin_required
 def admin_submissions():
@@ -1908,6 +1944,22 @@ def preview_homepage():
     return render_template(f"home_fragment/home{template_type}.html",
                            data=data,
                            length=-(-length // 10))
+
+
+@app.route("/users/<username>/profile")
+@login_required
+def profile(username):
+    user_info = db.execute("SELECT * FROM users WHERE username=:username", username=username)
+    if len(user_info) == 0:
+        return render_template("error/404.html"), 404
+    return render_template("profile/profile.html", user_data=user_info[0])
+
+
+@app.route("/ranking")
+@login_required
+def ranking():
+    user_info = db.execute("SELECT * FROM users WHERE verified=1 ORDER BY total_points DESC")
+    return render_template("ranking.html", user_data=user_info)
 
 
 # Error handling

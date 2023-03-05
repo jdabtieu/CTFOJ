@@ -6,8 +6,22 @@
 {% block main %}
 <h1>Create Contest</h1>
 <form autocomplete="off" method="post">
-    <input class="form-control mb-3" name="contest_id" placeholder="Contest ID" required>
-    <input class="form-control mb-3" name="contest_name" placeholder="Contest Name" required>
+    <div class="form-floating">
+        <input class="form-control mb-3"
+               name="contest_id"
+               id="id"
+               placeholder="Contest ID"
+               required>
+        <label for="id">Contest ID</label>
+    </div>
+    <div class="form-floating">
+        <input class="form-control mb-3"
+        name="contest_name"
+        id="name"
+        placeholder="Contest Name"
+        required>
+        <label for="name">Contest Name</label>
+    </div>
     <div style="display: flex;">
         <textarea class="form-control mb-3 md-preview"
                   id="description"
@@ -17,18 +31,24 @@
                   required></textarea>
         <div id="description-out" class="md-preview"></div>
     </div>
-    <input class="form-control mb-3 dtl"
-           type="text"
-           id="start"
-           name="start"
-           placeholder="Start Date & Time"
-           required>
-    <input class="form-control mb-3 dtl"
-           type="text"
-           id="end"
-           name="end"
-           placeholder="End Date & Time"
-           required>
+    <div class="form-floating">
+        <input class="form-control mb-3"
+               type="datetime-local"
+               id="start"
+               name="start"
+               placeholder="Start Date & Time"
+               required>
+        <label for="start">Start Date & Time</label>
+    </div>
+    <div class="form-floating">
+        <input class="form-control mb-3"
+               type="datetime-local"
+               id="end"
+               name="end"
+               placeholder="End Date & Time"
+               required>
+        <label for="end">End Date & Time</label>
+    </div>
     <div class="form-control mb-3" style="border: 0;">
         <input type="checkbox" id="scoreboard_visible" name="scoreboard_visible">
         <label for="scoreboard_visible">Scoreboard Visible?</label>
@@ -39,12 +59,6 @@
 {% endblock %}
 {% block script %}
 <script>
-    document.querySelectorAll(".dtl").forEach(function(e) {
-        e.addEventListener("focus", function() {
-           this.setAttribute("type", "datetime-local");
-        })
-    })
-
     document.getElementById("description-out").attachShadow({mode: "open"});
     document.getElementById("description").addEventListener("input", function() {
         const outputDiv = document.getElementById("description-out");

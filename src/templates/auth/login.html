@@ -6,16 +6,25 @@
 {% block main %}
 <h1 class="text-center">Log In</h1>
 <form method="post">
-    <input autofocus
-           class="form-control mb-3"
-           name="username"
-           placeholder="Username"
-           required>
-    <input class="form-control mb-3"
-           name="password"
-           placeholder="Password"
-           type="password"
-           required>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+    <div class="form-floating">
+        <input autofocus
+               class="form-control mb-3"
+               name="username"
+               id="username"
+               placeholder="Username"
+               required>
+        <label for="username">Username</label>
+    </div>
+    <div class="form-floating">
+        <input class="form-control mb-3"
+               name="password"
+               id="password"
+               placeholder="Password"
+               type="password"
+               required>
+        <label for="password">Password</label>
+    </div>
     <button class="btn btn-primary" type="submit">Log In</button>
     <a href="/forgotpassword" class="btn btn-secondary white">Forgot Password</a>
     {% if USE_CAPTCHA %}

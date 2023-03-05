@@ -4,9 +4,7 @@ converter.setOption('strikethrough', true);
 
 function addCSS(content) {
     let style = `
-        <link rel="stylesheet"
-              href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css"
-              crossorigin="anonymous">
+        <link rel="stylesheet" href="/assets/css/bootstrap.min.css">
         <link href="/assets/css/style.css" rel="stylesheet">`;
     return style + content;
 }
@@ -16,6 +14,9 @@ function convertMD(toConvert) {
 
 function _inject(shadow, content, editing) {
     let container = document.createElement("div");
+    if (getCookie("darkMode") == 1) {
+        container.classList.add("dark");
+    }
     container.innerHTML = addCSS(convertMD(content));
     shadow.replaceChildren(container);
     container.querySelectorAll("*").forEach(e => {

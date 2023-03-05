@@ -40,24 +40,35 @@
         <div class="card">
             <h3>Filter Submissions</h3>
             <form>
-                <input class="form-control mb-3"
-                       id="username"
-                       name="username"
-                       placeholder="Filter by username">
-                <input class="form-control mb-3"
-                       id="problem_id"
-                       name="problem_id"
-                       placeholder="Filter by problem ID">
-                <input class="form-control mb-3"
-                       id="contest_id"
-                       name="contest_id"
-                       placeholder="Filter by contest ID">
-                <select class="form-control form-select mb-3" id="correct" name="correct">
-                    <option value="" selected hidden>Filter by status</option>
-                    <option value="">All</option>
-                    <option value="AC">AC</option>
-                    <option value="WA">WA</option>
-                </select>
+                <div class="form-floating">
+                    <input class="form-control mb-3"
+                           id="username"
+                           name="username"
+                           placeholder="Filter by username">
+                    <label for="username">Username</label>
+                </div>
+                <div class="form-floating">
+                    <input class="form-control mb-3"
+                           id="problem_id"
+                           name="problem_id"
+                           placeholder="Filter by problem ID">
+                    <label for="problem_id">Problem ID</label>
+                </div>
+                <div class="form-floating">
+                    <input class="form-control mb-3"
+                           id="contest_id"
+                           name="contest_id"
+                           placeholder="Filter by contest ID">
+                    <label for="contest_id">Contest ID</label>
+                </div>
+                <div class="form-floating">
+                    <select class="form-control form-select mb-3" id="correct" name="correct">
+                        <option value="">All</option>
+                        <option value="AC">AC</option>
+                        <option value="WA">WA</option>
+                    </select>
+                    <label for="correct">Status</label>
+                </div>
                 <input class="btn btn-primary" type="submit" value="Filter!">
             </form>
         </div>

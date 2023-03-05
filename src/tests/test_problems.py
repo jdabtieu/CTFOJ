@@ -11,7 +11,7 @@ def test_problem(client, database):
     database.execute(
         ("INSERT INTO 'users' VALUES(1, 'admin', 'pbkdf2:sha256:150000$XoLKRd3I$"
          "2dbdacb6a37de2168298e419c6c54e768d242aee475aadf1fa9e6c30aa02997f', 'e', "
-         "datetime('now'), 1, 0, 1, 0, NULL)"))
+         "datetime('now'), 1, 0, 1, 0, NULL, 0, 0, 0)"))
     client.post('/login', data={'username': 'admin', 'password': 'CTFOJadmin'})
 
     file = open("test_upload.txt", "w")
@@ -31,6 +31,15 @@ def test_problem(client, database):
     os.remove('test_upload.txt')
     assert result.status_code == 302
 
+    result = client.post('/problem/helloworldtesting',
+                         data={'flag': 'ctf{hello}'}, follow_redirects=True)
+    assert result.status_code == 200
+    assert b'Congratulations' in result.data
+
+    result = client.get('/users/admin/profile')
+    assert result.status_code == 200
+    assert b'1 Point' in result.data
+
     result = client.post('/problem/helloworldtesting/publish', follow_redirects=True)
     assert result.status_code == 200
     assert b'published' in result.data
@@ -41,14 +50,43 @@ def test_problem(client, database):
     assert b'edited' in result.data
 
     result = client.post('/problem/helloworldtesting/edit', data={
+        'description': 'a short fun problem 2',
+        'hints': 'try looking at the title 2',
+        'point_value': 2,
+        'rejudge': True,
+        'category': 'web',
+        'flag': 'ctf{hello}'
+    })
+    assert result.status_code == 400
+    assert b'required' in result.data
+
+    result = client.post('/problem/helloworldtesting/edit', data={
         'name': 'hello world 2',
         'description': 'a short fun problem 2',
         'hints': 'try looking at the title 2',
         'point_value': 2,
+        'rejudge': True,
+        'category': 'web',
+        'flag': '\x2f\x10'
+    })
+    assert result.status_code == 400
+    assert b'Invalid' in result.data
+
+    result = client.post('/problem/helloworldtesting/edit', data={
+        'name': 'hello world 2',
+        'description': 'a short fun problem 2',
+        'hints': 'try looking at the title 2',
+        'point_value': 2,
+        'rejudge': True,
         'category': 'web',
         'flag': 'ctf{hello}'
-    })
-    assert result.status_code == 302
+    }, follow_redirects=True)
+    assert result.status_code == 200
+
+    result = client.get('/users/admin/profile')
+    assert result.status_code == 200
+    assert b'2 Points' in result.data
+
     client.get('/logout')
 
     # make sure api_login_required is working properly
@@ -59,7 +97,7 @@ def test_problem(client, database):
     database.execute(
         ("INSERT INTO 'users' VALUES(2, 'normal_user', 'pbkdf2:sha256:150000$XoLKRd3I$"
          "2dbdacb6a37de2168298e419c6c54e768d242aee475aadf1fa9e6c30aa02997f', 'e', "
-         "datetime('now'), 0, 0, 1, 0, NULL)"))
+         "datetime('now'), 0, 0, 1, 0, NULL, 0, 0, 0)"))
     client.post('/login', data={'username': 'normal_user', 'password': 'CTFOJadmin'},
                 follow_redirects=True)
     result = client.get('/problem/helloworldtesting')

@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+
+{% block title %}Ranking{% endblock %}
+{% block active %}Ranking{% endblock %}
+
+{% block main %}
+<h1>Rankings</h1>
+<div style="overflow-x: auto;">
+    <table class="table table-hover table-full-width">
+        <thead class="table-dark">
+            <tr>
+                <th scope="col" style="width: 13%;">Rank</th>
+                <th scope="col" style="width: 40%;">Username</th>
+                <th scope="col" style="width: 19%;">Points</th>
+                <th scope="col" style="width: 19%;">Contests Participated</th>
+                <th scope="col" style="width: 19%">Flags</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for i in range(user_data | length) %}
+            <tr>
+                <td>{{ i + 1 }}</td>
+                <td class="username">{{ user_data[i]["username"] }}</td>
+                <td>{{ user_data[i]["total_points"] }}</td>
+                <td>{{ user_data[i]["contests_completed"] }}</td>
+                <td>{{ user_data[i]["problems_solved"] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

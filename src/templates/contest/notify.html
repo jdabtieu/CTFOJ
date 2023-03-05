@@ -7,7 +7,15 @@
 <h1>Notify Participants</h1>
 <p>This will send an email to all participants in your contest. Use this feature with caution.</p>
 <form autocomplete="off" method="post" id="create" name="create">
-    <input class="form-control mb-3" type="text" name="subject" placeholder="Subject" required>
+    <div class="form-floating">
+        <input class="form-control mb-3"
+               type="text"
+               name="subject"
+               id="subject"
+               placeholder="Subject"
+               required>
+        <label for="subject">Subject</label>
+    </div>
     <textarea class="form-control mb-3"
               name="message"
               rows="20"

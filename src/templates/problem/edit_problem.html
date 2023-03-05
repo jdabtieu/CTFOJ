@@ -10,11 +10,15 @@
 {% block main %}
 <h1>Edit {{ data["name"] }}</h1>
 <form autocomplete="off" method="post">
-    <input class="form-control mb-3"
-           name="name"
-           value="{{ data['name'] }}"
-           placeholder="Name"
-           required>
+    <div class="form-floating">
+        <input class="form-control mb-3"
+               name="name"
+               id="name"
+               value="{{ data['name'] }}"
+               placeholder="Name"
+               required>
+        <label for="name">Problem Name</label>
+    </div>
     <div style="display: flex;">
         <textarea class="form-control mb-3 md-preview"
                   id="description"
@@ -32,26 +36,35 @@
                   placeholder="Hints"></textarea>
         <div id="hints-out" class="md-preview"></div>
     </div>
-    <input class="form-control mb-3"
-           name="category"
-           value="{{ data['category'] }}"
-           placeholder="Category"
-           required>
+    <div class="form-floating">
+        <input class="form-control mb-3"
+               name="category"
+               id="category"
+               value="{{ data['category'] }}"
+               placeholder="Category"
+               required>
+        <label for="category">Category</label>
+    </div>
     <div style="position: relative;">
-        <input class="form-control mb-3" id="flag" name="flag" placeholder="New flag (optional)">
+        <div class="form-floating">
+            <input class="form-control mb-3" id="flag" name="flag" placeholder="New Flag (optional)">
+            <label for="flag">New Flag (optional)</label>
+        </div>
         <div style="position: absolute; right: 0; top: 0; width: initial;" class="form-control">
             <input type="checkbox" id="rejudge" name="rejudge">
             <label for="rejudge">Rejudge?</label>
         </div>
     </div>
-    <input class="form-control mb-3"
-           type="number"
-           id="point_value"
-           name="point_value"
-           value="{{ data['point_value'] }}"
-           placeholder="Point Value"
-           {{ 'disabled' if data['score_users'] and data['score_users'] > 0 }}
-           required>
+    <div class="form-floating">
+        <input class="form-control mb-3"
+               type="number"
+               id="point_value"
+               name="point_value"
+               value="{{ data['point_value'] }}"
+               placeholder="Point Value"
+               required>
+        <label for="point_value">Point Value</label>
+    </div>
     <input class="btn btn-primary" type="submit" id="submit" name="submit" value="Submit">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 </form>
