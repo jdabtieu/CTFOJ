@@ -18,6 +18,28 @@ def test_contest(client, database):
     client.post('/login', data={'username': 'admin', 'password': 'CTFOJadmin'})
 
     result = client.post('/contests/create', data={
+        'contest_id': '',
+        'contest_name': 'Testing Contest',
+        'start': datetime.strftime(datetime.now(), "%Y-%m-%dT%H:%M:%S.%fZ"),
+        'end': datetime.strftime(datetime.now() + timedelta(600), "%Y-%m-%dT%H:%M:%S.%fZ"),  # noqa E501
+        'description': 'testing contest description',
+        'scoreboard_visible': True
+    }, follow_redirects=True)
+    assert result.status_code == 400
+    assert b'contest ID' in result.data
+
+    result = client.post('/contests/create', data={
+        'contest_id': 'testingcontest',
+        'contest_name': 'Testing Contest',
+        'start': datetime.strftime(datetime.now(), "%Y-%m-%dT%H:%M:%S.%fZ"),
+        'end': datetime.strftime(datetime.now() - timedelta(600), "%Y-%m-%dT%H:%M:%S.%fZ"),  # noqa E501
+        'description': 'testing contest description',
+        'scoreboard_visible': True
+    }, follow_redirects=True)
+    assert result.status_code == 400
+    assert b'end before' in result.data
+
+    result = client.post('/contests/create', data={
         'contest_id': 'testingcontest',
         'contest_name': 'Testing Contest',
         'start': datetime.strftime(datetime.now(), "%Y-%m-%dT%H:%M:%S.%fZ"),
@@ -27,6 +49,17 @@ def test_contest(client, database):
     }, follow_redirects=True)
     assert result.status_code == 200
     assert b'Testing Contest' in result.data
+
+    result = client.post('/contests/create', data={
+        'contest_id': 'testingcontest',
+        'contest_name': 'Testing Contest',
+        'start': datetime.strftime(datetime.now(), "%Y-%m-%dT%H:%M:%S.%fZ"),
+        'end': datetime.strftime(datetime.now() + timedelta(600), "%Y-%m-%dT%H:%M:%S.%fZ"),  # noqa E501
+        'description': 'testing contest description',
+        'scoreboard_visible': True
+    }, follow_redirects=True)
+    assert result.status_code == 409
+    assert b'already exists' in result.data
 
     result = client.post('/contest/testingcontest/edit', data={
         'name': 'Testing Contest',
@@ -49,6 +82,9 @@ def test_contest(client, database):
     result = client.get('/contest/noexist/edit', follow_redirects=True)
     assert b'does not exist' in result.data
 
+    result = client.get('/contest/noexist/delete', follow_redirects=True)
+    assert b'does not exist' in result.data
+
     result = client.get('/contest/testingcontest/scoreboard')
     assert result.status_code == 200
     assert b'Rank' in result.data
@@ -69,6 +105,7 @@ def test_contest(client, database):
     })
     os.remove('test_upload.txt')
     assert result.status_code == 302
+    client.get('/contest/testingcontest//edit')
 
     result = client.post('/contest/testingcontest/problem/helloworldtesting/edit', data={
         'name': 'hello world 2',
@@ -182,6 +219,14 @@ def test_contest(client, database):
     result = client.get('/admin/submissions')
     assert result.status_code == 200
     assert b'testingcontest-helloworldtesting' in result.data
+
+    result = client.get('/admin/submissions', data={
+        'username': 'username1',
+        'problem_id': 'problem_id',
+        'contest_id': 'contest_id',
+        'correct': '1'
+    })
+    assert result.status_code == 200
 
     file = open("test_upload.txt", "w")
     file.write('ree')

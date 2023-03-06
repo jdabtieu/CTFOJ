@@ -82,6 +82,9 @@ def test_pages(client, database):
     result = client.get('/logout')
     assert result.status_code == 302
 
+    result = client.post('/forgotpassword', data={'email': ''}, follow_redirects=True)
+    assert b'blank' in result.data
+
     result = client.post('/forgotpassword', data={'email': 'ctf.mgci+debug@email.com'})
     assert result.status_code == 200
 

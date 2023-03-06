@@ -67,6 +67,12 @@ def test_admin(client, database):
     assert result.status_code == 200
 
     # Admins should be able to ban and unban people
+    result = client.post('/admin/ban', follow_redirects=True)
+    assert b'user ID' in result.data
+    result = client.post('/admin/ban', data={'user_id': 100}, follow_redirects=True)
+    assert b'exist' in result.data
+    result = client.post('/admin/ban', data={'user_id': 1}, follow_redirects=True)
+    assert b'yourself' in result.data
     result = client.post('/admin/ban', data={'user_id': 2}, follow_redirects=True)
     assert result.status_code == 200
     assert b'Successfully banned' in result.data
@@ -94,6 +100,14 @@ def test_admin(client, database):
     }, follow_redirects=True)
     assert result.status_code == 200
     assert b'successfully created' in result.data
+
+    result = client.post('/admin/editannouncement/1', data={
+        'name': '',
+        'description': 'new testing announcement'
+    }, follow_redirects=True)
+    assert result.status_code == 400
+    assert b'empty' in result.data
+
     result = client.post('/admin/editannouncement/1', data={
         'name': 'testing',
         'description': 'new testing announcement'
