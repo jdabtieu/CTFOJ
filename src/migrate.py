@@ -70,7 +70,8 @@ for user in db.execute("SELECT * FROM users"):
     pts = total_points[user["id"]] if user["id"] in total_points else 0
     ccnt = contest_cnt[user["id"]] if user["id"] in contest_cnt else 0
     pcnt = problem_cnt[user["id"]] if user["id"] in problem_cnt else 0
+    email = user["email"].lower() #  for the lowercasing email PR
     db.execute(("UPDATE users SET total_points=?, contests_completed=?, "
-                "problems_solved=? WHERE id=?"), pts, ccnt, pcnt, user["id"])
+                "problems_solved=?, email=? WHERE id=?"), pts, ccnt, pcnt, email, user["id"])
 
 print('Migration completed.')

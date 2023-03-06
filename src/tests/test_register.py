@@ -73,6 +73,16 @@ def test_register(client, database):
         'username': 'testing',
         'password': 'testingpass',
         'confirmation': 'testingpass',
+        'email': 'testingemai+l@email.com'
+    }, follow_redirects=True)
+
+    assert result.status_code == 400
+    assert b'character not allowed' in result.data
+
+    result = client.post('/register', data={
+        'username': 'testing',
+        'password': 'testingpass',
+        'confirmation': 'testingpass',
         'email': 'testingemail@email.com'
     }, follow_redirects=True)
 
