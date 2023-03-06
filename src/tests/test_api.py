@@ -26,6 +26,12 @@ def test_api(client, database):
     assert 'data' not in json.loads(result.data)
     assert 'message' in json.loads(result.data)
 
+    result = client.get('/api/problem?id=noexist')
+    assert result.status_code == 404
+    assert json.loads(result.data)['status'] == 'fail'
+    assert 'data' not in json.loads(result.data)
+    assert 'message' in json.loads(result.data)
+
     client.get('/logout')
 
     result = client.get('/api/problem?id=anything')

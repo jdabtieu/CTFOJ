@@ -6,7 +6,7 @@ msg = """
 Before migrating, please confirm the following:
  - You are on v3.2.0 (older version please update to one of these first, new version no migrate necessary)
  - You have write permissions in the current directory
-Please note that migration is a one-way operation, and you will not be able to revert to the previous version without a FULL backup.
+Please note that migration is a one-way operation. Once it is completed, you will not be able to revert to the previous version without a FULL backup.
 
 [WARNING] THIS IS A MAJOR UPDATE. THE ENTIRE CTFOJ FILE STRUCTURE IS CHANGING.
 You should back up all your data (dl, logs, metadata, database.db, settings.py)
@@ -29,6 +29,8 @@ if confirm != 'y':
     sys.exit()
 
 db = cs50.SQL("sqlite:///database.db")
+
+db.execute("BEGIN")
 
 # Create new columns
 db.execute("ALTER TABLE users ADD COLUMN 'total_points' integer NOT NULL DEFAULT(0)")
@@ -73,5 +75,28 @@ for user in db.execute("SELECT * FROM users"):
     email = user["email"].lower() #  for the lowercasing email PR
     db.execute(("UPDATE users SET total_points=?, contests_completed=?, "
                 "problems_solved=?, email=? WHERE id=?"), pts, ccnt, pcnt, email, user["id"])
+
+# Fix old users table issues
+db.execute(('CREATE TABLE "user_temp" ('
+    '"id"    integer NOT NULL,'
+    '"username"  varchar(20) NOT NULL UNIQUE,'
+    '"password"  varchar(64) NOT NULL,'
+    '"email" varchar(128) NOT NULL,'
+    '"join_date" datetime NOT NULL DEFAULT (0),'
+    '"admin" boolean NOT NULL DEFAULT (0),'
+    '"banned"    boolean NOT NULL DEFAULT (0),'
+    '"verified"  boolean NOT NULL DEFAULT (0),'
+    '"twofa" BOOLEAN NOT NULL DEFAULT (0),'
+    '"api"   varchar(36) UNIQUE,'
+    '"total_points"  integer NOT NULL DEFAULT (0),'
+    '"contests_completed"    integer NOT NULL DEFAULT (0),'
+    '"problems_solved"   integer NOT NULL DEFAULT (0),'
+    'PRIMARY KEY("id"))'
+))
+db.execute("INSERT INTO user_temp SELECT * FROM users")
+db.execute("DROP TABLE users")
+db.execute("ALTER TABLE user_temp RENAME TO users")
+
+db.execute("COMMIT")
 
 print('Migration completed.')

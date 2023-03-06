@@ -21,8 +21,6 @@ def get_api_key():
                  "generated a new API key"), extra={"section": "api"})
     from application import db
     new_key = str(uuid.uuid4())
-    while len(db.execute("SELECT * FROM users WHERE api=?", new_key)) != 0:
-        new_key = str(uuid.uuid4())
     db.execute("UPDATE users SET api=? WHERE id=?", new_key, session["user_id"])
     return new_key
 
