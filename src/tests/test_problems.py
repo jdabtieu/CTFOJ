@@ -28,7 +28,6 @@ def test_problem(client, database):
         'file': ('test_upload.txt', 'test_upload.txt'),
         'draft': True
     })
-    os.remove('test_upload.txt')
     assert result.status_code == 302
 
     result = client.post('/problem/helloworldtesting',

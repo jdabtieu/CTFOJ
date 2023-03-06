@@ -20,6 +20,8 @@ def test_2fa(client, database):
     result = client.post('/settings/toggle2fa', data={'password': 'wrong'})
     assert b'Incorrect' in result.data
 
+    result = client.get('/settings/toggle2fa')
+
     client.get('/logout', follow_redirects=True)
 
     result = client.post('/login', data={'username': 'admin', 'password': 'CTFOJadmin'})

@@ -21,9 +21,13 @@ def test_emaintenance(client, database):
     assert result.status_code == 200
     assert b'Disabled' in result.data
 
-    result = client.post('/admin/maintenance', follow_redirects=True)
-
+    client.post('/admin/maintenance', follow_redirects=True)
+    
     result = client.get('/logout', follow_redirects=True)
+    assert result.status_code == 503
+    assert b'maintenance' in result.data
+
+    result = client.get('/api', follow_redirects=True)
     assert result.status_code == 503
     assert b'maintenance' in result.data
 
