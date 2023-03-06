@@ -2,7 +2,7 @@ import os
 import secrets
 import sys
 
-# DO NOT MODIFY THESE SETTINGS! Scroll down to line 24 for settings that you should change
+# DO NOT MODIFY THESE SETTINGS! Scroll down to line 22 for settings that you should change
 # The secret key is located in secret_key.txt by default
 try:
     with open("secret_key.txt", "r") as file:
@@ -10,11 +10,9 @@ try:
         SECRET_KEY = secret_key
 except Exception as e:
     sys.stderr.write(str(e))
-    secret = secrets.token_hex(48)  # 384 bits
     with open("secret_key.txt", "w+") as file:
-        file.write(secret)
-        secret_key = file.readline().strip()
-        SECRET_KEY = secret_key
+        file.write(secrets.token_hex(48)) # 384 bits
+        SECRET_KEY = file.readline().strip()
 
 TEMPLATES_AUTO_RELOAD = True
 SESSION_PERMANENT = False
