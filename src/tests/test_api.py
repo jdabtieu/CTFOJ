@@ -14,6 +14,18 @@ def test_api(client, database):
     result = client.get('/api')
     assert result.status_code == 308
 
+    result = client.get('/api/problem')
+    assert result.status_code == 400
+    assert json.loads(result.data)['status'] == 'fail'
+    assert 'data' not in json.loads(result.data)
+    assert 'message' in json.loads(result.data)
+
+    result = client.get('/api/contests')
+    assert result.status_code == 400
+    assert json.loads(result.data)['status'] == 'fail'
+    assert 'data' not in json.loads(result.data)
+    assert 'message' in json.loads(result.data)
+
     client.get('/logout')
 
     result = client.get('/api/problem?id=anything')
