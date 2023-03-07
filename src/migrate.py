@@ -78,19 +78,19 @@ for user in db.execute("SELECT * FROM users"):
 
 # Fix old users table issues
 db.execute(('CREATE TABLE "user_temp" ('
-    '"id"    integer NOT NULL,'
+    '"id"        integer NOT NULL,'
     '"username"  varchar(20) NOT NULL UNIQUE,'
     '"password"  varchar(64) NOT NULL,'
-    '"email" varchar(128) NOT NULL,'
+    '"email"     varchar(128) NOT NULL,'
     '"join_date" datetime NOT NULL DEFAULT (0),'
-    '"admin" boolean NOT NULL DEFAULT (0),'
+    '"admin"     boolean NOT NULL DEFAULT (0),'
     '"banned"    boolean NOT NULL DEFAULT (0),'
     '"verified"  boolean NOT NULL DEFAULT (0),'
-    '"twofa" BOOLEAN NOT NULL DEFAULT (0),'
-    '"api"   varchar(36) UNIQUE,'
-    '"total_points"  integer NOT NULL DEFAULT (0),'
-    '"contests_completed"    integer NOT NULL DEFAULT (0),'
-    '"problems_solved"   integer NOT NULL DEFAULT (0),'
+    '"twofa"     boolean NOT NULL DEFAULT (0),'
+    '"api"       varchar(36) UNIQUE,'
+    '"total_points"        integer NOT NULL DEFAULT (0),'
+    '"contests_completed"  integer NOT NULL DEFAULT (0),'
+    '"problems_solved"     integer NOT NULL DEFAULT (0),'
     'PRIMARY KEY("id"))'
 ))
 db.execute("INSERT INTO user_temp SELECT * FROM users")
