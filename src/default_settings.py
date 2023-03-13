@@ -42,7 +42,7 @@ IP addresses should come from the X-Forwarded-For header. This is done automatic
 PythonAnywhere, but with Nginx, you should add this line to your server block:
         proxy_set_header        X-Forwarded-For  $proxy_add_x_forwarded_for;
 Apache/other proxies should also set the header to the real user IP.
-If you enable this option, you MUST set the X-Forwarded-For setting.
+If you enable this option, you MUST set the X-Forwarded-For header.
 """
 USE_X_FORWARDED_FOR = False
 
