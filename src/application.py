@@ -18,6 +18,7 @@ from werkzeug.exceptions import HTTPException, InternalServerError, default_exce
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from helpers import *  # noqa
+from middlewares import ProxyFix
 
 app = Flask(__name__)
 
@@ -28,6 +29,11 @@ except Exception as e:
     app.config.from_object('default_settings')
 app.jinja_env.globals['CLUB_NAME'] = app.config['CLUB_NAME']
 app.jinja_env.globals['USE_CAPTCHA'] = app.config['USE_CAPTCHA']
+
+# Add middlewares
+if app.config["USE_X_FORWARDED_FOR"]:
+    app.wsgi_app = ProxyFix(app.wsgi_app)
+
 
 # Configure logging
 LOG_HANDLER = logging.FileHandler(app.config['LOGGING_FILE_LOCATION'])
