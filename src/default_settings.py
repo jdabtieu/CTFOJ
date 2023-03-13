@@ -37,6 +37,16 @@ HCAPTCHA_SITE = "site_key"
 
 # Configure other settings here
 """
+If you are running CTFOJ under a proxy (e.g. PythonAnywhere, Nginx, or Apache), users'
+IP addresses should come from the X-Forwarded-For header. This is done automatically on
+PythonAnywhere, but with Nginx, you should add this line to your server block:
+        proxy_set_header        X-Forwarded-For  $proxy_add_x_forwarded_for;
+Apache/other proxies should also set the header to the real user IP.
+If you enable this option, you MUST set the X-Forwarded-For setting.
+"""
+USE_X_FORWARDED_FOR = False
+
+"""
 CLUB_NAME should store the name of your CTF club. It will be displayed in the navbar,
 footer, and page title.
 """
