@@ -4,7 +4,7 @@ import sys
 msg = """
 [WARNING] THIS IS A MAJOR UPDATE. THE ENTIRE CTFOJ FILE STRUCTURE IS CHANGING.
 Before migrating, please confirm the following:
- - You are on v3.2.0 (older version please update to one of these first, new version no migrate necessary)
+ - You are on v3.2.x (older version please update to one of these first, new version no migrate necessary)
  - You have write permissions in the current directory
 Please note that migration is a one-way operation. Once it is completed, you will not be able to revert to the previous version without a FULL backup.
 
