@@ -76,7 +76,7 @@ CREATE TABLE 'contest_users' ('contest_id' varchar(32) NOT NULL, 'user_id' integ
 CREATE TABLE 'contest_solved' ('contest_id' varchar(32) NOT NULL, 'user_id' integer NOT NULL, 'problem_id' varchar(64) NOT NULL);
 CREATE TABLE 'contest_problems' ('contest_id' varchar(32) NOT NULL, 'problem_id' varchar(64) NOT NULL, 'name' varchar(256) NOT NULL, 'point_value' integer NOT NULL DEFAULT(0), 'category' varchar(64), 'flag' varchar(256) NOT NULL, 'draft' boolean NOT NULL DEFAULT(0), 'score_min' integer NOT NULL DEFAULT(0), 'score_max' integer NOT NULL DEFAULT(0), 'score_users' integer NOT NULL DEFAULT(-1), 'flag_hint' varchar(256) NOT NULL DEFAULT(''));
 CREATE TABLE 'problem_solved' ('user_id' integer NOT NULL, 'problem_id' varchar(64) NOT NULL);
-INSERT INTO 'users' VALUES(1, 'admin', 'pbkdf2:sha256:150000\$XoLKRd3I\$2dbdacb6a37de2168298e419c6c54e768d242aee475aadf1fa9e6c30aa02997f', 'e', datetime('now'), 1, 0, 1, 0, NULL);
+INSERT INTO 'users' VALUES(1, 'admin', 'pbkdf2:sha256:150000\$XoLKRd3I\$2dbdacb6a37de2168298e419c6c54e768d242aee475aadf1fa9e6c30aa02997f', 'e', datetime('now'), 1, 0, 1, 0, NULL, 0, 0, 0);
 EOF
 mkdir -p "$DATA_DIR/logs" "$DATA_DIR/dl" "$DATA_DIR/backups" "$DATA_DIR/metadata/contests"
 mkdir -p "$DATA_DIR/metadata/problems" "$DATA_DIR/metadata/announcements"
