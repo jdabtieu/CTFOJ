@@ -24,7 +24,7 @@ echo 'Checking out working directory into /tmp/CTFOJ...Done!'
 
 # Generate secret key (otherwise application.py will throw an error)
 cd /tmp/CTFOJ
-rm -rf logs dl metadata secret_key.txt database.db settings.py database.db.bak
+rm -rf logs dl metadata backups secret_key.txt database.db settings.py database.db.bak
 python daily_tasks.py
 
 # Run tests

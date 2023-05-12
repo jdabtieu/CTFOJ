@@ -49,7 +49,9 @@ def database():
         ("CREATE TABLE 'problems' ('id' varchar(64) NOT NULL, "
          "'name' varchar(256) NOT NULL, 'point_value' integer NOT NULL DEFAULT (0), "
          "'category' varchar(64), 'flag' varchar(256) NOT NULL, "
-         "'draft' boolean NOT NULL DEFAULT(0))"))
+         "'draft' boolean NOT NULL DEFAULT(0), "
+         "'flag_hint' varchar(256) NOT NULL DEFAULT(''), "
+         "'instanced' boolean NOT NULL DEFAULT(0))"))
     db.execute(
         ("CREATE TABLE 'contests' ('id' varchar(32) NOT NULL, "
          "'name' varchar(256) NOT NULL, 'start' datetime NOT NULL, "
@@ -72,7 +74,8 @@ def database():
          "'score_min' integer NOT NULL DEFAULT(0), "
          "'score_max' integer NOT NULL DEFAULT(0), "
          "'score_users' integer NOT NULL DEFAULT(-1), "
-         "'flag_hint' varchar(256) NOT NULL DEFAULT(''))"))
+         "'flag_hint' varchar(256) NOT NULL DEFAULT(''), "
+         "'instanced' boolean NOT NULL DEFAULT(0))"))
     db.execute(
         ("CREATE TABLE 'problem_solved' ('user_id' integer NOT NULL, "
          "'problem_id' varchar(64) NOT NULL)"))

@@ -1339,6 +1339,9 @@ def create_problem():
     category = request.form.get("category")
     flag = request.form.get("flag")
     draft = 1 if request.form.get("draft") else 0
+    flag_hint = request.form.get("flag-hint")
+    if not flag_hint:
+        flag_hint = ""
 
     if (not problem_id or not name or not description or not point_value
             or not category or not flag):
@@ -1374,10 +1377,11 @@ def create_problem():
         description += f'\n\n[{filename}](/dl/{filename})'
 
     # Modify problems table
-    db.execute(("INSERT INTO problems (id, name, point_value, category, flag, draft) "
-                "VALUES (:id, :name, :point_value, :category, :flag, :draft)"),
+    db.execute(("INSERT INTO problems (id, name, point_value, category, flag, draft, "
+                "flag_hint) VALUES (:id, :name, :point_value, :category, :flag, :draft, "
+                ":fhint)"),
                id=problem_id, name=name, point_value=point_value, category=category,
-               flag=flag, draft=draft)
+               flag=flag, draft=draft, fhint=flag_hint)
 
     os.makedirs('metadata/problems/' + problem_id)
     write_file('metadata/problems/' + problem_id + '/description.md', description)
@@ -1515,6 +1519,9 @@ def editproblem(problem_id):
     new_category = request.form.get("category")
     new_points = int(request.form.get("point_value"))
     new_flag = request.form.get("flag")
+    new_flag_hint = request.form.get("flag-hint")
+    if not new_flag_hint:
+        new_flag_hint = ""
 
     if not new_name or not new_description or not new_category or not new_points:
         flash('You have not entered all required fields', 'danger')
@@ -1548,15 +1555,16 @@ def editproblem(problem_id):
             )
     else:
         new_flag = data[0]["flag"]
+        new_flag_hint = data[0]["flag_hint"]
 
     new_description = new_description.replace('\r', '')
     if not new_hint:
         new_hint = ""
 
     db.execute(("UPDATE problems SET name=:name, category=:category, point_value=:pv, "
-                "flag=:flag WHERE id=:problem_id"),
+                "flag=:flag, flag_hint=:fhint WHERE id=:problem_id"),
                name=new_name, category=new_category, pv=new_points,
-               problem_id=problem_id, flag=new_flag)
+               problem_id=problem_id, flag=new_flag, fhint=new_flag_hint)
     db.execute(
         ("UPDATE users SET total_points=total_points+:dpv WHERE id IN "
          "(SELECT user_id FROM problem_solved WHERE problem_id=:pid)"),

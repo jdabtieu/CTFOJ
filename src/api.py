@@ -45,6 +45,7 @@ def problem():
         "description": description,
         "hints": hints,
         "editorial": editorial,
+        "flag_hint": data[0]["flag_hint"],
     }
     return json_success(returns)
 
