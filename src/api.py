@@ -1,4 +1,4 @@
-from flask import Blueprint, redirect
+from flask import Blueprint, redirect, current_app
 import uuid
 import logging
 
@@ -48,6 +48,65 @@ def problem():
         "flag_hint": data[0]["flag_hint"],
     }
     return json_success(returns)
+
+
+@api.route("/instancer/query")
+@api_login_required
+def query_instancer():
+    if "id" not in request.args:
+        return json_fail("Must provide instancer ID", 400)
+    # TODO make sure user has perms
+    data = {
+        "name": request.args["id"],
+        "player": session["user_id"],
+    }
+
+    headers = {
+        "Authorization": "Bearer " + current_app.config["INSTANCER_TOKEN"],
+    }
+
+    response = requests.post(current_app.config["INSTANCER_HOST"] + "/api/v1/query", headers=headers, json=data)
+    return json_success(response.json())
+
+
+@api.route("/instancer/create")
+@api_login_required
+def create_instancer():
+    if "id" not in request.args:
+        return json_fail("Must provide instancer ID", 400)
+    # TODO make sure user has perms
+    data = {
+        "name": request.args["id"],
+        "player": session["user_id"],
+        "duration": 900, # TODO configurable duration
+        "flag": "billy", # TODO get flag
+    }
+
+    headers = {
+        "Authorization": "Bearer " + current_app.config["INSTANCER_TOKEN"],
+    }
+
+    response = requests.post(current_app.config["INSTANCER_HOST"] + "/api/v1/create", headers=headers, json=data)
+    return json_success(response.json())
+
+
+@api.route("/instancer/destroy")
+@api_login_required
+def destroy_instancer():
+    if "id" not in request.args:
+        return json_fail("Must provide instancer ID", 400)
+    # TODO make sure user has perms
+    data = {
+        "name": request.args["id"],
+        "player": session["user_id"],
+    }
+
+    headers = {
+        "Authorization": "Bearer " + current_app.config["INSTANCER_TOKEN"],
+    }
+
+    response = requests.post(current_app.config["INSTANCER_HOST"] + "/api/v1/destroy", headers=headers, json=data)
+    return json_success(response.json())
 
 
 @api.route("/contest/problem")
