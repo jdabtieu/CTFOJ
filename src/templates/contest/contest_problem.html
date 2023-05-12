@@ -27,6 +27,106 @@
 {% endif %}
 <div class="flex">
     <div style="flex: 3; padding: 4px; word-break: break-word; min-width: 0px;">
+        {% if data["instanced"] %}
+        <div class="card mb-3">
+            <div class="card-body">
+                <h3 class="card-title">Live Instance</h3>
+                <div class="card-text" id="instanceBody">Checking details...</div>
+            </div>
+            <script>
+                (function instancer() {
+                    const output = document.getElementById("instanceBody");
+                    const id = "{{ request.path.split('/')[2] }}/{{ request.path.split('/')[4] }}";
+
+                    function populate(b) {
+                        if (b["status"] !== "success") {
+                            console.log(`API fail: status: ${b["status"]}, message: ${b["message"]}`);
+                            return;
+                        }
+                        let data = b["data"];
+                        if (data["status"] !== "success") {
+                            output.innerHTML = "<b>Error</b><div>There was an error getting your instance: " + data["message"] + "</div>";
+                            return;
+                        }
+                        data = data["data"];
+                        if (!data["active"]) {
+                            output.innerHTML = "<b>Not Running</b><div>You don't have an active instance.</div>";
+                            let btn = document.createElement("button");
+                            btn.classList.add("btn");
+                            btn.classList.add("btn-primary");
+                            btn.classList.add("m-1");
+                            btn.innerText = "Launch Instance";
+                            btn.addEventListener("click", create);
+                            output.append(btn);
+                            return;
+                        }
+                        output.innerHTML = `<b>Running</b><div class="text-center"><code>${ data["conn"] }</code></div>`;
+                        let timer = document.createElement("p");
+                        let exp = new Date(data["expiry"] * 1000);
+                        output.append(timer);
+                        let interval = setInterval(() => {
+                            let s = Math.floor((exp - new Date()) / 1000);
+                            if (s < 0) {
+                                clearInterval(interval);
+                                output.innerHTML = "<b>Not Running</b><div>You don't have an active instance.</div>";
+                                let btn = document.createElement("button");
+                                btn.classList.add("btn");
+                                btn.classList.add("btn-primary");
+                                btn.classList.add("m-1");
+                                btn.innerText = "Launch Instance";
+                                btn.addEventListener("click", create);
+                                output.append(btn);
+                                return;
+                            }
+                            timer.innerText = `${s} seconds remaining`;
+                        }, 200);
+                        let btn = document.createElement("button");
+                        btn.classList.add("btn");
+                        btn.classList.add("btn-secondary");
+                        btn.classList.add("m-1");
+                        btn.innerText = "Refresh Status";
+                        btn.addEventListener("click", query);
+                        output.append(btn);
+                        btn = document.createElement("button");
+                        btn.classList.add("btn");
+                        btn.classList.add("btn-danger");
+                        btn.classList.add("m-1");
+                        btn.innerText = "Destroy Instance";
+                        btn.addEventListener("click", destroy);
+                        output.append(btn);
+                        return;
+                    }
+
+                    function query() {
+                        output.innerText = "Checking details...";
+                        fetch("/api/instancer/query?id=" + id).then(b => b.text()).then(b => JSON.parse(b)).then(b => populate(b));
+                    }
+
+                    function create() {
+                        output.innerText = "Launching instance...";
+                        fetch("/api/instancer/create?id=" + id).then(b => b.text()).then(b => JSON.parse(b)).then(b => populate(b));
+                    }
+
+                    function destroy() {
+                        fetch("/api/instancer/destroy?id=" + id).then(b => b.text()).then(b => JSON.parse(b)).then(b => {
+                            if (b["status"] !== "success") {
+                                console.log(`API fail: status: ${b["status"]}, message: ${b["message"]}`);
+                                return;
+                            }
+                            output.innerHTML = "<b>Not Running</b><div>You don't have an active instance.</div>";
+                            let btn = document.createElement("button");
+                            btn.classList.add("btn");
+                            btn.classList.add("btn-primary");
+                            btn.innerText = "Launch Instance";
+                            btn.addEventListener("click", create);
+                            output.append(btn);
+                        });
+                    }
+                    query();
+                })();
+            </script>
+        </div>
+        {% endif %}
         <div id="problem-description" class="hidden"></div>
         <div id="hint-container">
             <btn class="btn btn-secondary" id="togglehint">
