@@ -20,9 +20,9 @@
 /templates/unauth_index.html
 /session
 /backups
-
-# Logs
-/logs/
+/dl
+/logs
+/metadata
 
 # Coverage reports
 .coverage

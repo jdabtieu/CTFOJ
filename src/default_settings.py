@@ -84,3 +84,11 @@ DOCS_URL controls the website users are redirected to when they access the route
 By default, this is set to the GitHub wiki documentation for the CTFOJ platform itself.
 """
 DOCS_URL = "https://github.com/jdabtieu/CTFOJ/wiki"
+
+"""
+If you would like to use CTFOJ-managed instances (see CTFOJ-Instancer on GitHub for setup,
+add your Bearer token to the INSTANCER_TOKEN variable.
+Then, update INSTANCER_HOST with the http(s) hostname of the instancer server
+"""
+INSTANCER_TOKEN = ""
+INSTANCER_HOST = "http://ctfoj.instancer:8080"
