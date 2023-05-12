@@ -25,10 +25,13 @@ def test_problem(client, database):
         'point_value': 1,
         'category': 'general',
         'flag': 'ctf{hello}',
+        'instanced': True,
         'file': ('test_upload.txt', 'test_upload.txt'),
         'draft': True
     })
     assert result.status_code == 302
+
+    # TODO Assert the instancer interface exists
 
     result = client.post('/problem/helloworldtesting',
                          data={'flag': 'ctf{hello}'}, follow_redirects=True)
