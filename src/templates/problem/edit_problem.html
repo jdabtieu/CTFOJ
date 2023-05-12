@@ -65,13 +65,9 @@
         </div>
         <input class="form-control" name="flag-hint" placeholder="Flag Hint" readonly>
     </div>
-    <div class="mb-3 toggle-input">
-        Requires Instancing? (you must create an entry in CTFOJ-Instancer matching this problem)
-        <div>
-            <div class="form-check form-switch">
-                <input class="form-check-input" type="checkbox" name="instanced" {{ 'checked' if data['instanced'] }}>
-            </div>
-        </div>
+    <div class="form-control mb-3" style="border: 0;">
+        Requires Instancing? You must create an entry in CTFOJ-Instancer with this this key: "<span id="instancedkey"></span>"
+        <input type="checkbox" name="instanced" {{ 'checked' if data['instanced'] }}>
     </div>
     <div class="form-floating">
         <input class="form-control mb-3"
@@ -112,6 +108,7 @@
     const hints = document.getElementById("hints");
     document.getElementById("description-out").attachShadow({mode: "open"});
     document.getElementById("hints-out").attachShadow({mode: "open"});
+    document.getElementById("instancedkey").innerText = problemId;
 
     function updateDescription() {
         const outputDiv = document.getElementById("description-out");
