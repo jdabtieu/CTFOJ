@@ -100,6 +100,7 @@ def test_contest(client, database):
         'point_value': 1,
         'category': 'general',
         'flag': 'ctf{hello}',
+        'instanced': False,
         'draft': True,
         'file': ('test_upload.txt', 'test_upload.txt')
     })
@@ -112,7 +113,8 @@ def test_contest(client, database):
         'description': 'a short fun problem 2',
         'hints': 'try looking at the title 2',
         'point_value': 2,
-        'category': 'web'
+        'category': 'web',
+        'instanced': True,
     })
     assert result.status_code == 302
 
@@ -124,6 +126,8 @@ def test_contest(client, database):
                          follow_redirects=True)
     assert result.status_code == 200
     assert b'published' in result.data
+
+    # TODO assert that the instanced box shows up
 
     client.post('/contest/testingcontest/problem/helloworldtesting', data={
         'flag': 'ctf{hello}'

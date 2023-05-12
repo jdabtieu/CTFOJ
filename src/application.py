@@ -939,6 +939,7 @@ def edit_contest_problem(contest_id, problem_id):
     new_flag_hint = request.form.get("flag-hint")
     if not new_flag_hint:
         new_flag_hint = ""
+    new_instanced = bool(request.form.get("instanced"))
 
     if (not new_name or not new_description or not new_category
             or (not new_points and data[0]["score_users"] == -1)):
@@ -971,9 +972,9 @@ def edit_contest_problem(contest_id, problem_id):
                    pv=int(new_points), cid=contest_id, pid=problem_id)
 
     db.execute(("UPDATE contest_problems SET name=:name, category=:category, flag=:flag, "
-                "flag_hint=:fhint WHERE contest_id=:cid AND problem_id=:pid"),
+                "flag_hint=:fhint, instanced=:inst WHERE contest_id=:cid AND problem_id=:pid"),
                name=new_name, category=new_category, flag=new_flag, cid=contest_id,
-               pid=problem_id, fhint=new_flag_hint)
+               pid=problem_id, fhint=new_flag_hint, inst=new_instanced)
 
     write_file(
         f'metadata/contests/{contest_id}/{problem_id}/description.md', new_description)
@@ -1117,6 +1118,7 @@ def contest_add_problem(contest_id):
     flag_hint = request.form.get("flag-hint")
     if not flag_hint:
         flag_hint = ""
+    instanced = bool(request.form.get("instanced"))
 
     if not problem_id or not name or not description or not category or not flag:
         flash('You have not entered all required fields', 'danger')
@@ -1154,10 +1156,10 @@ def contest_add_problem(contest_id):
 
         # Modify problems table
         db.execute(("INSERT INTO contest_problems VALUES(:cid, :pid, :name, :pv, "
-                    ":category, :flag, :draft, :min, :max, :users, :fhint)"),
+                    ":category, :flag, :draft, :min, :max, :users, :fhint, :inst)"),
                    cid=contest_id, pid=problem_id, name=name, pv=max_points,
                    category=category, flag=flag, draft=draft, min=min_points,
-                   max=max_points, users=users_decay, fhint=flag_hint)
+                   max=max_points, users=users_decay, fhint=flag_hint, inst=instanced)
     else:  # assume static
         point_value = request.form.get("point_value")
         if not point_value:
@@ -1166,10 +1168,12 @@ def contest_add_problem(contest_id):
 
         # Modify problems table
         db.execute(("INSERT INTO contest_problems(contest_id, problem_id, name, "
-                    "point_value, category, flag, draft, flag_hint) "
-                    "VALUES(:cid, :pid, :name, :pv, :category, :flag, :draft, :fhint)"),
+                    "point_value, category, flag, draft, flag_hint, instanced) "
+                    "VALUES(:cid, :pid, :name, :pv, :category, :flag, :draft, "
+                    ":fhint, :inst)"),
                    cid=contest_id, pid=problem_id, name=name, pv=point_value,
-                   category=category, flag=flag, draft=draft, fhint=flag_hint)
+                   category=category, flag=flag, draft=draft, fhint=flag_hint,
+                   inst=instanced)
 
     # Check if file exists & upload if it does
     file = request.files["file"]
@@ -1342,6 +1346,7 @@ def create_problem():
     flag_hint = request.form.get("flag-hint")
     if not flag_hint:
         flag_hint = ""
+    instanced = bool(request.form.get("instanced"))
 
     if (not problem_id or not name or not description or not point_value
             or not category or not flag):
@@ -1378,10 +1383,10 @@ def create_problem():
 
     # Modify problems table
     db.execute(("INSERT INTO problems (id, name, point_value, category, flag, draft, "
-                "flag_hint) VALUES (:id, :name, :point_value, :category, :flag, :draft, "
-                ":fhint)"),
+                "flag_hint, instanced) VALUES (:id, :name, :point_value, :category, "
+                ":flag, :draft, :fhint, :inst)"),
                id=problem_id, name=name, point_value=point_value, category=category,
-               flag=flag, draft=draft, fhint=flag_hint)
+               flag=flag, draft=draft, fhint=flag_hint, inst=instanced)
 
     os.makedirs('metadata/problems/' + problem_id)
     write_file('metadata/problems/' + problem_id + '/description.md', description)
@@ -1522,6 +1527,7 @@ def editproblem(problem_id):
     new_flag_hint = request.form.get("flag-hint")
     if not new_flag_hint:
         new_flag_hint = ""
+    new_instanced = bool(request.form.get("instanced"))
 
     if not new_name or not new_description or not new_category or not new_points:
         flash('You have not entered all required fields', 'danger')
@@ -1562,9 +1568,10 @@ def editproblem(problem_id):
         new_hint = ""
 
     db.execute(("UPDATE problems SET name=:name, category=:category, point_value=:pv, "
-                "flag=:flag, flag_hint=:fhint WHERE id=:problem_id"),
+                "flag=:flag, flag_hint=:fhint, instanced=:inst WHERE id=:problem_id"),
                name=new_name, category=new_category, pv=new_points,
-               problem_id=problem_id, flag=new_flag, fhint=new_flag_hint)
+               problem_id=problem_id, flag=new_flag, fhint=new_flag_hint,
+               inst=new_instanced)
     db.execute(
         ("UPDATE users SET total_points=total_points+:dpv WHERE id IN "
          "(SELECT user_id FROM problem_solved WHERE problem_id=:pid)"),
