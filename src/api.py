@@ -55,8 +55,31 @@ def problem():
 def query_instancer():
     if "id" not in request.args:
         return json_fail("Must provide instancer ID", 400)
-    # TODO make sure user has perms
-    data = {
+    
+    # Check perms
+    key = request.args["id"].split("/", 1)
+    contest_id = key[0] if len(key) == 2 else None
+    problem_id = key[-1]
+
+    from application import db
+    if contest_id:
+        contest = db.execute("SELECT * FROM contests WHERE id=?", contest_id)
+        if len(contest) != 1:
+            return json_fail("Contest not found", 404)
+        start = datetime.strptime(contest[0]["start"], "%Y-%m-%d %H:%M:%S")
+        if datetime.utcnow() < start and not api_admin():
+            return json_fail("The contest has not started", 403)
+        data = db.execute(("SELECT * FROM contest_problems WHERE "
+                           "contest_id=:cid AND problem_id=:pid"),
+                          cid=contest_id, pid=problem_id)
+        if len(data) == 0 or (data[0]["draft"] and not api_admin()):
+            return json_fail("Problem not found", 404)
+    else:
+        data = db.execute("SELECT * FROM problems WHERE id=:pid", pid=problem_id)
+        if len(data) == 0 or (data[0]["draft"] and not api_admin()):
+            return json_fail("Problem not found", 404)
+
+    body = {
         "name": request.args["id"],
         "player": session["user_id"],
     }
@@ -65,7 +88,7 @@ def query_instancer():
         "Authorization": "Bearer " + current_app.config["INSTANCER_TOKEN"],
     }
 
-    response = requests.post(current_app.config["INSTANCER_HOST"] + "/api/v1/query", headers=headers, json=data)
+    response = requests.post(current_app.config["INSTANCER_HOST"] + "/api/v1/query", headers=headers, json=body)
     return json_success(response.json())
 
 
@@ -74,18 +97,41 @@ def query_instancer():
 def create_instancer():
     if "id" not in request.args:
         return json_fail("Must provide instancer ID", 400)
-    # TODO make sure user has perms
-    data = {
+    
+    # Check perms
+    key = request.args["id"].split("/", 1)
+    contest_id = key[0] if len(key) == 2 else None
+    problem_id = key[-1]
+
+    from application import db
+    if contest_id:
+        contest = db.execute("SELECT * FROM contests WHERE id=?", contest_id)
+        if len(contest) != 1:
+            return json_fail("Contest not found", 404)
+        start = datetime.strptime(contest[0]["start"], "%Y-%m-%d %H:%M:%S")
+        if datetime.utcnow() < start and not api_admin():
+            return json_fail("The contest has not started", 403)
+        data = db.execute(("SELECT * FROM contest_problems WHERE "
+                           "contest_id=:cid AND problem_id=:pid"),
+                          cid=contest_id, pid=problem_id)
+        if len(data) == 0 or (data[0]["draft"] and not api_admin()):
+            return json_fail("Problem not found", 404)
+    else:
+        data = db.execute("SELECT * FROM problems WHERE id=:pid", pid=problem_id)
+        if len(data) == 0 or (data[0]["draft"] and not api_admin()):
+            return json_fail("Problem not found", 404)
+
+    body = {
         "name": request.args["id"],
         "player": session["user_id"],
-        "flag": "billy", # TODO get flag
+        "flag": data[0]["flag"],
     }
 
     headers = {
         "Authorization": "Bearer " + current_app.config["INSTANCER_TOKEN"],
     }
 
-    response = requests.post(current_app.config["INSTANCER_HOST"] + "/api/v1/create", headers=headers, json=data)
+    response = requests.post(current_app.config["INSTANCER_HOST"] + "/api/v1/create", headers=headers, json=body)
     return json_success(response.json())
 
 
@@ -94,8 +140,31 @@ def create_instancer():
 def destroy_instancer():
     if "id" not in request.args:
         return json_fail("Must provide instancer ID", 400)
-    # TODO make sure user has perms
-    data = {
+    
+    # Check perms
+    key = request.args["id"].split("/", 1)
+    contest_id = key[0] if len(key) == 2 else None
+    problem_id = key[-1]
+
+    from application import db
+    if contest_id:
+        contest = db.execute("SELECT * FROM contests WHERE id=?", contest_id)
+        if len(contest) != 1:
+            return json_fail("Contest not found", 404)
+        start = datetime.strptime(contest[0]["start"], "%Y-%m-%d %H:%M:%S")
+        if datetime.utcnow() < start and not api_admin():
+            return json_fail("The contest has not started", 403)
+        data = db.execute(("SELECT * FROM contest_problems WHERE "
+                           "contest_id=:cid AND problem_id=:pid"),
+                          cid=contest_id, pid=problem_id)
+        if len(data) == 0 or (data[0]["draft"] and not api_admin()):
+            return json_fail("Problem not found", 404)
+    else:
+        data = db.execute("SELECT * FROM problems WHERE id=:pid", pid=problem_id)
+        if len(data) == 0 or (data[0]["draft"] and not api_admin()):
+            return json_fail("Problem not found", 404)
+
+    body = {
         "name": request.args["id"],
         "player": session["user_id"],
     }
@@ -104,7 +173,7 @@ def destroy_instancer():
         "Authorization": "Bearer " + current_app.config["INSTANCER_TOKEN"],
     }
 
-    response = requests.post(current_app.config["INSTANCER_HOST"] + "/api/v1/destroy", headers=headers, json=data)
+    response = requests.post(current_app.config["INSTANCER_HOST"] + "/api/v1/destroy", headers=headers, json=body)
     return json_success(response.json())
 
 
