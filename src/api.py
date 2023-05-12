@@ -78,7 +78,6 @@ def create_instancer():
     data = {
         "name": request.args["id"],
         "player": session["user_id"],
-        "duration": 900, # TODO configurable duration
         "flag": "billy", # TODO get flag
     }
 

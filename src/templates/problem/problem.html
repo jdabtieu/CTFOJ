@@ -52,6 +52,7 @@
                             let btn = document.createElement("button");
                             btn.classList.add("btn");
                             btn.classList.add("btn-primary");
+                            btn.classList.add("m-1");
                             btn.innerText = "Launch Instance";
                             btn.addEventListener("click", create);
                             output.append(btn);
@@ -61,18 +62,33 @@
                         let timer = document.createElement("p");
                         let exp = new Date(data["expiry"] * 1000);
                         output.append(timer);
-                        setInterval(() => {
-                            timer.innerText = `${Math.floor((exp - new Date()) / 1000)} seconds remaining`;
+                        let interval = setInterval(() => {
+                            let s = Math.floor((exp - new Date()) / 1000);
+                            if (s < 0) {
+                                clearInterval(interval);
+                                output.innerHTML = "<b>Not Running</b><div>You don't have an active instance.</div>";
+                                let btn = document.createElement("button");
+                                btn.classList.add("btn");
+                                btn.classList.add("btn-primary");
+                                btn.classList.add("m-1");
+                                btn.innerText = "Launch Instance";
+                                btn.addEventListener("click", create);
+                                output.append(btn);
+                                return;
+                            }
+                            timer.innerText = `${s} seconds remaining`;
                         }, 200);
                         let btn = document.createElement("button");
                         btn.classList.add("btn");
                         btn.classList.add("btn-secondary");
+                        btn.classList.add("m-1");
                         btn.innerText = "Refresh Status";
                         btn.addEventListener("click", query);
                         output.append(btn);
                         btn = document.createElement("button");
                         btn.classList.add("btn");
                         btn.classList.add("btn-danger");
+                        btn.classList.add("m-1");
                         btn.innerText = "Destroy Instance";
                         btn.addEventListener("click", destroy);
                         output.append(btn);
