@@ -35,10 +35,12 @@
                 (function instancer() {
                     const output = document.getElementById("instanceBody");
                     const id = "{{ request.path.split('/')[2] }}";
+                    let interval = null;
 
                     function populate(b) {
                         if (b["status"] !== "success") {
                             console.log(`API fail: status: ${b["status"]}, message: ${b["message"]}`);
+                            output.innerHTML = "<b>Error</b><div>There was an error getting your instance: " + b["message"] + "</div>";
                             return;
                         }
                         let data = b["data"];
@@ -62,10 +64,12 @@
                         let timer = document.createElement("p");
                         let exp = new Date(data["expiry"] * 1000);
                         output.append(timer);
-                        let interval = setInterval(() => {
+                        if (interval) clearInterval(interval);
+                        interval = setInterval(() => {
                             let s = Math.floor((exp - new Date()) / 1000);
                             if (s < 0) {
                                 clearInterval(interval);
+                                interval = null;
                                 output.innerHTML = "<b>Not Running</b><div>You don't have an active instance.</div>";
                                 let btn = document.createElement("button");
                                 btn.classList.add("btn");
@@ -109,6 +113,7 @@
                         fetch("/api/instancer/destroy?id=" + id).then(b => b.text()).then(b => JSON.parse(b)).then(b => {
                             if (b["status"] !== "success") {
                                 console.log(`API fail: status: ${b["status"]}, message: ${b["message"]}`);
+                                output.innerHTML = "<b>Error</b><div>There was an error getting your instance: " + b["message"] + "</div>";
                                 return;
                             }
                             output.innerHTML = "<b>Not Running</b><div>You don't have an active instance.</div>";
@@ -118,6 +123,8 @@
                             btn.innerText = "Launch Instance";
                             btn.addEventListener("click", create);
                             output.append(btn);
+                            if (interval) clearInterval(interval);
+                            interval = null;
                         });
                     }
                     query();

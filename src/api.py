@@ -88,8 +88,11 @@ def query_instancer():
         "Authorization": "Bearer " + current_app.config["INSTANCER_TOKEN"],
     }
 
-    response = requests.post(current_app.config["INSTANCER_HOST"] + "/api/v1/query", headers=headers, json=body)
-    return json_success(response.json())
+    try:
+        response = requests.post(current_app.config["INSTANCER_HOST"] + "/api/v1/query", headers=headers, json=body)
+        return json_success(response.json())
+    except:
+        return json_fail("Failed to get a valid response from the instance server", 500)
 
 
 @api.route("/instancer/create")
@@ -131,8 +134,11 @@ def create_instancer():
         "Authorization": "Bearer " + current_app.config["INSTANCER_TOKEN"],
     }
 
-    response = requests.post(current_app.config["INSTANCER_HOST"] + "/api/v1/create", headers=headers, json=body)
-    return json_success(response.json())
+    try:
+        response = requests.post(current_app.config["INSTANCER_HOST"] + "/api/v1/create", headers=headers, json=body)
+        return json_success(response.json())
+    except:
+        return json_fail("Failed to get a valid response from the instance server", 500)
 
 
 @api.route("/instancer/destroy")
@@ -173,8 +179,11 @@ def destroy_instancer():
         "Authorization": "Bearer " + current_app.config["INSTANCER_TOKEN"],
     }
 
-    response = requests.post(current_app.config["INSTANCER_HOST"] + "/api/v1/destroy", headers=headers, json=body)
-    return json_success(response.json())
+    try:
+        response = requests.post(current_app.config["INSTANCER_HOST"] + "/api/v1/destroy", headers=headers, json=body)
+        return json_success(response.json())
+    except:
+        return json_fail("Failed to get a valid response from the instance server", 500)
 
 
 @api.route("/contest/problem")
