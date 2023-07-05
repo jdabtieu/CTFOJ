@@ -129,3 +129,5 @@ def test_dl(client, database):
     client.post('/login', data={'username': 'admin', 'password': 'CTFOJadmin'})
     result = client.post('/problem/helloworldtesting/delete', follow_redirects=True)
     assert result.status_code == 200
+    result = client.post('/contest/testingcontest/delete', follow_redirects=True)
+    assert result.status_code == 200
