@@ -29,4 +29,13 @@ for e in db.execute("SELECT id FROM contests"):
 
 db.execute("COMMIT")
 
+with open("settings.py", "a") as f:
+    f.write('''"""
+If you would like to use CTFOJ-managed instances (see CTFOJ-Instancer on GitHub for setup,
+add your Bearer token to the INSTANCER_TOKEN variable.
+Then, update INSTANCER_HOST with the http(s) hostname of the instancer server
+"""
+INSTANCER_TOKEN = "Your token here"
+INSTANCER_HOST = "http://localhost:5000"''')
+
 print('Migration completed.')

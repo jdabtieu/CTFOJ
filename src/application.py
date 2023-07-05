@@ -9,7 +9,7 @@ from io import BytesIO
 
 import jwt
 from cs50 import SQL
-from flask import (Flask, flash, redirect, render_template, request,
+from flask import (abort, Flask, flash, redirect, render_template, request,
                    send_from_directory, send_file, session)
 from flask_mail import Mail
 from flask_session import Session
@@ -173,10 +173,30 @@ def get_asset(filename):
     return resp
 
 
-@app.route("/dl/<path:filename>")
+@app.route("/dl/<problem_id>.zip")
 @login_required
-def dl(filename):
-    return send_from_directory("dl/", filename, as_attachment=True)
+def dl_file(problem_id):
+    problem = db.execute("SELECT * FROM problems WHERE id=?", problem_id)
+    if len(problem) == 0 or (problem[0]["draft"] and not session["admin"]):
+        return abort(404)
+    return send_from_directory("dl/", f"{problem_id}.zip", as_attachment=True)
+
+
+@app.route("/dl/<contest_id>/<problem_id>.zip")
+@login_required
+def dl_contest(contest_id, problem_id):
+    contest = db.execute("SELECT * FROM contests WHERE id=?", contest_id)
+    if len(contest) == 0:
+        return abort(404)
+    # Ensure contest started or user is admin
+    start = datetime.strptime(contest[0]["start"], "%Y-%m-%d %H:%M:%S")
+    if datetime.utcnow() < start and not session["admin"]:
+        return abort(404)
+    problem = db.execute(("SELECT * FROM contest_problems WHERE contest_id=? "
+                          "AND problem_id=?"), contest_id, problem_id)
+    if len(problem) == 0 or (problem[0]["draft"] and not session["admin"]):
+        return abort(404)
+    return send_from_directory("dl/", f"{contest_id}/{problem_id}.zip", as_attachment=True)
 
 
 @app.route("/login", methods=["GET", "POST"])

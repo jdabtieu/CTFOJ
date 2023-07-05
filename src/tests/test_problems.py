@@ -21,10 +21,11 @@ def test_problem(client, database):
         'id': 'helloworldtesting',
         'name': 'hello world',
         'description': 'a short fun problem',
-        'hint': 'try looking at the title',
+        'hints': 'try looking at the title',
         'point_value': 1,
         'category': 'general',
         'flag': 'ctf{hello}',
+        'flag-hint': 'ctf{...}',
         'instanced': True,
         'file': ('test_upload.txt', 'test_upload.txt'),
         'draft': True
@@ -81,7 +82,8 @@ def test_problem(client, database):
         'point_value': 2,
         'rejudge': True,
         'category': 'web',
-        'flag': 'ctf{hello}'
+        'flag': 'ctf{hello}',
+        'flag-hint': 'ctf{...}'
     }, follow_redirects=True)
     assert result.status_code == 200
 
@@ -110,6 +112,7 @@ def test_problem(client, database):
     assert json.loads(result.data)['data']['description'] == 'a short fun problem 2'
     assert json.loads(result.data)['data']['hints'] == 'try looking at the title 2'
     assert json.loads(result.data)['data']['editorial'] == 'sample editorial'
+    assert json.loads(result.data)['data']['flag_hint'] == 'ctf{...}'
 
     result = client.get('/problem/helloworldtesting/editorial')
     assert result.status_code == 200

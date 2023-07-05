@@ -8,8 +8,9 @@ import requests
 from datetime import datetime, timedelta
 from functools import wraps
 
-from flask import redirect, request, session, flash, Markup, make_response
+from flask import redirect, request, session, flash, make_response
 from flask_mail import Message
+from markupsafe import Markup
 from werkzeug.security import check_password_hash
 
 

@@ -100,13 +100,16 @@ def test_contest(client, database):
         'point_value': 1,
         'category': 'general',
         'flag': 'ctf{hello}',
+        'flag_hint': 'ctf{...}',
         'instanced': False,
         'draft': True,
         'file': ('test_upload.txt', 'test_upload.txt')
     })
     os.remove('test_upload.txt')
     assert result.status_code == 302
-    client.get('/contest/testingcontest//edit')
+
+    result = client.get('/contest/testingcontest/problem/helloworldtesting')
+    assert result.status_code == 200
 
     result = client.post('/contest/testingcontest/problem/helloworldtesting/edit', data={
         'name': 'hello world 2',
@@ -315,3 +318,4 @@ def test_contest(client, database):
     shutil.rmtree('dl')
     os.mkdir('dl')
     shutil.rmtree('metadata/problems/testingcontest-helloworldtesting')
+
