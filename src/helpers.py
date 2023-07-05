@@ -17,14 +17,18 @@ def json_fail(message: str, http_code: int):
     """
     Return the fail message as a JSON response with the specified http code
     """
-    return make_response((json.dumps({"status": "fail", "message": message}), http_code))
+    resp = make_response((json.dumps({"status": "fail", "message": message}), http_code))
+    resp.headers['Content-Type'] = 'application/json; charset=utf-8'
+    return resp
 
 
 def json_success(data: dict) -> str:
     """
     Return the requested information with status: success
     """
-    return json.dumps({"status": "success", "data": data})
+    resp = make_response(json.dumps({"status": "success", "data": data}))
+    resp.headers['Content-Type'] = 'application/json; charset=utf-8'
+    return resp
 
 
 def api_logged_in() -> bool:
