@@ -4,7 +4,7 @@
 {% block active %}Contests{% endblock %}
 
 {% block preload %}
-<link rel="preload" href="/api/contests?id={{ request.path.split('/')[2] }}" as="fetch" crossorigin="anonymous">
+<link rel="preload" href="/api/contests?id={{ data['id'] }}" as="fetch" crossorigin="anonymous">
 {% endblock %}
 
 {% block main %}
@@ -49,8 +49,14 @@
         <label for="end">End Date & Time</label>
     </div>
     <div class="form-control mb-3" style="border: 0;">
-        <input type="checkbox" id="scoreboard_visible" name="scoreboard_visible" {% if data['scoreboard_visible'] %}checked{% endif %}>
-        <label for="scoreboard_visible">Scoreboard Visible?</label>
+        <div>
+            <input type="checkbox" id="scoreboard_visible" name="scoreboard_visible" {% if data['scoreboard_visible'] %}checked{% endif %}>
+            <label for="scoreboard_visible">Scoreboard Visible?</label>
+        </div>
+        <div>Live scoreboard feed (for CTFtime): <span id="lsf_host"></span>/api/contest/scoreboard/{{ data['id'] }}?key=<span id="lsf_key">{{ data['scoreboard_key'] }}</span></div>
+        <script>
+          document.querySelector("#lsf_host").innerText = location.origin;
+        </script>
     </div>
     <input class="btn btn-primary" type="submit" id="submit" name="submit" value="Edit">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
@@ -58,7 +64,7 @@
 {% endblock %}
 {% block script %}
 <script>
-    const contestId = "{{ request.path.split('/')[2] }}";
+    const contestId = "{{ data['id'] }}";
     const description = document.getElementById("description");
     const outputDiv = document.getElementById("description-out");
     outputDiv.attachShadow({mode: "open"});

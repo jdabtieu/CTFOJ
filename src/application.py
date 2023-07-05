@@ -577,6 +577,7 @@ def create_contest():
         return render_template("contest/create.html"), 400
 
     contest_name = request.form.get("contest_name")
+    scoreboard_key = request.form.get("scoreboard_key")
 
     # Ensure contest doesn't already exist
     check = db.execute("SELECT * FROM contests WHERE id=:cid OR name=:contest_name",
@@ -602,10 +603,9 @@ def create_contest():
         return render_template("contest/create.html"), 400
 
     db.execute(
-        ("INSERT INTO contests (id, name, start, end, scoreboard_visible) "
-         "VALUES (:id, :name, datetime(:start), datetime(:end), :scoreboard_visible)"),
-        id=contest_id, name=contest_name, start=start, end=end,
-        scoreboard_visible=scoreboard_visible)
+        ("INSERT INTO contests (id, name, start, end, scoreboard_visible, scoreboard_key)"
+         " VALUES (?, ?, datetime(?), datetime(?), ?, ?)"),
+        contest_id, contest_name, start, end, scoreboard_visible, scoreboard_key)
 
     os.makedirs('metadata/contests/' + contest_id)
     write_file('metadata/contests/' + contest_id + '/description.md', description)
@@ -634,6 +634,7 @@ def contest(contest_id):
 
     # Check for scoreboard permission
     scoreboard = contest_info[0]["scoreboard_visible"] or session["admin"]
+    scoreboard_key = contest_info[0]["scoreboard_key"]
 
     user_info = db.execute(
         "SELECT * FROM contest_users WHERE contest_id=:cid AND user_id=:uid",
@@ -682,7 +683,7 @@ def contest(contest_id):
         data.append(keys)
 
     return render_template("contest/contest.html", title=title, scoreboard=scoreboard,
-                           data=data)
+                           scoreboard_key=scoreboard_key, data=data)
 
 
 @app.route('/contest/<contest_id>/edit', methods=["GET", "POST"])

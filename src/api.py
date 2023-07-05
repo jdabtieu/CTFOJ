@@ -220,6 +220,39 @@ def contest_problem():
     return json_success(returns)
 
 
+@api.route("/contest/scoreboard/<contest_id>")
+def contest_scoreboard(contest_id):
+    if not request.args.get("key"):
+        return json_fail("Unauthorized", 401)
+        
+    from application import db
+    # Ensure contest exists
+    contest_info = db.execute("SELECT * FROM contests WHERE id=:cid", cid=contest_id)
+    if len(contest_info) != 1:
+        return json_fail("The contest doesn't exist", 404)
+
+    # Ensure proper permissions
+    if request.args.get("key") != contest_info[0]["scoreboard_key"]:
+        return json_fail('Invalid token', 401)
+
+    data = db.execute(
+        ("SELECT user_id, points, lastAC, username FROM contest_users "
+         "JOIN users on user_id=users.id WHERE contest_users.contest_id=:cid AND "
+         "hidden=0 ORDER BY points DESC, lastAC ASC"),
+        cid=contest_id)
+    teams = db.execute("SELECT id, username FROM users")
+    teams = {x["id"]: x["username"] for x in teams}
+    ret = {"standings": []}
+    for i in range(len(data)):
+        ret["standings"].append({
+            "pos": i + 1,
+            "team": teams[data[i]["user_id"]],
+            "score": data[i]["points"],
+        })
+
+    return json.dumps(ret)
+
+
 @api.route("/contests")
 @api_login_required
 def contests():

@@ -55,7 +55,8 @@ def database():
     db.execute(
         ("CREATE TABLE 'contests' ('id' varchar(32) NOT NULL, "
          "'name' varchar(256) NOT NULL, 'start' datetime NOT NULL, "
-         "'end' datetime NOT NULL, 'scoreboard_visible' boolean NOT NULL DEFAULT (1))"))
+         "'end' datetime NOT NULL, 'scoreboard_visible' boolean NOT NULL DEFAULT (1), "
+         "'scoreboard_key' varchar(36))"))
     db.execute(
         ("CREATE TABLE 'announcements' ('id' integer PRIMARY KEY NOT NULL, "
          "'name' varchar(256) NOT NULL, 'date' datetime NOT NULL)"))

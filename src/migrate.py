@@ -1,4 +1,5 @@
 import cs50
+import uuid
 import sys
 
 msg = """
@@ -22,6 +23,9 @@ db.execute("BEGIN")
 db.execute("ALTER TABLE problems ADD COLUMN 'flag_hint' varchar(256) NOT NULL DEFAULT('')")
 db.execute("ALTER TABLE problems ADD COLUMN 'instanced' boolean NOT NULL DEFAULT(0)")
 db.execute("ALTER TABLE contest_problems ADD COLUMN 'instanced' boolean NOT NULL DEFAULT(0)")
+db.execute("ALTER TABLE contests ADD COLUMN 'scoreboard_key' varchar(36)")
+for e in db.execute("SELECT id FROM contests"):
+    db.execute("UPDATE contests SET scoreboard_key=? WHERE id=?", str(uuid.uuid4()), e["id"])
 
 db.execute("COMMIT")
 

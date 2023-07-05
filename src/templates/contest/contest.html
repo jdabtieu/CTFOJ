@@ -24,6 +24,8 @@
                        href="{{ request.path }}/drafts">View Draft Problems</a>
                     <a class="dropdown-item"
                        href="{{ request.path }}/notify">Notify Participants</a>
+                    <a class="dropdown-item"
+                       href="/api/contest/scoreboard/{{ request.path[9:] }}?key={{ scoreboard_key }}">Export CTFtime Scoreboard</a>
                 {% endif %}
             </div>
         </div>
