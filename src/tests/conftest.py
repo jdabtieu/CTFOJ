@@ -34,7 +34,7 @@ def database():
         ("CREATE TABLE 'users' ('id' integer PRIMARY KEY NOT NULL, "
          "'username' varchar(20) NOT NULL, 'password' varchar(64) NOT NULL, "
          "'email' varchar(128), 'join_date' datetime NOT NULL DEFAULT (0), "
-         "'admin' boolean NOT NULL DEFAULT (0), 'banned' boolean NOT NULL DEFAULT (0), "
+         "'banned' boolean NOT NULL DEFAULT (0), "
          "'verified' boolean NOT NULL DEFAULT (0), 'twofa' boolean NOT NULL DEFAULT (0), "
          "'api' varchar(36), 'total_points' integer NOT NULL DEFAULT(0), "
          "'contests_completed' integer NOT NULL DEFAULT(0), "
@@ -79,4 +79,7 @@ def database():
     db.execute(
         ("CREATE TABLE 'problem_solved' ('user_id' integer NOT NULL, "
          "'problem_id' varchar(64) NOT NULL)"))
+    db.execute(
+        ("CREATE TABLE user_perms ('id' integer PRIMARY KEY NOT NULL, "
+         "'user_id' integer NOT NULL, 'perm_id' integer NOT NULL)"))
     return db

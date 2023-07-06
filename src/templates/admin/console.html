@@ -14,18 +14,23 @@
 </div>
 <h1>Admin Console</h1>
 <div class="row">
+    {% if check_perm(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER"]) %}
     <div class="col-sm-6 admin-card">
         <div class="card bg-ld-green">
             <div class="card-body">
                 <h5 class="card-title">User Management</h5>
                 <p class="card-text">Manage users and their submissions.</p>
-                <a class="btn btn-primary" href="/admin/submissions" role="button">Submissions</a>
-                <br>
-                <br>
+                {% if check_perm(["ADMIN", "SUPERADMIN"]) %}
                 <a class="btn btn-primary" href="/admin/users" role="button">Users</a>
+                <br>
+                <br>
+                {% endif %}
+                <a class="btn btn-primary" href="/admin/submissions" role="button">Submissions</a>
             </div>
         </div>
     </div>
+    {% endif %}
+    {% if check_perm(["ADMIN", "SUPERADMIN"]) %}
     <div class="col-sm-6 admin-card">
         <div class="card bg-ld-red">
             <div class="card-body">
@@ -38,6 +43,8 @@
             </div>
         </div>
     </div>
+    {% endif %}
+    {% if check_perm(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER"]) %}
     <div class="col-sm-6 admin-card">
         <div class="card bg-ld-purple">
             <div class="card-body">
@@ -50,6 +57,8 @@
             </div>
         </div>
     </div>
+    {% endif %}
+    {% if check_perm(["ADMIN", "SUPERADMIN"]) %}
     <div class="col-sm-6 admin-card">
         <div class="card bg-ld-blue">
             <div class="card-body">
@@ -62,7 +71,9 @@
             </div>
         </div>
     </div>
+    {% endif %}
 </div>
+{% if check_perm(["ADMIN", "SUPERADMIN"]) %}
 <hr>
 <p>
     The only thing maintenance mode should be used for is to make significant changes to the
@@ -79,6 +90,7 @@
     {% endif %}
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 </form>
+{% endif %}
 {% endblock %}
 {% block script %}
 <script>

@@ -15,7 +15,7 @@
     {% endif %}
     {{ data["name"] }}
 </h1>
-{% if session["admin"] %}
+{% if check_perm(["ADMIN", "SUPERADMIN"]) %}
     <div id="confirm" class="hidden">
         <form method="post" style="margin-bottom: 1rem;" action="{{ request.path }}/publish">
             <input class="btn btn-danger"
@@ -157,7 +157,7 @@
             <b>Category:</b> {{ data["category"] }}<br>
             <b>Points:</b> {{ data["point_value"] }}<br>
             <a href="/contest/{{ request.path.split("/")[2] }}">Back to contest</a>
-            {% if session["admin"] %}
+            {% if check_perm(["ADMIN", "SUPERADMIN"]) %}
                 <br><a href="/admin/submissions?contest_id={{ request.path.split('/')[2] }}&problem_id={{ request.path.split('/')[4] }}">
                         View submissions
                     </a>

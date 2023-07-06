@@ -22,7 +22,7 @@ def problem(problem_id):
                       problem_id=problem_id)
 
     # Ensure problem exists
-    if len(data) != 1 or (data[0]["draft"] == 1 and session["admin"] != 1):
+    if len(data) != 1 or (data[0]["draft"] == 1 and not check_perm(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER"])):
         return render_template("problem/problem_noexist.html"), 404
 
     data[0]["editorial"] = read_file(f"metadata/problems/{problem_id}/editorial.md")
@@ -71,7 +71,7 @@ def problem(problem_id):
 
 
 @api.route('<problem_id>/publish', methods=["POST"])
-@admin_required
+@perm_required(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER"])
 def publish_problem(problem_id):
     data = db.execute("SELECT * FROM problems WHERE id=:problem_id",
                       problem_id=problem_id)
@@ -105,7 +105,7 @@ def problem_editorial(problem_id):
 
 
 @api.route('<problem_id>/edit', methods=["GET", "POST"])
-@admin_required
+@perm_required(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER"])
 def editproblem(problem_id):
     data = db.execute("SELECT * FROM problems WHERE id=:problem_id",
                       problem_id=problem_id)
@@ -188,7 +188,7 @@ def editproblem(problem_id):
 
 
 @api.route('<problem_id>/editeditorial', methods=["GET", "POST"])
-@admin_required
+@perm_required(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER"])
 def problem_editeditorial(problem_id):
     data = db.execute("SELECT * FROM problems WHERE id=:problem_id",
                       problem_id=problem_id)
@@ -218,7 +218,7 @@ def problem_editeditorial(problem_id):
 
 
 @api.route('<problem_id>/delete', methods=["POST"])
-@admin_required
+@perm_required(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER"])
 def delete_problem(problem_id):
     data = db.execute("SELECT * FROM problems WHERE id=:pid", pid=problem_id)
 
@@ -245,7 +245,7 @@ def delete_problem(problem_id):
 
 
 @api.route('<problem_id>/download')
-@admin_required
+@perm_required(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER"])
 def download_problem(problem_id):
     temp_zipfile = BytesIO()
     zf = zipfile.ZipFile(temp_zipfile, 'w', zipfile.ZIP_DEFLATED)

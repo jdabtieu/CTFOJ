@@ -119,12 +119,26 @@
     color: red;
 }
 
-.user-admin {
-    font-weight: bold;
-}
-
 .username > a.username:not(.btn) {
     color: inherit;
+}
+
+.perm-select .multiselect-dropdown {
+    min-width: 60px;
+}
+
+.perm-select .multiselect-dropdown span.optext {
+    padding: 1px 12px 1px 6px;
+    font-size: 0.75rem;
+}
+
+.perm-select .multiselect-dropdown-list input {
+    height: unset;
+    width: unset;   
+}
+
+.perm-select .multiselect-dropdown-list label {
+    font-size: 0.75rem;
 }
 
 /****************** OTHER PAGES ******************************/

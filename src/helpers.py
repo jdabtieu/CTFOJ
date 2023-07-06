@@ -5,12 +5,31 @@ import math
 import secrets
 import re
 import requests
+from typing import Optional
 from datetime import datetime, timedelta
 from functools import wraps
 
 from flask import redirect, request, session, flash, make_response
 from flask_mail import Message
 from werkzeug.security import check_password_hash
+
+
+USER_PERM = {
+    "SUPERADMIN": 0,
+    "ADMIN": 1,
+    "PROBLEM_MANAGER": 2,
+}
+
+
+def check_perm(required_perms: list, user_perms: Optional[set] = None) -> bool:
+    """
+    Check if the user has sufficient permissions to perform an action
+    Alternatively, check if user_perms matches any of the required_perms
+    """
+    required_perms = set([USER_PERM[x] for x in required_perms])
+    if user_perms is None:
+        user_perms = session["perms"]
+    return bool(user_perms.intersection(required_perms))
 
 
 def json_fail(message: str, http_code: int):
@@ -67,13 +86,12 @@ def api_login_required(f):
     return decorated_function
 
 
-def api_admin() -> bool:
+def api_get_perms() -> set:
     """
-    Check whether the user is an admin, using API key or session
+    Get the permissions of the session or API key holder
     """
-    # Check session
-    if session and "admin" in session and session["admin"] == 1:
-        return True
+    if session and "perms" in session:
+        return session["perms"]
 
     # Get API key
     key = None
@@ -82,12 +100,21 @@ def api_admin() -> bool:
     if request.method == "POST" and "key" in request.form:
         key = request.form["key"]
     if key is None:
-        return False
+        return set()
 
     # Check API key
     from application import db
-    user = db.execute("SELECT * FROM users WHERE api=? AND admin=1", request.args["key"])
-    return len(user) == 1
+    user = db.execute("SELECT * FROM users WHERE api=?", request.args["key"])
+    if len(user) == 0:
+        return set()
+    perms = db.execute("SELECT * FROM user_perms WHERE user_id=?", user[0]["id"])
+    return set([x["perm_id"] for x in perms])
+
+def api_admin() -> bool:
+    """
+    Check whether the user is an admin, using API key or session
+    """
+    return check_perm(["ADMIN", "SUPERADMIN"], api_get_perms())
 
 
 def login_required(f):
@@ -112,10 +139,26 @@ def admin_required(f):
     def decorated_function(*args, **kwargs):
         if session.get("user_id") is None:
             return redirect("/login?next=" + request.path)
-        if not session.get("admin"):
+        if not check_perm(["ADMIN", "SUPERADMIN"]):
             return redirect("/")
         return f(*args, **kwargs)
     return decorated_function
+
+
+def perm_required(perms):
+    """
+    Decorate routes to require admin login.
+    """
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if session.get("user_id") is None:
+                return redirect("/login?next=" + request.path)
+            if not check_perm(perms):
+                return redirect("/")
+            return f(*args, **kwargs)
+        return decorated_function
+    return decorator
 
 
 def generate_password():

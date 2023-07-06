@@ -5,7 +5,7 @@
 
 {% block main %}
 <h1><a href="{{ request.path[:-11] }}">{{ title }}</a></h1>
-{% if session["admin"] %}
+{% if check_perm(["ADMIN", "SUPERADMIN"]) %}
     <div id="confirm" class="hidden">
         <form method="post" style="margin-bottom: 1rem;">
             <input type="hidden" name="user_id">
@@ -22,7 +22,7 @@
                 <th scope="col" style="width: 40%;">Username</th>
                 <th scope="col" style="width: 18%;">Points</th>
                 <th scope="col" style="width: 30%;">Most recent AC submission</th>
-                {% if session["admin"] %}
+                {% if check_perm(["ADMIN", "SUPERADMIN"]) %}
                     <th scope="col" style="width: 10%">Actions</th>
                 {% endif %}
             </tr>
@@ -38,7 +38,7 @@
                 {% else %}
                     <td>None</td>
                 {% endif %}
-                {% if session["admin"] %}
+                {% if check_perm(["ADMIN", "SUPERADMIN"]) %}
                     <td data-id="{{ data[i]['user_id'] }}" data-username="{{ data[i]['username'] }}">
                         <a href="#">
                             <img src="/assets/images/restrict.svg"
@@ -70,7 +70,7 @@
                     <th scope="col" style="width: 40%;">Username</th>
                     <th scope="col" style="width: 18%;">Points</th>
                     <th scope="col" style="width: 30%;">Most recent AC submission</th>
-                    {% if session["admin"] %}
+                    {% if check_perm(["ADMIN", "SUPERADMIN"]) %}
                         <th scope="col" style="width: 10%">Actions</th>
                     {% endif %}
                 </tr>
@@ -86,7 +86,7 @@
                     {% else %}
                         <td>None</td>
                     {% endif %}
-                    {% if session["admin"] %}
+                    {% if check_perm(["ADMIN", "SUPERADMIN"]) %}
                         <td data-id="{{ hidden[i]['user_id'] }}" data-username="{{ hidden[i]['username'] }}">
                             <a href="#">
                                 <img src="/assets/images/restrict.svg"
@@ -111,7 +111,7 @@
 {% endif %}
 {% endblock %}
 {% block script %}
-{% if session["admin"] %}
+{% if check_perm(["ADMIN", "SUPERADMIN"]) %}
     <script>
         const path = "{{ request.path }}";
         const confirmDiv = document.getElementById("confirm");

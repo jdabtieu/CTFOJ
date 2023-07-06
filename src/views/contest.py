@@ -26,14 +26,14 @@ def contest(contest_id):
 
     # Ensure contest started or user is admin
     start = datetime.strptime(contest_info[0]["start"], "%Y-%m-%d %H:%M:%S")
-    if datetime.utcnow() < start and not session["admin"]:
+    if datetime.utcnow() < start and not check_perm(["ADMIN", "SUPERADMIN"]):
         flash('The contest has not started yet!', 'danger')
         return redirect("/contests")
 
     title = contest_info[0]["name"]
 
     # Check for scoreboard permission
-    scoreboard = contest_info[0]["scoreboard_visible"] or session["admin"]
+    scoreboard = contest_info[0]["scoreboard_visible"] or check_perm(["ADMIN", "SUPERADMIN"])
     scoreboard_key = contest_info[0]["scoreboard_key"]
 
     user_info = db.execute(
@@ -213,14 +213,14 @@ def contest_problem(contest_id, problem_id):
     # Ensure contest started or user is admin
     check = db.execute("SELECT * FROM contests WHERE id=?", contest_id)
     start = datetime.strptime(check[0]["start"], "%Y-%m-%d %H:%M:%S")
-    if datetime.utcnow() < start and not session["admin"]:
+    if datetime.utcnow() < start and not check_perm(["ADMIN", "SUPERADMIN"]):
         flash('The contest has not started yet!', 'danger')
         return redirect("/contests")
 
     check = db.execute(("SELECT * FROM contest_problems WHERE contest_id=:cid AND "
                         "problem_id=:pid"),
                        cid=contest_id, pid=problem_id)
-    if len(check) != 1 or (check[0]["draft"] and not session["admin"]):
+    if len(check) != 1 or (check[0]["draft"] and not check_perm(["ADMIN", "SUPERADMIN"])):
         return render_template("contest/contest_problem_noexist.html"), 404
 
     # Check if problem is solved
@@ -397,7 +397,7 @@ def contest_scoreboard(contest_id):
         return render_template("contest/contest_noexist.html"), 404
 
     # Ensure proper permissions
-    if not contest_info[0]["scoreboard_visible"] and not session["admin"]:
+    if not (contest_info[0]["scoreboard_visible"] or check_perm(["ADMIN", "SUPERADMIN"])):
         flash('You are not allowed to view the scoreboard!', 'danger')
         return redirect("/contest/" + contest_id)
 
@@ -407,7 +407,7 @@ def contest_scoreboard(contest_id):
          "hidden=0 ORDER BY points DESC, lastAC ASC"),
         cid=contest_id)
 
-    if session["admin"]:
+    if check_perm(["ADMIN", "SUPERADMIN"]):
         hidden = db.execute(
             ("SELECT user_id, points, lastAC, username FROM contest_users "
              "JOIN users on user_id=users.id WHERE contest_users.contest_id=:cid AND "
