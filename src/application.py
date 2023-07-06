@@ -957,7 +957,7 @@ def edit_contest_problem(contest_id, problem_id):
     new_category = request.form.get("category")
     new_points = request.form.get("point_value")
     new_flag = request.form.get("flag")
-    new_flag_hint = request.form.get("flag-hint")
+    new_flag_hint = request.form.get("flag_hint")
     if not new_flag_hint:
         new_flag_hint = ""
     new_instanced = bool(request.form.get("instanced"))
@@ -1136,7 +1136,7 @@ def contest_add_problem(contest_id):
     category = request.form.get("category")
     flag = request.form.get("flag")
     draft = 1 if request.form.get("draft") else 0
-    flag_hint = request.form.get("flag-hint")
+    flag_hint = request.form.get("flag_hint")
     if not flag_hint:
         flag_hint = ""
     instanced = bool(request.form.get("instanced"))
@@ -1364,7 +1364,7 @@ def create_problem():
     category = request.form.get("category")
     flag = request.form.get("flag")
     draft = 1 if request.form.get("draft") else 0
-    flag_hint = request.form.get("flag-hint")
+    flag_hint = request.form.get("flag_hint")
     if not flag_hint:
         flag_hint = ""
     instanced = bool(request.form.get("instanced"))
@@ -1545,7 +1545,7 @@ def editproblem(problem_id):
     new_category = request.form.get("category")
     new_points = int(request.form.get("point_value"))
     new_flag = request.form.get("flag")
-    new_flag_hint = request.form.get("flag-hint")
+    new_flag_hint = request.form.get("flag_hint")
     if not new_flag_hint:
         new_flag_hint = ""
     new_instanced = bool(request.form.get("instanced"))

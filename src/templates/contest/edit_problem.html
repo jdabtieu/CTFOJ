@@ -63,7 +63,7 @@
             </div>
             <span>Automatic</span>
         </div>
-        <input class="form-control" name="flag-hint" placeholder="Flag Hint" readonly>
+        <input class="form-control" name="flag_hint" placeholder="Flag Hint" readonly>
     </div>
     <div class="form-control mb-3" style="border: 0;">
         Requires Instancing? You must create an entry in CTFOJ-Instancer with this this key: "<span id="instancedkey"></span>"
@@ -92,14 +92,14 @@
         let flag = document.querySelector("input[name=flag]").value;
         const regex = /^(.*\{).+\}$/;
         if (regex.test(flag)) {
-            document.querySelector("input[name=flag-hint]").value = flag.replace(regex, "$1...}");
+            document.querySelector("input[name=flag_hint]").value = flag.replace(regex, "$1...}");
         } else {
-            document.querySelector("input[name=flag-hint]").value = "";
+            document.querySelector("input[name=flag_hint]").value = "";
         }
     }
     document.getElementById("toggle-flag-hint").addEventListener("input", function() {
         autoFlagHint = !autoFlagHint;
-        document.querySelector("input[name=flag-hint]").toggleAttribute("readonly");
+        document.querySelector("input[name=flag_hint]").toggleAttribute("readonly");
         updateFlagHint();
     });
     document.querySelector("input[name=flag]").addEventListener("input", updateFlagHint);

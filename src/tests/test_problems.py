@@ -25,7 +25,7 @@ def test_problem(client, database):
         'point_value': 1,
         'category': 'general',
         'flag': 'ctf{hello}',
-        'flag-hint': 'ctf{...}',
+        'flag_hint': 'ctf{...}',
         'instanced': True,
         'file': ('test_upload.txt', 'test_upload.txt'),
         'draft': True
@@ -83,7 +83,7 @@ def test_problem(client, database):
         'rejudge': True,
         'category': 'web',
         'flag': 'ctf{hello}',
-        'flag-hint': 'ctf{...}'
+        'flag_hint': 'ctf{...}'
     }, follow_redirects=True)
     assert result.status_code == 200
 
