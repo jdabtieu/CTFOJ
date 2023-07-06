@@ -385,7 +385,7 @@ def edit_contest_problem(contest_id, problem_id):
                  f"{problem_id} in contest {contest_id}"),
                 extra={"section": "contest"})
     flash('Problem successfully edited', 'success')
-    return redirect(request.path[:-5])
+    return redirect("/contest/" + contest_id + "/problem/" + problem_id)
 
 
 @api.route("/<contest_id>/scoreboard")
