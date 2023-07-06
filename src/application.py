@@ -121,7 +121,8 @@ def check_for_maintenance():
     maintenance_mode = bool(os.path.exists('maintenance_mode'))
     if maintenance_mode:
         if request.path[:5] == '/api/':
-            return make_response(("The site is currently undergoing maintenance", 503))
+            return json_fail("Internal Server Error", 500)
+            # return make_response(("The site is currently undergoing maintenance", 503))
 
         # Prevent Internal Server error if session only contains CSRF token
         if not session or 'admin' not in session:
