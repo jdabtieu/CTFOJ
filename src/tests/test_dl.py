@@ -1,9 +1,6 @@
-import json
 import os
-import shutil
 
-from datetime import datetime
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 
 def test_dl(client, database):

@@ -11,7 +11,7 @@ try:
 except Exception as e:
     sys.stderr.write(str(e))
     with open("secret_key.txt", "w+") as file:
-        file.write(secrets.token_hex(48)) # 384 bits
+        file.write(secrets.token_hex(48))  # 384 bits
         SECRET_KEY = file.readline().strip()
 
 TEMPLATES_AUTO_RELOAD = True

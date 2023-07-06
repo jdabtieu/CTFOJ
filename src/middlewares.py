@@ -56,5 +56,6 @@ class ProxyFix:
         if x_for:
             environ["REMOTE_ADDR"] = x_for
         else:
-            raise KeyError("No X-Forwarded-For header found. Make sure to set it in your proxy.")
+            raise KeyError(("No X-Forwarded-For header found. "
+                            "Make sure to set it in your proxy."))
         return self.app(environ, start_response)

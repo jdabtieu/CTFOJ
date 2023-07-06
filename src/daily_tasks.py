@@ -2,10 +2,7 @@
 
 import datetime
 import os
-import secrets
 import shutil
-import subprocess
-import sys
 
 # Backup database if exists
 if os.path.exists('database.db'):
@@ -16,7 +13,7 @@ if os.path.exists('metadata'):
     # remove older folder
     try:
         shutil.rmtree('backups/metadata/')
-    except Exception as e:
+    except Exception:
         pass
     shutil.copytree('metadata/', 'backups/metadata/')
 

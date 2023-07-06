@@ -135,7 +135,7 @@ def test_register(client, database):
         algorithm='HS256'
     )
 
-    result = client.get(f'/cancelregister/faketoken', follow_redirects=True)
+    result = client.get('/cancelregister/faketoken', follow_redirects=True)
     assert b'invalid' in result.data
 
     result = client.get(f'/cancelregister/{token}')

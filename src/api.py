@@ -54,7 +54,7 @@ def problem():
 def query_instancer():
     if "id" not in request.args:
         return json_fail("Must provide instancer ID", 400)
-    
+
     # Check perms
     key = request.args["id"].split("/", 1)
     contest_id = key[0] if len(key) == 2 else None
@@ -87,9 +87,10 @@ def query_instancer():
     }
 
     try:
-        response = requests.post(app.config["INSTANCER_HOST"] + "/api/v1/query", headers=headers, json=body)
+        response = requests.post(app.config["INSTANCER_HOST"] + "/api/v1/query",
+                                 headers=headers, json=body)
         return json_success(response.json())
-    except:
+    except Exception:
         return json_fail("Failed to get a valid response from the instance server", 500)
 
 
@@ -98,7 +99,7 @@ def query_instancer():
 def create_instancer():
     if "id" not in request.args:
         return json_fail("Must provide instancer ID", 400)
-    
+
     # Check perms
     key = request.args["id"].split("/", 1)
     contest_id = key[0] if len(key) == 2 else None
@@ -132,9 +133,10 @@ def create_instancer():
     }
 
     try:
-        response = requests.post(app.config["INSTANCER_HOST"] + "/api/v1/create", headers=headers, json=body)
+        response = requests.post(app.config["INSTANCER_HOST"] + "/api/v1/create",
+                                 headers=headers, json=body)
         return json_success(response.json())
-    except:
+    except Exception:
         return json_fail("Failed to get a valid response from the instance server", 500)
 
 
@@ -143,7 +145,7 @@ def create_instancer():
 def destroy_instancer():
     if "id" not in request.args:
         return json_fail("Must provide instancer ID", 400)
-    
+
     # Check perms
     key = request.args["id"].split("/", 1)
     contest_id = key[0] if len(key) == 2 else None
@@ -176,9 +178,10 @@ def destroy_instancer():
     }
 
     try:
-        response = requests.post(app.config["INSTANCER_HOST"] + "/api/v1/destroy", headers=headers, json=body)
+        response = requests.post(app.config["INSTANCER_HOST"] + "/api/v1/destroy",
+                                 headers=headers, json=body)
         return json_success(response.json())
-    except:
+    except Exception:
         return json_fail("Failed to get a valid response from the instance server", 500)
 
 
