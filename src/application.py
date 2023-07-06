@@ -71,11 +71,11 @@ csrf = CSRFProtect(app)
 csrf.init_app(app)
 
 # Load API
-from api import api  # noqa
-from views.contest import api as view_contest
-from views.problem import api as view_problem
-from views.admin import api as view_admin
-app.register_blueprint(api, url_prefix="/api")
+from views.api import api as view_api  # noqa
+from views.contest import api as view_contest  # noqa
+from views.problem import api as view_problem  # noqa
+from views.admin import api as view_admin  # noqa
+app.register_blueprint(view_api, url_prefix="/api")
 app.register_blueprint(view_contest, url_prefix="/contest")
 app.register_blueprint(view_problem, url_prefix="/problem")
 app.register_blueprint(view_admin, url_prefix="/admin")
