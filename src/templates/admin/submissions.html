@@ -54,6 +54,7 @@
                            placeholder="Filter by problem ID">
                     <label for="problem_id">Problem ID</label>
                 </div>
+                {% if check_perm(["ADMIN", "SUPERADMIN"]) %}
                 <div class="form-floating">
                     <input class="form-control mb-3"
                            id="contest_id"
@@ -61,6 +62,7 @@
                            placeholder="Filter by contest ID">
                     <label for="contest_id">Contest ID</label>
                 </div>
+                {% endif %}
                 <div class="form-floating">
                     <select class="form-control form-select mb-3" id="correct" name="correct">
                         <option value="">All</option>
@@ -85,7 +87,7 @@
         document.querySelector("#problem_id").setAttribute("value", queryStrings.get("problem_id"));
     }
     if (queryStrings.get("contest_id") != null) {
-        document.querySelector("#contest_id").setAttribute("value", queryStrings.get("contest_id"));
+        document.querySelector("#contest_id")?.setAttribute("value", queryStrings.get("contest_id"));
     }
     if (queryStrings.get("correct") != null) {
         document.querySelector("#correct").value = queryStrings.get("correct");

@@ -17,7 +17,7 @@
         <p style="margin-bottom: 0;">Start: <span class="dt">{{ contest["start"] }}</span></p>
         <p style="margin-bottom: 0;">End: <span class="dt">{{ contest["end"] }}</span></p>
         <div id="contest-{{ contest['id'] }}" class="hidden smarkdown"></div>
-        {% if session["admin"] %}
+        {% if check_perm(["ADMIN", "SUPERADMIN"]) %}
             <a href="/contest/{{ contest['id'] }}/edit"
                style="position: absolute; top: 12px; right: 36px;">
                 <img src="/assets/images/pencil.svg"
@@ -49,7 +49,7 @@
         <p style="margin-bottom: 0;">Start: <span class="dt">{{ contest["start"] }}</span></p>
         <p style="margin-bottom: 0;">End: <span class="dt">{{ contest["end"] }}</span></p>
         <div id="contest-{{ contest['id'] }}" class="hidden smarkdown"></div>
-        {% if session["admin"] %}
+        {% if check_perm(["ADMIN", "SUPERADMIN"]) %}
             <a href="/contest/{{ contest['id'] }}/edit"
                style="position: absolute; top: 12px; right: 36px;">
                 <img src="/assets/images/pencil.svg"
@@ -81,7 +81,7 @@
         <p style="margin-bottom: 0;">Start: <span class="dt">{{ contest["start"] }}</span></p>
         <p style="margin-bottom: 0;">End: <span class="dt">{{ contest["end"] }}</span></p>
         <div id="contest-{{ contest['id'] }}" class="hidden smarkdown"></div>
-        {% if session["admin"] %}
+        {% if check_perm(["ADMIN", "SUPERADMIN"]) %}
             <a href="/contest/{{ contest['id'] }}/edit"
                style="position: absolute; top: 12px; right: 36px;">
                 <img src="/assets/images/pencil.svg"

@@ -29,6 +29,7 @@ except Exception as e:
     app.config.from_object('default_settings')
 app.jinja_env.globals['CLUB_NAME'] = app.config['CLUB_NAME']
 app.jinja_env.globals['USE_CAPTCHA'] = app.config['USE_CAPTCHA']
+app.jinja_env.globals.update(check_perm=check_perm)
 
 # Add middlewares
 if app.config["USE_X_FORWARDED_FOR"]:
@@ -120,13 +121,13 @@ def check_for_maintenance():
 
     maintenance_mode = bool(os.path.exists('maintenance_mode'))
     if maintenance_mode:
-        if request.path[:5] == '/api/':
+        if (not check_perm(["ADMIN", "SUPERADMIN"], api_get_perms()) and
+                request.path[:5] == '/api/'):
             return make_response(("The site is currently undergoing maintenance", 503))
 
         # Prevent Internal Server error if session only contains CSRF token
-        if not session or 'admin' not in session:
-            return render_template("error/maintenance.html"), 503
-        elif not session['admin']:
+        if (not session or 'perms' not in session or
+                not check_perm(["ADMIN", "SUPERADMIN"])):
             return render_template("error/maintenance.html"), 503
         else:
             flash("Maintenance mode is enabled", "warning")
@@ -183,7 +184,8 @@ def get_asset(filename):
 @login_required
 def dl_file(problem_id):
     problem = db.execute("SELECT * FROM problems WHERE id=?", problem_id)
-    if len(problem) == 0 or (problem[0]["draft"] and not session["admin"]):
+    if len(problem) == 0 or (problem[0]["draft"] and not
+                             check_perm(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER"])):
         return abort(404)
     return send_from_directory("dl/", f"{problem_id}.zip", as_attachment=True)
 
@@ -196,13 +198,15 @@ def dl_contest(contest_id, problem_id):
         return abort(404)
     # Ensure contest started or user is admin
     start = datetime.strptime(contest[0]["start"], "%Y-%m-%d %H:%M:%S")
-    if datetime.utcnow() < start and not session["admin"]:
+    if datetime.utcnow() < start and not check_perm(["ADMIN", "SUPERADMIN"]):
         return abort(404)
     problem = db.execute(("SELECT * FROM contest_problems WHERE contest_id=? "
                           "AND problem_id=?"), contest_id, problem_id)
-    if len(problem) == 0 or (problem[0]["draft"] and not session["admin"]):
+    if len(problem) == 0 or (problem[0]["draft"] and
+                             not check_perm(["ADMIN", "SUPERADMIN"])):
         return abort(404)
-    return send_from_directory("dl/", f"{contest_id}/{problem_id}.zip", as_attachment=True)
+    return send_from_directory("dl/", f"{contest_id}/{problem_id}.zip",
+                               as_attachment=True)
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -255,10 +259,12 @@ def login():
                      f"on IP {request.remote_addr}"), extra={"section": "auth"})
         return render_template("auth/login.html", site_key=app.config['HCAPTCHA_SITE'])
 
+    perms = db.execute("SELECT * FROM user_perms WHERE user_id=?", rows[0]["id"])
+
     # Remember which user has logged in
     session["user_id"] = rows[0]["id"]
     session["username"] = rows[0]["username"]
-    session["admin"] = rows[0]["admin"]
+    session["perms"] = set([x["perm_id"] for x in perms])
 
     logger.info((f"User #{session['user_id']} ({session['username']}) logged in "
                  f"on IP {request.remote_addr}"), extra={"section": "auth"})
@@ -373,7 +379,7 @@ def confirm_register(token):
         "SELECT * FROM users WHERE email = :email", email=token['email'])[0]
     session["user_id"] = user["id"]
     session["username"] = user["username"]
-    session["admin"] = False  # ensure no one can get admin right after registering
+    session["perms"] = set()
 
     logger.info((f"User #{session['user_id']} ({session['username']}) has successfully "
                  f"registered on IP {request.remote_addr}"), extra={"section": "auth"})
@@ -416,11 +422,13 @@ def confirm_login(token):
                                site_key=app.config['HCAPTCHA_SITE']), 401
 
     # Log user in
-    user = db.execute(
-        "SELECT * FROM users WHERE email = :email", email=token['email'])[0]
+    user = db.execute("SELECT * FROM users WHERE email=:email", email=token['email'])[0]
+    perms = db.execute("SELECT * FROM user_perms WHERE user_id=?", user["id"])
+
+    # Remember which user has logged in
     session["user_id"] = user["id"]
     session["username"] = user["username"]
-    session["admin"] = user["admin"]
+    session["perms"] = set([x["perm_id"] for x in perms])
 
     logger.info((f"User #{session['user_id']} ({session['username']}) logged in via 2FA "
                  f"on IP {request.remote_addr}"), extra={"section": "auth"})
@@ -686,7 +694,7 @@ def problems():
 
 
 @app.route("/problems/create", methods=["GET", "POST"])
-@admin_required
+@perm_required(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER"])
 def create_problem():
     if request.method == "GET":
         return render_template("problem/create.html")
@@ -758,7 +766,7 @@ def create_problem():
 
 
 @app.route('/problems/draft')
-@admin_required
+@perm_required(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER"])
 def draft_problems():
     page = request.args.get("page")
     if not page:

@@ -33,7 +33,7 @@ def problem():
     problem_id = request.args["id"]
 
     data = db.execute("SELECT * FROM problems WHERE id=:pid", pid=problem_id)
-    if len(data) == 0 or (data[0]["draft"] and not api_admin()):
+    if len(data) == 0 or (data[0]["draft"] and not check_perm(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER"], api_get_perms())):
         return json_fail("Problem not found", 404)
 
     description = read_file(f"metadata/problems/{problem_id}/description.md")
@@ -74,7 +74,7 @@ def query_instancer():
             return json_fail("Problem not found", 404)
     else:
         data = db.execute("SELECT * FROM problems WHERE id=:pid", pid=problem_id)
-        if len(data) == 0 or (data[0]["draft"] and not api_admin()):
+        if len(data) == 0 or (data[0]["draft"] and not check_perm(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER"], api_get_perms())):
             return json_fail("Problem not found", 404)
 
     body = {
@@ -119,7 +119,7 @@ def create_instancer():
             return json_fail("Problem not found", 404)
     else:
         data = db.execute("SELECT * FROM problems WHERE id=:pid", pid=problem_id)
-        if len(data) == 0 or (data[0]["draft"] and not api_admin()):
+        if len(data) == 0 or (data[0]["draft"] and not check_perm(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER"], api_get_perms())):
             return json_fail("Problem not found", 404)
 
     body = {
@@ -165,7 +165,7 @@ def destroy_instancer():
             return json_fail("Problem not found", 404)
     else:
         data = db.execute("SELECT * FROM problems WHERE id=:pid", pid=problem_id)
-        if len(data) == 0 or (data[0]["draft"] and not api_admin()):
+        if len(data) == 0 or (data[0]["draft"] and not check_perm(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER"], api_get_perms())):
             return json_fail("Problem not found", 404)
 
     body = {
@@ -247,7 +247,9 @@ def contest_scoreboard(contest_id):
             "score": data[i]["points"],
         })
 
-    return json.dumps(ret)
+    resp = make_response(json.dumps(ret))
+    resp.headers['Content-Type'] = 'application/json; charset=utf-8'
+    return resp
 
 
 @api.route("/contests")

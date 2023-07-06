@@ -8,7 +8,7 @@
 <div class="profileDiv">
     <h1>{{ user_data["username"] }}</h1>
     <hr>
-    {% if session.username == user_data["username"] or session.admin %}
+    {% if session.username == user_data["username"] or check_perm(["ADMIN", "SUPERADMIN"]) %}
         <details>
             <summary>User Info</summary>
             <div>Email: {{ user_data["email"] }}</div>

@@ -2,6 +2,8 @@ import cs50
 import uuid
 import sys
 
+from helpers import USER_PERM
+
 msg = """
 Before migrating, please confirm the following:
  - You are on v4.0.x (older version please update to one of these first, new version no migrate necessary)
@@ -26,6 +28,13 @@ db.execute("ALTER TABLE contest_problems ADD COLUMN 'instanced' boolean NOT NULL
 db.execute("ALTER TABLE contests ADD COLUMN 'scoreboard_key' varchar(36)")
 for e in db.execute("SELECT id FROM contests"):
     db.execute("UPDATE contests SET scoreboard_key=? WHERE id=?", str(uuid.uuid4()), e["id"])
+db.execute(("CREATE TABLE user_perms ('id' integer PRIMARY KEY NOT NULL, "
+            "'user_id' integer NOT NULL, 'perm_id' integer NOT NULL)"))
+for user in db.execute("SELECT * FROM users WHERE admin=1 AND NOT id=1"):
+    db.execute("INSERT INTO user_perms (user_id, perm_id) VALUES(?, ?)",
+               user["id"], USER_PERM["ADMIN"])
+db.execute("INSERT INTO user_perms (user_id, perm_id) VALUES(1, ?)", USER_PERM["SUPERADMIN"])
+db.execute("ALTER TABLE users DROP COLUMN admin")
 
 db.execute("COMMIT")
 

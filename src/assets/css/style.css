@@ -119,12 +119,31 @@
     color: red;
 }
 
-.user-admin {
-    font-weight: bold;
-}
-
 .username > a.username:not(.btn) {
     color: inherit;
+}
+
+.perm-select .multiselect-dropdown {
+    min-width: 60px;
+    max-width: 100%;
+}
+
+.perm-select .multiselect-dropdown span.optext {
+    padding: 1px 12px 1px 6px;
+    font-size: 0.75rem;
+}
+
+.perm-select .multiselect-dropdown-list-wrapper {
+    border: none;
+}
+
+.perm-select .multiselect-dropdown-list input {
+    height: unset;
+    width: unset;
+}
+
+.perm-select .multiselect-dropdown-list label {
+    font-size: 0.75rem;
 }
 
 /****************** OTHER PAGES ******************************/
@@ -342,4 +361,21 @@ input:-webkit-autofill:active{
 
 .dark input:-webkit-autofill{
     -webkit-text-fill-color: white;
+}
+
+.dark .perm-select .multiselect-dropdown-list-wrapper {
+    background: #2f2f2f;
+}
+
+.dark .perm-select .multiselect-dropdown {
+    background-color: #5d5d5d;
+}
+
+.dark .perm-select .multiselect-dropdown .optext {
+    color: black;
+}
+
+
+.dark .perm-select .multiselect-dropdown-list div:hover {
+    background-color: #5d5d5d;
 }

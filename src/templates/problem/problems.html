@@ -52,7 +52,7 @@
                 <td><a href="/problem/{{ row["id"] }}">{{ row["name"] }}</a></td>
                 <td>{{ row["category"] }}</td>
                 <td>{{ row["point_value"] }}</td>
-                {% if session.admin %}
+                {% if check_perm(["ADMIN", "SUPERADMIN"]) %}
                     <td><a href="/admin/submissions?problem_id={{ row["id"] }}&correct=AC">
                         {{ row["sols"] }}
                     </a></td>

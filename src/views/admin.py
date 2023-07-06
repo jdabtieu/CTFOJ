@@ -2,6 +2,7 @@ from flask import (Blueprint, flash, redirect, render_template, request, session
                    current_app as app)
 import logging
 import os
+import re
 from werkzeug.security import generate_password_hash
 
 from helpers import *  # noqa
@@ -13,38 +14,45 @@ logger = logging.getLogger("CTFOJ")
 
 
 @api.route("/console")
-@admin_required
+@perm_required(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER"])
 def admin_console():
     return render_template("admin/console.html", ver="v4.0.0",
                            maintenance_mode=os.path.exists('maintenance_mode'))
 
 
 @api.route("/submissions")
-@admin_required
+@perm_required(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER"])
 def admin_submissions():
     submissions = None
 
     modifier = " WHERE"
     args = []
 
-    if request.args.get("username"):
+    # Permission-based overrides
+    query = request.args.copy()
+    if not check_perm(["ADMIN", "SUPERADMIN"]):
+        if check_perm(["PROBLEM_MANAGER"]):
+            query["contest_id"] = "None"
+
+    # Construct query
+    if query.get("username"):
         modifier += " username=? AND"
-        args.append(request.args.get("username"))
+        args.append(query.get("username"))
 
-    if request.args.get("problem_id"):
+    if query.get("problem_id"):
         modifier += " problem_id=? AND"
-        args.append(request.args.get("problem_id"))
+        args.append(query.get("problem_id"))
 
-    if request.args.get("contest_id"):
-        if request.args.get("contest_id") == "None":
+    if query.get("contest_id"):
+        if query.get("contest_id") == "None":
             modifier += " contest_id IS NULL AND"
         else:
             modifier += " contest_id=? AND"
-            args.append(request.args.get("contest_id"))
+            args.append(query.get("contest_id"))
 
-    if request.args.get("correct"):
+    if query.get("correct"):
         modifier += " correct=? AND"
-        args.append(request.args.get("correct") == "AC")
+        args.append(query.get("correct") == "AC")
 
     page = request.args.get("page")
     if not page:
@@ -72,9 +80,17 @@ def admin_users():
         page = "1"
     page = (int(page) - 1) * 50
 
-    data = db.execute("SELECT * FROM users LIMIT 50 OFFSET ?", page)
+    data = db.execute("SELECT * FROM users ORDER BY id ASC LIMIT 50 OFFSET ?", page)
     length = len(db.execute("SELECT * FROM users"))
-    return render_template("admin/users.html", data=data, length=-(-length // 50))
+
+    perms = db.execute("SELECT * FROM user_perms WHERE user_id IN (SELECT id FROM users ORDER BY id ASC LIMIT 50 OFFSET ?)", page)
+    disp_perms = {}
+    for perm in perms:
+        if perm["user_id"] not in disp_perms:
+            disp_perms[perm["user_id"]] = {}
+        disp_perms[perm["user_id"]][perm["perm_id"]] = True
+
+    return render_template("admin/users.html", data=data, length=-(-length // 50), perm_list=USER_PERM, disp_perms=disp_perms)
 
 
 @api.route("/ban", methods=["POST"])
@@ -98,8 +114,10 @@ def ban():
         flash("Cannot ban yourself", "danger")
         return redirect("/admin/users")
 
-    if user["admin"] and session["user_id"] != 1:
-        flash("Only the super-admin can ban admins", "danger")
+    ban_perm = db.execute("SELECT * FROM user_perms WHERE user_id=?", user_id)
+    ban_perm = set([x["perm_id"] for x in ban_perm])
+    if check_perm(["ADMIN", "SUPERADMIN"], ban_perm) and not check_perm(["SUPERADMIN"]):
+        flash("Only super-admins can ban admins", "danger")
         return redirect("/admin/users")
 
     db.execute("UPDATE users SET banned=:status WHERE id=:id",
@@ -127,9 +145,11 @@ def reset_password():
         flash("That user doesn't exist", "danger")
         return redirect("/admin/users")
 
-    if user[0]["id"] == 1:
-        flash(("Cannot reset the super-admin password. "
-               "Use the forgot password page instead."), "danger")
+    perm = db.execute("SELECT * FROM user_perms WHERE user_id=?", user[0]["id"])
+    perm = set([x["perm_id"] for x in perm])
+    if check_perm(["SUPERADMIN"], perm):
+        flash(("Cannot reset super-admin passwords. Super-admins must "
+               "use the forgot password page instead."), "danger")
         return redirect("/admin/users")
 
     password = generate_password()
@@ -144,44 +164,55 @@ def reset_password():
     return redirect("/admin/users")
 
 
-@api.route("/makeadmin", methods=["POST"])
+@api.route("/updateperms", methods=["POST"])
 @admin_required
-def makeadmin():
-    user_id = request.form.get("user_id")
+def update_perms():
+    user_id = request.args.get("user_id")
     if not user_id:
         flash("Must provide user ID", "danger")
         return redirect("/admin/users")
 
     user = db.execute("SELECT * FROM users WHERE id=:id", id=user_id)
-
     if len(user) == 0:
         flash("That user doesn't exist", "danger")
         return redirect("/admin/users")
-
     user_id = int(user_id)
-    admin_status = user[0]["admin"]
 
-    if admin_status and session["user_id"] != 1:
+    cur_perms = db.execute("SELECT * FROM user_perms WHERE user_id=?", user_id)
+    cur_perms = set([x["perm_id"] for x in cur_perms])
+    new_perms = set([int(x) for x in request.form.getlist("perms")])
+
+    # Calculate old/new perms
+    perms_add = new_perms - cur_perms
+    perms_remove = cur_perms - new_perms
+
+    # Get friendly names
+    inv_perms = {v: k for k, v in USER_PERM.items()}
+    friendly_perms_add = [inv_perms[x] for x in perms_add]
+    friendly_perms_remove = [inv_perms[x] for x in perms_remove]
+
+    # Permission checks for sensitive permissions
+    if check_perm(["ADMIN", "SUPERADMIN"], perms_remove) and not check_perm(["SUPERADMIN"]):
         flash("Only the super-admin can revoke admin status", "danger")
         return redirect("/admin/users")
 
-    if admin_status and user_id == 1:
-        flash("Cannot revoke super-admin privileges", "danger")
+    if check_perm(["SUPERADMIN"], perms_add) and not check_perm(["SUPERADMIN"]):
+        flash("Only the super-admin can create super-admins", "danger")
         return redirect("/admin/users")
 
-    if admin_status and session["user_id"] == 1:
-        db.execute("UPDATE users SET admin=0 WHERE id=:id", id=user_id)
-        flash("Admin privileges for " + user[0]["username"] + " revoked", "success")
-        logger.info(f"Admin privileges for user #{user_id} ({user[0]['username']}) revoked",  # noqa
-                    extra={"section": "auth"})
-        return redirect("/admin/users")
-    else:
-        db.execute("UPDATE users SET admin=1 WHERE id=:id", id=user_id)
-        flash("Admin privileges for " + user[0]["username"] + " granted", "success")
-        logger.info((f"Admin privileges for user #{user_id} ({user[0]['username']}) "
-                     f"granted by user #{session['user_id']} ({session['username']})"),
-                    extra={"section": "auth"})
-        return redirect("/admin/users")
+    # Update permissions
+    for perm in perms_add:
+        db.execute("INSERT INTO user_perms(user_id, perm_id) VALUES(?, ?)", user_id, perm)
+    for perm in perms_remove:
+        db.execute("DELETE FROM user_perms WHERE user_id=? AND perm_id=?", user_id, perm)
+    
+    # Flash and log message
+    msg = f"Permissions changed for user #{user_id} ({user[0]['username']}). "
+    msg += f"Granted {friendly_perms_add}, revoked {friendly_perms_remove}."
+    flash(msg, "success")
+    logger.info(msg + f" Performed by user #{session['user_id']} ({session['username']})",
+                extra={"section": "auth"})
+    return redirect("/admin/users")
 
 
 @api.route("/createannouncement", methods=["GET", "POST"])

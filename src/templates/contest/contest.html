@@ -6,7 +6,7 @@
 {% block main %}
 <div style="position: relative; margin-bottom: 0.5rem;">
     <h1 style="display: inline;">{{ title }}</h1>
-    {% if scoreboard or session.admin %}
+    {% if scoreboard or check_perm(["ADMIN", "SUPERADMIN"]) %}
         <div class="dropdown" style="display: inline; margin-left: 4px;">
             <button class="btn btn-secondary dropdown-toggle" type="button"
                     data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
@@ -15,7 +15,7 @@
                 {% if scoreboard %}
                     <a class="dropdown-item" href="{{ request.path }}/scoreboard">Scoreboard</a>
                 {% endif %}
-                {% if session.admin %}
+                {% if check_perm(["ADMIN", "SUPERADMIN"]) %}
                     <a class="dropdown-item"
                        href="/admin/submissions?contest_id={{ request.path[9:] }}">Submissions</a>
                     <a class="dropdown-item"
@@ -67,7 +67,7 @@
                 {% else %}
                     <td>{{ row["point_value"] }}</td>
                 {% endif %}
-                {% if session.admin %}
+                {% if check_perm(["ADMIN", "SUPERADMIN"]) %}
                     <td><a href="/admin/submissions?problem_id={{ row['problem_id'] }}&contest_id={{ request.path[9:] }}&correct=AC">
                         {{ row["sols"] }}
                     </a></td>
