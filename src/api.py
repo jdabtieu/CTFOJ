@@ -1,8 +1,9 @@
-from flask import Blueprint, redirect, current_app
+from flask import Blueprint, redirect, current_app as app
 import uuid
 import logging
 
 from helpers import *  # noqa
+from application import db
 
 api = Blueprint("api", __name__)
 
@@ -19,7 +20,6 @@ def api_documentation():
 def get_api_key():
     logger.info((f"User #{session['user_id']} ({session['username']}) "
                  "generated a new API key"), extra={"section": "api"})
-    from application import db
     new_key = str(uuid.uuid4())
     db.execute("UPDATE users SET api=? WHERE id=?", new_key, session["user_id"])
     return new_key
@@ -32,7 +32,6 @@ def problem():
         return json_fail("Must provide problem ID", 400)
     problem_id = request.args["id"]
 
-    from application import db
     data = db.execute("SELECT * FROM problems WHERE id=:pid", pid=problem_id)
     if len(data) == 0 or (data[0]["draft"] and not api_admin()):
         return json_fail("Problem not found", 404)
@@ -61,7 +60,6 @@ def query_instancer():
     contest_id = key[0] if len(key) == 2 else None
     problem_id = key[-1]
 
-    from application import db
     if contest_id:
         contest = db.execute("SELECT * FROM contests WHERE id=?", contest_id)
         if len(contest) != 1:
@@ -85,11 +83,11 @@ def query_instancer():
     }
 
     headers = {
-        "Authorization": "Bearer " + current_app.config["INSTANCER_TOKEN"],
+        "Authorization": "Bearer " + app.config["INSTANCER_TOKEN"],
     }
 
     try:
-        response = requests.post(current_app.config["INSTANCER_HOST"] + "/api/v1/query", headers=headers, json=body)
+        response = requests.post(app.config["INSTANCER_HOST"] + "/api/v1/query", headers=headers, json=body)
         return json_success(response.json())
     except:
         return json_fail("Failed to get a valid response from the instance server", 500)
@@ -106,7 +104,6 @@ def create_instancer():
     contest_id = key[0] if len(key) == 2 else None
     problem_id = key[-1]
 
-    from application import db
     if contest_id:
         contest = db.execute("SELECT * FROM contests WHERE id=?", contest_id)
         if len(contest) != 1:
@@ -131,11 +128,11 @@ def create_instancer():
     }
 
     headers = {
-        "Authorization": "Bearer " + current_app.config["INSTANCER_TOKEN"],
+        "Authorization": "Bearer " + app.config["INSTANCER_TOKEN"],
     }
 
     try:
-        response = requests.post(current_app.config["INSTANCER_HOST"] + "/api/v1/create", headers=headers, json=body)
+        response = requests.post(app.config["INSTANCER_HOST"] + "/api/v1/create", headers=headers, json=body)
         return json_success(response.json())
     except:
         return json_fail("Failed to get a valid response from the instance server", 500)
@@ -152,7 +149,6 @@ def destroy_instancer():
     contest_id = key[0] if len(key) == 2 else None
     problem_id = key[-1]
 
-    from application import db
     if contest_id:
         contest = db.execute("SELECT * FROM contests WHERE id=?", contest_id)
         if len(contest) != 1:
@@ -176,11 +172,11 @@ def destroy_instancer():
     }
 
     headers = {
-        "Authorization": "Bearer " + current_app.config["INSTANCER_TOKEN"],
+        "Authorization": "Bearer " + app.config["INSTANCER_TOKEN"],
     }
 
     try:
-        response = requests.post(current_app.config["INSTANCER_HOST"] + "/api/v1/destroy", headers=headers, json=body)
+        response = requests.post(app.config["INSTANCER_HOST"] + "/api/v1/destroy", headers=headers, json=body)
         return json_success(response.json())
     except:
         return json_fail("Failed to get a valid response from the instance server", 500)
@@ -196,7 +192,6 @@ def contest_problem():
     contest_id = request.args["cid"]
     problem_id = request.args["pid"]
 
-    from application import db
     contest = db.execute("SELECT * FROM contests WHERE id=?", contest_id)
     if len(contest) != 1:
         return json_fail("Contest not found", 404)
@@ -224,8 +219,7 @@ def contest_problem():
 def contest_scoreboard(contest_id):
     if not request.args.get("key"):
         return json_fail("Unauthorized", 401)
-        
-    from application import db
+
     # Ensure contest exists
     contest_info = db.execute("SELECT * FROM contests WHERE id=:cid", cid=contest_id)
     if len(contest_info) != 1:
@@ -259,7 +253,6 @@ def contests():
     if "id" not in request.args:
         return json_fail("Must specify ids", 400)
     ids = request.args["id"].split(",")
-    from application import db
     res = db.execute("SELECT * FROM contests WHERE id IN (?)", ids)
     returns = {}
     for item in res:
@@ -269,7 +262,6 @@ def contests():
 
 @api.route("/announcements")
 def announcement():
-    from application import app
     if app.config["USE_HOMEPAGE"] and read_file(app.config['HOMEPAGE_FILE'])[0] == '2':
         return _announcement()
     elif not api_logged_in():
@@ -281,7 +273,6 @@ def _announcement():
     if "id" not in request.args:
         return json_fail("Must specify ids", 400)
     nums = [int(e) for e in request.args["id"].split(",") if e.isdigit()][:10]
-    from application import db
     res = db.execute("SELECT * FROM announcements WHERE id IN (?)", nums)
     returns = {}
     for item in res:
@@ -291,7 +282,6 @@ def _announcement():
 
 @api.route("/homepage")
 def homepage():
-    from application import app
     if app.config["USE_HOMEPAGE"]:
         return _homepage()
     elif not api_admin():
@@ -300,5 +290,4 @@ def homepage():
 
 
 def _homepage():
-    from application import app
     return json_success({"data": read_file(app.config['HOMEPAGE_FILE'])[2:]})
