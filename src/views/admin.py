@@ -29,30 +29,30 @@ def admin_submissions():
     args = []
 
     # Permission-based overrides
-    overrides = {}
-    if check_perm(["PROBLEM_MANAGER"]) and not check_perm(["ADMIN", "SUPERADMIN"]):
-        overrides["contest_id"] = "None"
+    query = request.args.copy()
+    if not check_perm(["ADMIN", "SUPERADMIN"]):
+        if check_perm(["PROBLEM_MANAGER"]):
+            query["contest_id"] = "None"
 
     # Construct query
-    if request.args.get("username"):
+    if query.get("username"):
         modifier += " username=? AND"
-        args.append(overrides.get("username") or request.args.get("username"))
+        args.append(query.get("username"))
 
-    if request.args.get("problem_id"):
+    if query.get("problem_id"):
         modifier += " problem_id=? AND"
-        args.append(overrides.get("problem_id") or request.args.get("problem_id"))
+        args.append(query.get("problem_id"))
 
-    if request.args.get("contest_id"):
-        argval = overrides.get("contest_id") or request.args.get("contest_id")
-        if argval == "None":
+    if query.get("contest_id"):
+        if query.get("contest_id") == "None":
             modifier += " contest_id IS NULL AND"
         else:
             modifier += " contest_id=? AND"
-            args.append(argval)
+            args.append(query.get("contest_id"))
 
-    if request.args.get("correct"):
+    if query.get("correct"):
         modifier += " correct=? AND"
-        args.append((overrides.get("correct") or request.args.get("correct")) == "AC")
+        args.append(query.get("correct") == "AC")
 
     page = request.args.get("page")
     if not page:
@@ -191,7 +191,7 @@ def update_perms():
     friendly_perms_add = [inv_perms[x] for x in perms_add]
     friendly_perms_remove = [inv_perms[x] for x in perms_remove]
 
-    # Permission check
+    # Permission checks for sensitive permissions
     if check_perm(["ADMIN", "SUPERADMIN"], perms_remove) and not check_perm(["SUPERADMIN"]):
         flash("Only the super-admin can revoke admin status", "danger")
         return redirect("/admin/users")

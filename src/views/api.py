@@ -247,7 +247,9 @@ def contest_scoreboard(contest_id):
             "score": data[i]["points"],
         })
 
-    return json.dumps(ret)
+    resp = make_response(json.dumps(ret))
+    resp.headers['Content-Type'] = 'application/json; charset=utf-8'
+    return resp
 
 
 @api.route("/contests")

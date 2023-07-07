@@ -121,13 +121,13 @@ def check_for_maintenance():
 
     maintenance_mode = bool(os.path.exists('maintenance_mode'))
     if maintenance_mode:
-        if request.path[:5] == '/api/':
+        if (not check_perm(["ADMIN", "SUPERADMIN"], api_get_perms()) and
+                request.path[:5] == '/api/'):
             return make_response(("The site is currently undergoing maintenance", 503))
 
         # Prevent Internal Server error if session only contains CSRF token
-        if not session or 'perms' not in session:
-            return render_template("error/maintenance.html"), 503
-        elif not check_perm(["ADMIN", "SUPERADMIN"]):
+        if (not session or 'perms' not in session or
+                not check_perm(["ADMIN", "SUPERADMIN"])):
             return render_template("error/maintenance.html"), 503
         else:
             flash("Maintenance mode is enabled", "warning")
@@ -202,9 +202,11 @@ def dl_contest(contest_id, problem_id):
         return abort(404)
     problem = db.execute(("SELECT * FROM contest_problems WHERE contest_id=? "
                           "AND problem_id=?"), contest_id, problem_id)
-    if len(problem) == 0 or (problem[0]["draft"] and not check_perm(["ADMIN", "SUPERADMIN"])):
+    if len(problem) == 0 or (problem[0]["draft"] and
+                             not check_perm(["ADMIN", "SUPERADMIN"])):
         return abort(404)
-    return send_from_directory("dl/", f"{contest_id}/{problem_id}.zip", as_attachment=True)
+    return send_from_directory("dl/", f"{contest_id}/{problem_id}.zip",
+                               as_attachment=True)
 
 
 @app.route("/login", methods=["GET", "POST"])
