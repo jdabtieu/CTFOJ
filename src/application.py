@@ -8,7 +8,6 @@ from datetime import datetime
 from io import BytesIO
 
 import jwt
-from cs50 import SQL
 from flask import (abort, Flask, flash, redirect, render_template, request,
                    send_from_directory, send_file, session)
 from flask_mail import Mail
@@ -18,6 +17,7 @@ from werkzeug.exceptions import HTTPException, InternalServerError, default_exce
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from helpers import *  # noqa
+from db import db
 from middlewares import ProxyFix
 
 app = Flask(__name__)
@@ -55,14 +55,6 @@ logging.getLogger().addHandler(logging.StreamHandler())
 
 # Configure flask-session
 Session(app)
-
-# Configure cs50
-try:
-    db = SQL("sqlite:///database.db")
-except Exception as e:  # when testing
-    sys.stderr.write(str(e))
-    open("database_test.db", "w").close()
-    db = SQL("sqlite:///database_test.db")
 
 # Configure flask-mail
 mail = Mail(app)

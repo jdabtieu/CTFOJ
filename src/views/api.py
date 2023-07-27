@@ -3,7 +3,7 @@ import uuid
 import logging
 
 from helpers import *  # noqa
-from application import db
+from db import db
 
 api = Blueprint("api", __name__)
 

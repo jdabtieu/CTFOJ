@@ -8,7 +8,7 @@ from io import BytesIO
 
 
 from helpers import *  # noqa
-from application import db
+from db import db
 
 api = Blueprint("problem", __name__)
 

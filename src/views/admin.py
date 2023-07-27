@@ -6,7 +6,7 @@ import re
 from werkzeug.security import generate_password_hash
 
 from helpers import *  # noqa
-from application import db
+from db import db
 
 api = Blueprint("admin", __name__)
 
