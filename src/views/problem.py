@@ -206,10 +206,8 @@ def problem_editeditorial(problem_id):
     if len(data) == 0:
         return render_template("problem/problem_noexist.html"), 404
 
-    data[0]['editorial'] = read_file('metadata/problems/' + problem_id + '/editorial.md')
-
     if request.method == "GET":
-        return render_template('problem/edit_editorial.html', data=data[0])
+        return render_template('problem/edit_editorial.html')
 
     # Reached via POST
 
