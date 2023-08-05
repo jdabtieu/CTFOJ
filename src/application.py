@@ -656,7 +656,7 @@ def problems():
     solved = set()
     if session.get("user_id"):
         solved_db = db.execute("SELECT problem_id FROM problem_solved WHERE user_id=:uid",
-                                 uid=session["user_id"])
+                               uid=session["user_id"])
         for row in solved_db:
             solved.add(row["problem_id"])
 
