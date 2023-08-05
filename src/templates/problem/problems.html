@@ -5,6 +5,16 @@
 
 {% block main %}
 <h1>Problems</h1>
+{% if is_ongoing_contest %}
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+        There is currently an ongoing contest. To view it, go to the <a href="/contests">Contests</a> page.
+        These are only <b>practice problems unrelated to the contest</b>.
+        <button type="button"
+                class="btn-close"
+                data-bs-dismiss="alert"
+                aria-label="Close"></button>
+    </div>
+{% endif %}
 <div id="pagination" style="display: inline-block; min-height: 42px" data-pages="{{ length }}"></div>
 <div id="category-selector-container">
     <label for="category-selector">Category</label>

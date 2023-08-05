@@ -680,9 +680,14 @@ def problems():
     categories = db.execute("SELECT DISTINCT category FROM problems WHERE draft=0")
     categories.sort(key=lambda x: x['category'])
 
+    is_ongoing_contest = len(db.execute(
+        ("SELECT id AS n FROM contests WHERE end > datetime('now') AND "
+         "start <= datetime('now') ORDER BY end DESC")))
+
     return render_template('problem/problems.html',
                            data=data, solved=solved, length=-(-length // 50),
-                           categories=categories, selected=category)
+                           categories=categories, selected=category,
+                           is_ongoing_contest=is_ongoing_contest)
 
 
 @app.route("/problems/create", methods=["GET", "POST"])
