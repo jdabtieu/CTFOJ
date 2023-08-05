@@ -8,6 +8,13 @@
 <p>
 	Are you sure you want to export {{ data["name"] }} to the Practice tab?
 </p>
+{% if data["instanced"] %}
+<p style="color: red"><b>
+    Because this problem is instanced, you will need to create a new entry in the instancer.
+    Simply copy the config of <code>{{ data["contest_id"] }}/{{ data["problem_id"] }}</code> to
+    <code>{{ data["contest_id"] }}-{{ data["problem_id"] }}</code>.
+</b></p>
+{% endif %}
 <form method="post">
     <div class="form-floating">
         <input class="form-control mb-3" id="pv" type="number" name="point_value" placeholder="New Point Value: (Empty to Keep Original)">

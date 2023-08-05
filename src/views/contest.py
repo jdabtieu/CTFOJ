@@ -636,10 +636,10 @@ def export_contest_problem(contest_id, problem_id):
         new_points = data[0]["point_value"]
 
     # Insert into problems databases
-    db.execute(("INSERT INTO problems(id, name, point_value, category, flag) "
-                "VALUES(:id, :name, :pv, :cat, :flag)"),
-               id=new_id, name=new_name, pv=new_points,
-               cat=data[0]["category"], flag=data[0]["flag"])
+    db.execute(("INSERT INTO problems(id, name, point_value, category, flag, flag_hint, "
+                "instanced) VALUES(?, ?, ?, ?, ?, ?, ?)"),
+               new_id, new_name, new_points, data[0]["category"], data[0]["flag"],
+               data[0]["flag_hint"], data[0]["instanced"])
 
     db.execute("INSERT INTO problem_solved(user_id, problem_id) SELECT user_id, :new_id "
                "FROM contest_solved WHERE contest_id=:cid AND problem_id=:pid",
