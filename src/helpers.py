@@ -5,6 +5,7 @@ import math
 import secrets
 import re
 import requests
+import urllib.parse
 from typing import Optional
 from datetime import datetime, timedelta
 from functools import wraps
@@ -126,7 +127,7 @@ def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if session.get("user_id") is None:
-            return redirect("/login?next=" + request.path)
+            return redirect("/login?next=" + urllib.parse.quote(request.full_path))
         return f(*args, **kwargs)
     return decorated_function
 
@@ -138,7 +139,7 @@ def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if session.get("user_id") is None:
-            return redirect("/login?next=" + request.path)
+            return redirect("/login?next=" + urllib.parse.quote(request.full_path))
         if not check_perm(["ADMIN", "SUPERADMIN"]):
             return redirect("/")
         return f(*args, **kwargs)
@@ -153,7 +154,7 @@ def perm_required(perms):
         @wraps(f)
         def decorated_function(*args, **kwargs):
             if session.get("user_id") is None:
-                return redirect("/login?next=" + request.path)
+                return redirect("/login?next=" + urllib.parse.quote(request.full_path))
             if not check_perm(perms):
                 return redirect("/")
             return f(*args, **kwargs)
