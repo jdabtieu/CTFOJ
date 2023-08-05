@@ -643,7 +643,6 @@ def create_contest():
 
 
 @app.route('/problems')
-@login_required
 def problems():
     page = request.args.get("page")
     if not page:
@@ -654,11 +653,12 @@ def problems():
     if not category:
         category = None
 
-    solved_data = db.execute("SELECT problem_id FROM problem_solved WHERE user_id=:uid",
-                             uid=session["user_id"])
     solved = set()
-    for row in solved_data:
-        solved.add(row["problem_id"])
+    if session.get("user_id"):
+        solved_db = db.execute("SELECT problem_id FROM problem_solved WHERE user_id=:uid",
+                                 uid=session["user_id"])
+        for row in solved_db:
+            solved.add(row["problem_id"])
 
     if category is not None:
         data = db.execute(
@@ -782,7 +782,6 @@ def profile(username):
 
 
 @app.route("/ranking")
-@login_required
 def ranking():
     user_info = db.execute("SELECT * FROM users WHERE verified=1 ORDER BY total_points DESC")
     return render_template("ranking.html", user_data=user_info)

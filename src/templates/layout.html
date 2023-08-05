@@ -24,16 +24,16 @@
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="navbar" data-active="{% block active %}{% endblock %}">
+                    <ul class="navbar-nav me-auto">
+                        <li><a class="nav-link" href="/">Home</a></li>
+                        <li><a class="nav-link" href="/problems">Practice</a></li>
+                        <li><a class="nav-link" href="/contests">Contests</a></li>
+                        <li><a class="nav-link" href="/ranking">Rankings</a></li>
+                        {% if check_perm(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER"]) %}
+                            <li><a class="nav-link" href="/admin/console">Admin Console</a></li>
+                        {% endif %}
+                    </ul>
                     {% if session.user_id %}
-                        <ul class="navbar-nav me-auto">
-                            <li><a class="nav-link" href="/">Home</a></li>
-                            <li><a class="nav-link" href="/problems">Practice</a></li>
-                            <li><a class="nav-link" href="/contests">Contests</a></li>
-                            <li><a class="nav-link" href="/ranking">Rankings</a></li>
-                            {% if check_perm(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER"]) %}
-                                <li><a class="nav-link" href="/admin/console">Admin Console</a></li>
-                            {% endif %}
-                        </ul>
                         <ul class="navbar-nav">
                             <div class="form-check form-switch nav-link">
                                 <input class="form-check-input dark-toggle"

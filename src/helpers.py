@@ -29,7 +29,10 @@ def check_perm(required_perms: list, user_perms: Optional[set] = None) -> bool:
     """
     required_perms = set([USER_PERM[x] for x in required_perms])
     if user_perms is None:
-        user_perms = session["perms"]
+        if session.get("perms"):
+            user_perms = session["perms"]
+        else:
+            user_perms = set()
     return bool(user_perms.intersection(required_perms))
 
 
