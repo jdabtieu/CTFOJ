@@ -9,7 +9,7 @@
 
 {% block main %}
 <h1>Edit {{ data["name"] }}</h1>
-<form autocomplete="off" method="post">
+<form autocomplete="off" method="post" enctype="multipart/form-data">
     <div class="form-floating">
         <input class="form-control mb-3"
                name="name"
@@ -78,6 +78,10 @@
                placeholder="Point Value"
                required>
         <label for="point_value">Point Value</label>
+    </div>
+    <div class="input-group mb-3">
+        <label class="input-group-text" for="file">New File (optional)</label>
+        <input class="form-control" type="file" id="file" name="file" accept=".zip">
     </div>
     <input class="btn btn-primary" type="submit" id="submit" name="submit" value="Submit">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>

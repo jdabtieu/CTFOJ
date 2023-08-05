@@ -178,6 +178,15 @@ def editproblem(problem_id):
          "(SELECT user_id FROM problem_solved WHERE problem_id=:pid)"),
         dpv=new_points - data[0]["point_value"], pid=problem_id
     )
+
+    # Check if file exists & upload if it does
+    file = request.files["file"]
+    if file.filename:
+        filename = problem_id + ".zip"
+        file.save("dl/" + filename)
+        if f'[{filename}](/dl/{filename})' not in new_description:
+            new_description += f'\n\n[{filename}](/dl/{filename})'
+
     write_file('metadata/problems/' + problem_id + '/description.md', new_description)
     write_file('metadata/problems/' + problem_id + '/hints.md', new_hint)
 

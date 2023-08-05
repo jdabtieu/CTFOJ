@@ -121,6 +121,7 @@ def test_contest(client, database):
         'hints': 'try looking at the title 2',
         'point_value': 2,
         'category': 'web',
+        'file': ('fake_empty_file', ''),
         'instanced': True,
     })
     assert result.status_code == 302
@@ -281,7 +282,8 @@ def test_contest(client, database):
         'name': 'dynscore',
         'description': 'dynamic is fun',
         'category': 'web',
-        'flag': 'ctf{nobodywillguessme}'
+        'flag': 'ctf{nobodywillguessme}',
+        'file': ('fake_empty_file', ''),
     })
     assert result.status_code == 302
 
@@ -293,7 +295,8 @@ def test_contest(client, database):
         'description': 'dynamic is fun',
         'category': 'web',
         'flag': 'ctf{nobodywillguessmeagain}',
-        'rejudge': True
+        'rejudge': True,
+        'file': ('fake_empty_file', ''),
     })
     assert result.status_code == 302
 

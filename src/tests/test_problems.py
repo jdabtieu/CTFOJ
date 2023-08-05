@@ -61,7 +61,8 @@ def test_problem(client, database):
         'point_value': 2,
         'rejudge': True,
         'category': 'web',
-        'flag': 'ctf{hello}'
+        'flag': 'ctf{hello}',
+        'file': ('fake_empty_file', ''),
     })
     assert result.status_code == 400
     assert b'required' in result.data
@@ -73,11 +74,15 @@ def test_problem(client, database):
         'point_value': 2,
         'rejudge': True,
         'category': 'web',
-        'flag': '\x2f\x10'
+        'flag': '\x2f\x10',
+        'file': ('fake_empty_file', ''),
     })
     assert result.status_code == 400
     assert b'Invalid' in result.data
 
+    file = open("test_upload.txt", "w")
+    file.write('ree2')
+    file.close()
     result = client.post('/problem/helloworldtesting/edit', data={
         'name': 'hello world 2',
         'description': 'a short fun problem 2',
@@ -86,9 +91,13 @@ def test_problem(client, database):
         'rejudge': True,
         'category': 'web',
         'flag': 'ctf{hello}',
-        'flag_hint': 'ctf{...}'
+        'flag_hint': 'ctf{...}',
+        'file': ('test_upload.txt', 'test_upload.txt'),
     }, follow_redirects=True)
     assert result.status_code == 200
+
+    result = client.get('/dl/helloworldtesting.zip')
+    assert result.data == b'ree2'
 
     result = client.get('/users/admin/profile')
     assert result.status_code == 200
@@ -112,7 +121,7 @@ def test_problem(client, database):
 
     result = client.get('/api/problem?id=helloworldtesting')
     assert json.loads(result.data)['status'] == 'success'
-    assert json.loads(result.data)['data']['description'] == 'a short fun problem 2'
+    assert json.loads(result.data)['data']['description'].startswith('a short fun problem 2')
     assert json.loads(result.data)['data']['hints'] == 'try looking at the title 2'
     assert json.loads(result.data)['data']['editorial'] == 'sample editorial'
     assert json.loads(result.data)['data']['flag_hint'] == 'ctf{...}'

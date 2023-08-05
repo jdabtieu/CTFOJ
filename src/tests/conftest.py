@@ -23,6 +23,7 @@ def client():
     app.config['USE_CAPTCHA'] = False
     app.config['WTF_CSRF_ENABLED'] = False
     app.config['SECRET_KEY'] = 'testing_secret_key'
+    open('fake_empty_file', 'w').close()
     return app.test_client()
 
 

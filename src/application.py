@@ -737,19 +737,19 @@ def create_problem():
         flash('A problem with this name or ID already exists', 'danger')
         return render_template("problem/create.html"), 409
 
-    # Check if file exists & upload if it does
-    file = request.files["file"]
-    if file.filename:
-        filename = problem_id + ".zip"
-        file.save("dl/" + filename)
-        description += f'\n\n[{filename}](/dl/{filename})'
-
     # Modify problems table
     db.execute(("INSERT INTO problems (id, name, point_value, category, flag, draft, "
                 "flag_hint, instanced) VALUES (:id, :name, :point_value, :category, "
                 ":flag, :draft, :fhint, :inst)"),
                id=problem_id, name=name, point_value=point_value, category=category,
                flag=flag, draft=draft, fhint=flag_hint, inst=instanced)
+
+    # Check if file exists & upload if it does
+    file = request.files["file"]
+    if file.filename:
+        filename = problem_id + ".zip"
+        file.save("dl/" + filename)
+        description += f'\n\n[{filename}](/dl/{filename})'
 
     os.makedirs('metadata/problems/' + problem_id)
     write_file('metadata/problems/' + problem_id + '/description.md', description)

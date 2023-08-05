@@ -315,6 +315,7 @@ def publish_contest_problem(contest_id, problem_id):
 @api.route('/<contest_id>/problem/<problem_id>/edit', methods=["GET", "POST"])
 @admin_required
 def edit_contest_problem(contest_id, problem_id):
+
     # Ensure contest exists
     if not contest_exists(contest_id):
         return render_template("contest/contest_noexist.html"), 404
@@ -376,7 +377,16 @@ def edit_contest_problem(contest_id, problem_id):
                 "flag_hint=:fhint, instanced=:inst WHERE contest_id=:cid AND problem_id=:pid"),
                name=new_name, category=new_category, flag=new_flag, cid=contest_id,
                pid=problem_id, fhint=new_flag_hint, inst=new_instanced)
-
+    # Check if file exists & upload if it does
+    file = request.files["file"]
+    if file.filename:
+        if not os.path.exists("dl/" + contest_id):
+            os.makedirs("dl/" + contest_id)
+        filename = problem_id + ".zip"
+        filepath = "dl/" + contest_id + "/"
+        file.save(filepath + filename)
+        if f'[{filename}](/{filepath + filename})' not in new_description:
+            new_description += f'\n\n[{filename}](/{filepath + filename})'
     write_file(
         f'metadata/contests/{contest_id}/{problem_id}/description.md', new_description)
     write_file(f'metadata/contests/{contest_id}/{problem_id}/hints.md', new_hint)
