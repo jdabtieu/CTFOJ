@@ -115,7 +115,7 @@ def check_for_maintenance():
     if maintenance_mode:
         if (not check_perm(["ADMIN", "SUPERADMIN"], api_get_perms()) and
                 request.path[:5] == '/api/'):
-            return make_response(("The site is currently undergoing maintenance", 503))
+            return json_fail("The site is currently undergoing maintenance", 503)
 
         # Prevent Internal Server error if session only contains CSRF token
         if (not session or 'perms' not in session or
@@ -792,6 +792,8 @@ def errorhandler(e):
     if not isinstance(e, HTTPException):
         e = InternalServerError()
     if request.path.startswith('/api/'):
+        if e.code == 500:
+            return json_fail("Internal Server Error", 500)
         return json_fail(e.description, e.code)
     if e.code == 404:
         return render_template("error/404.html"), 404
