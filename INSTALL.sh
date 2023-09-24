@@ -57,8 +57,8 @@ echo "Precheck complete!"
 . bin/activate || . Scripts/activate
 cd src
 echo "Installing dependencies..."
-"$PYTHPIP" install wheel
-"$PYTHPIP" install -r requirements.txt
+pip install wheel
+pip install -r requirements.txt
 echo "Data directory (if using Docker, enter the directory that the volume is bound to): "
 echo "This directory can be absolute or relative to the src directory"
 read DATA_DIR
@@ -88,8 +88,9 @@ ln -s "$DATA_DIR/dl" dl
 ln -s "$DATA_DIR/metadata" metadata
 ln -s "$DATA_DIR/backups" backups
 chmod +x daily_tasks.py
-"$PYTH" daily_tasks.py
-cp default_settings.py settings.py
+python daily_tasks.py
+cp default_settings.py "$DATA_DIR/settings.py"
+ln -s "$DATA_DIR/settings.py" settings.py
 cp templates/default_homepage.html metadata/homepage.html
 echo "Configuring settings..."
 echo "Admin Email: "
@@ -100,5 +101,5 @@ EOF
 nano settings.py
 echo "Success! CTFOJ is now set up."
 echo "Running application as debug... You may exit anytime by hitting Ctrl+C"
-"$PYTH" application.py
+python application.py
 deactivate
