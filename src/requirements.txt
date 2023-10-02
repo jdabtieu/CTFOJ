@@ -3,7 +3,7 @@ flask-session2==1.3.1
 Flask-WTF==1.2.1
 Flask==2.3.3
 Werkzeug==2.3.7
-cs50==9.2.5
+cs50==9.2.6
 pyjwt==2.8.0
 requests==2.31.0
 sqlalchemy<3.0
