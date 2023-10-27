@@ -114,6 +114,7 @@ def test_contest(client, database):
 
     result = client.get('/contest/testingcontest/problem/helloworldtesting')
     assert result.status_code == 200
+    assert b'Contest Leaderboard' in result.data
 
     result = client.post('/contest/testingcontest/problem/helloworldtesting/edit', data={
         'name': 'hello world 2',

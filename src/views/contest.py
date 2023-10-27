@@ -31,9 +31,6 @@ def contest(contest_id):
         return redirect("/contests")
 
     title = contest_info[0]["name"]
-
-    # Check for scoreboard permission
-    scoreboard = contest_info[0]["scoreboard_visible"] or check_perm(["ADMIN", "SUPERADMIN"])
     scoreboard_key = contest_info[0]["scoreboard_key"]
 
     user_info = db.execute(
@@ -82,7 +79,7 @@ def contest(contest_id):
         }
         data.append(keys)
 
-    return render_template("contest/contest.html", title=title, scoreboard=scoreboard,
+    return render_template("contest/contest.html", title=title,
                            scoreboard_key=scoreboard_key, data=data)
 
 
@@ -409,7 +406,7 @@ def contest_scoreboard(contest_id):
     # Ensure proper permissions
     if not (contest_info[0]["scoreboard_visible"] or check_perm(["ADMIN", "SUPERADMIN"])):
         flash('You are not allowed to view the scoreboard!', 'danger')
-        return redirect("/contest/" + contest_id)
+        return redirect(request.referrer)
 
     data = db.execute(
         ("SELECT user_id, points, lastAC, username FROM contest_users "

@@ -678,8 +678,8 @@ def problems():
     categories.sort(key=lambda x: x['category'])
 
     is_ongoing_contest = len(db.execute(
-        ("SELECT id AS n FROM contests WHERE end > datetime('now') AND "
-         "start <= datetime('now') ORDER BY end DESC")))
+        "SELECT * FROM contests WHERE end > datetime('now') AND start <= datetime('now')"
+    ))
 
     return render_template('problem/problems.html',
                            data=data, solved=solved, length=-(-length // 50),
@@ -786,7 +786,13 @@ def profile(username):
 @app.route("/ranking")
 def ranking():
     user_info = db.execute("SELECT * FROM users WHERE verified=1 ORDER BY total_points DESC")
-    return render_template("ranking.html", user_data=user_info)
+
+    is_ongoing_contest = len(db.execute(
+        "SELECT * FROM contests WHERE end > datetime('now') AND start <= datetime('now')"
+    ))
+
+    return render_template("ranking.html", user_data=user_info,
+                           is_ongoing_contest=is_ongoing_contest)
 
 
 # Error handling

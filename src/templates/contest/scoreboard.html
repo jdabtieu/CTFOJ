@@ -1,7 +1,7 @@
-{% extends "layout.html" %}
+{% extends "contest/layout.html" %}
 
 {% block title %}{{ title }} Scoreboard{% endblock %}
-{% block active %}Contests{% endblock %}
+{% block active %}Contest Leaderboard{% endblock %}
 
 {% block main %}
 <h1><a href="{{ request.path[:-11] }}">{{ title }}</a></h1>

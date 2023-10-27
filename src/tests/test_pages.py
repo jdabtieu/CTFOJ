@@ -22,7 +22,8 @@ def test_pages(client, database):
 
     result = client.get('/ranking')
     assert result.status_code == 200
-    assert b'Rankings' in result.data
+    assert b'Practice Leaderboard' in result.data
+    assert b'Contest Leaderboard' not in result.data
 
     result = client.post('/login', data={
         'username': 'normal_user',

@@ -1,0 +1,5 @@
+{% extends "layout.html" %}
+
+{% block contest_leaderboard %}
+<li><a class="nav-link" href="{{ '/'.join(request.path.split('/')[:3]) }}/scoreboard">Contest Leaderboard</a></li>
+{% endblock %}
