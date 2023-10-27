@@ -664,7 +664,7 @@ def export_contest_problem(contest_id, problem_id):
     db.execute(("UPDATE users SET total_points=total_points+:nv, "
                 "problems_solved=problems_solved+1 WHERE id IN (SELECT user_id FROM "
                 "contest_solved WHERE contest_id=:cid AND problem_id=:pid)"),
-                nv=new_points, cid=contest_id, pid=problem_id)
+               nv=new_points, cid=contest_id, pid=problem_id)
 
     os.makedirs(f'metadata/problems/{new_id}')
     shutil.copy(f'metadata/contests/{contest_id}/{problem_id}/description.md',

@@ -225,12 +225,12 @@ def test_contest(client, database):
     result = client.get('/api/contest/scoreboard/testingcontest')
     assert result.status_code == 401
 
-    result = client.get('/api/contest/scoreboard/testingcontest?key=00000000-0000-0000-0000-000000000001')
+    result = client.get('/api/contest/scoreboard/testingcontest?key=00000000-0000-0000-0000-000000000001')  # noqa
     assert result.status_code == 401
 
-    result = client.get('/api/contest/scoreboard/testingcontest?key=00000000-0000-0000-0000-000000000000')
+    result = client.get('/api/contest/scoreboard/testingcontest?key=00000000-0000-0000-0000-000000000000')  # noqa
     assert result.status_code == 200
-    assert result.data == b'{"standings": [{"pos": 1, "team": "normal_user", "score": 2}]}'
+    assert result.data == b'{"standings": [{"pos": 1, "team": "normal_user", "score": 2}]}'  # noqa
 
     result = client.post('/contest/testingcontest/scoreboard/hide', data={
         'user_id': 2
@@ -335,4 +335,3 @@ def test_contest(client, database):
     shutil.rmtree('dl')
     os.mkdir('dl')
     shutil.rmtree('metadata/problems/testingcontest-helloworldtesting')
-

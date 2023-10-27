@@ -2,7 +2,6 @@ from flask import (Blueprint, flash, redirect, render_template, request, session
                    current_app as app)
 import logging
 import os
-import re
 from werkzeug.security import generate_password_hash
 
 from helpers import *  # noqa
@@ -83,14 +82,16 @@ def admin_users():
     data = db.execute("SELECT * FROM users ORDER BY id ASC LIMIT 50 OFFSET ?", page)
     length = len(db.execute("SELECT * FROM users"))
 
-    perms = db.execute("SELECT * FROM user_perms WHERE user_id IN (SELECT id FROM users ORDER BY id ASC LIMIT 50 OFFSET ?)", page)
+    perms = db.execute(("SELECT * FROM user_perms WHERE user_id IN "
+                        "(SELECT id FROM users ORDER BY id ASC LIMIT 50 OFFSET ?)"), page)
     disp_perms = {}
     for perm in perms:
         if perm["user_id"] not in disp_perms:
             disp_perms[perm["user_id"]] = {}
         disp_perms[perm["user_id"]][perm["perm_id"]] = True
 
-    return render_template("admin/users.html", data=data, length=-(-length // 50), perm_list=USER_PERM, disp_perms=disp_perms)
+    return render_template("admin/users.html", data=data, length=-(-length // 50),
+                           perm_list=USER_PERM, disp_perms=disp_perms)
 
 
 @api.route("/ban", methods=["POST"])
@@ -205,7 +206,7 @@ def update_perms():
         db.execute("INSERT INTO user_perms(user_id, perm_id) VALUES(?, ?)", user_id, perm)
     for perm in perms_remove:
         db.execute("DELETE FROM user_perms WHERE user_id=? AND perm_id=?", user_id, perm)
-    
+
     # Flash and log message
     msg = f"Permissions changed for user #{user_id} ({user[0]['username']}). "
     msg += f"Granted {friendly_perms_add}, revoked {friendly_perms_remove}."

@@ -133,4 +133,3 @@ def test_pages(client, database):
 
     result = client.get('/ranking')
     assert result.status_code == 200
-    

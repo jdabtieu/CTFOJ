@@ -114,6 +114,7 @@ def api_get_perms() -> set:
     perms = db.execute("SELECT * FROM user_perms WHERE user_id=?", user[0]["id"])
     return set([x["perm_id"] for x in perms])
 
+
 def api_admin() -> bool:
     """
     Check whether the user is an admin, using API key or session

@@ -41,7 +41,7 @@ def test_api(client, database):
     assert 'message' in json.loads(result.data)
 
     database.execute("UPDATE users SET api='00000000-0000-0000-0000-000000000000'")
-    result = client.get('/api/contests?id=successful&key=00000000-0000-0000-0000-000000000000')
+    result = client.get('/api/contests?id=successful&key=00000000-0000-0000-0000-000000000000')  # noqa
     assert result.status_code == 200
     assert json.loads(result.data)['status'] == 'success'
     assert 'data' in json.loads(result.data)

@@ -1,15 +1,12 @@
 import logging
 import os
 import requests
-import shutil
 import sys
-import zipfile
 from datetime import datetime
-from io import BytesIO
 
 import jwt
 from flask import (abort, Flask, flash, redirect, render_template, request,
-                   send_from_directory, send_file, session)
+                   send_from_directory, session)
 from flask_mail import Mail
 from flask_session import Session
 from flask_wtf.csrf import CSRFProtect

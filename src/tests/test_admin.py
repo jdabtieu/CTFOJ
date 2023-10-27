@@ -88,7 +88,9 @@ def test_admin(client, database):
     assert b'was reset' in result.data
 
     # Test make admin feature
-    result = client.post('/admin/updateperms?user_id=2', data={'perms': [USER_PERM["ADMIN"]]}, follow_redirects=True)
+    result = client.post('/admin/updateperms?user_id=2',
+                         data={'perms': [USER_PERM["ADMIN"]]},
+                         follow_redirects=True)
     assert result.status_code == 200
     assert b"Granted [&#39;ADMIN&#39;]" in result.data
 
@@ -104,7 +106,7 @@ def test_admin(client, database):
     # But superadmins can
     database.execute("INSERT INTO user_perms VALUES(3, 1, ?)", USER_PERM["SUPERADMIN"])
     client.post('/login', data={'username': 'admin', 'password': 'CTFOJadmin'})
-    
+
     result = client.post('/admin/updateperms?user_id=2', follow_redirects=True)
     assert result.status_code == 200
     assert b"revoked [&#39;ADMIN&#39;]" in result.data
