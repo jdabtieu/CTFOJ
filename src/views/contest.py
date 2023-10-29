@@ -406,7 +406,7 @@ def contest_scoreboard(contest_id):
     # Ensure proper permissions
     if not (contest_info[0]["scoreboard_visible"] or check_perm(["ADMIN", "SUPERADMIN"])):
         flash('You are not allowed to view the scoreboard!', 'danger')
-        return redirect(request.referrer)
+        return redirect("/contest/" + contest_id)
 
     data = db.execute(
         ("SELECT user_id, points, lastAC, username FROM contest_users "
