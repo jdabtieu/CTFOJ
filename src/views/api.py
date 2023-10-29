@@ -88,7 +88,7 @@ def query_instancer():
 
     try:
         response = requests.post(app.config["INSTANCER_HOST"] + "/api/v1/query",
-                                 headers=headers, json=body)
+                                 headers=headers, json=body, timeout=3)
         return json_success(response.json())
     except Exception:
         return json_fail("Failed to get a valid response from the instance server", 500)
@@ -134,7 +134,7 @@ def create_instancer():
 
     try:
         response = requests.post(app.config["INSTANCER_HOST"] + "/api/v1/create",
-                                 headers=headers, json=body)
+                                 headers=headers, json=body, timeout=3)
         return json_success(response.json())
     except Exception:
         return json_fail("Failed to get a valid response from the instance server", 500)
@@ -179,7 +179,7 @@ def destroy_instancer():
 
     try:
         response = requests.post(app.config["INSTANCER_HOST"] + "/api/v1/destroy",
-                                 headers=headers, json=body)
+                                 headers=headers, json=body, timeout=3)
         return json_success(response.json())
     except Exception:
         return json_fail("Failed to get a valid response from the instance server", 500)
