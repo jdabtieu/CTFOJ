@@ -8,8 +8,8 @@ Please refer to the chart below for versions with security support
 | ----------- | ------------------ |
 | Prereleases | :x:                |
 | Betas       | :x:                |
-| >= 4.0.0    | :white_check_mark: |
-| < 4.0.0     | :x:                |
+| >= 4.1.0    | :white_check_mark: |
+| < 4.1.0     | :x:                |
 
 As you can tell, it is strongly recommended to always be on the latest stable major release. It is strongly recommended to run the application on a modern Linux distribution with Python >=3.8.
 
