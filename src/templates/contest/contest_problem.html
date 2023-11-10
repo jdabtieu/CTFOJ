@@ -156,7 +156,7 @@
         <div>
             <b>Category:</b> {{ data["category"] }}<br>
             <b>Points:</b> {{ data["point_value"] }}<br>
-            <a href="/contest/{{ request.path.split("/")[2] }}">Back to contest</a>
+            <a href="/contest/{{ request.path.split("/")[2] }}"><b>Back to contest</b></a>
             {% if check_perm(["ADMIN", "SUPERADMIN"]) %}
                 <br><a href="/admin/submissions?contest_id={{ request.path.split('/')[2] }}&problem_id={{ request.path.split('/')[4] }}">
                         View submissions
