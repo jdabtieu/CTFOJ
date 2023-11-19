@@ -50,6 +50,8 @@ def test_problem(client, database):
     assert result.status_code == 200
     assert b'published' in result.data
 
+    result = client.get('/problem/helloworldtesting/editeditorial')
+    assert result.status_code == 200
     result = client.post('/problem/helloworldtesting/editeditorial',
                          data={'editorial': 'sample editorial'}, follow_redirects=True)
     assert result.status_code == 200
@@ -136,13 +138,13 @@ def test_problem(client, database):
     assert b'Congratulations' in result.data
 
     # test if nonexistent problems don't exist
-    result = client.get('/problem/idontexist', follow_redirects=True)
+    result = client.get('/problem/idontexist')
     assert result.status_code == 404
     assert b'does not exist' in result.data
     client.get('/logout')
 
     client.post('/login', data={'username': 'admin', 'password': 'CTFOJadmin'})
-    result = client.get('/problem/helloworldtesting/download', follow_redirects=True)
+    result = client.get('/problem/helloworldtesting/download')
     assert result.status_code == 200
 
     result = client.post('/problem/helloworldtesting/delete', follow_redirects=True)
