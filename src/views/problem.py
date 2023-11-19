@@ -207,7 +207,7 @@ def problem_editeditorial(problem_id):
         return render_template("problem/problem_noexist.html"), 404
 
     if request.method == "GET":
-        return render_template('problem/edit_editorial.html')
+        return render_template('problem/edit_editorial.html', data=data[0])
 
     # Reached via POST
 
