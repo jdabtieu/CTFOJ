@@ -19,6 +19,7 @@ fi
 
 # Checkout repo
 echo 'Checking out working directory into /tmp/CTFOJ...'
+echo 'If cp whines about cannot create symbolic link, ignore it, it is ok'
 cp -r .. /tmp/CTFOJ
 echo 'Checking out working directory into /tmp/CTFOJ...Done!'
 

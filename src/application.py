@@ -104,19 +104,19 @@ if not app.config['TESTING']:
 @app.before_request
 def check_for_maintenance():
     # Don't prevent login or getting assets
-    if request.path == '/login' or (request.path[:8] == '/assets/'
-                                    and '..' not in request.path):
+    if request.path == '/login' or request.path.startswith('/assets/'):
         return
 
     maintenance_mode = bool(os.path.exists('maintenance_mode'))
     if maintenance_mode:
-        if (not check_perm(["ADMIN", "SUPERADMIN"], api_get_perms()) and
-                request.path[:5] == '/api/'):
-            return json_fail("The site is currently undergoing maintenance", 503)
+        if request.path.startswith('/api/'):
+            if not check_perm(["ADMIN", "SUPERADMIN"], api_get_perms()):
+                return json_fail("The site is currently undergoing maintenance", 503)
+            else:
+                return
 
         # Prevent Internal Server error if session only contains CSRF token
-        if (not session or 'perms' not in session or
-                not check_perm(["ADMIN", "SUPERADMIN"])):
+        if not check_perm(["ADMIN", "SUPERADMIN"]):
             return render_template("error/maintenance.html"), 503
         else:
             flash("Maintenance mode is enabled", "warning")
