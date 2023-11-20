@@ -15,7 +15,7 @@ logger = logging.getLogger("CTFOJ")
 @api.route("/console")
 @perm_required(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER"])
 def admin_console():
-    return render_template("admin/console.html", ver="v4.1.0",
+    return render_template("admin/console.html", ver="v4.1.1",
                            maintenance_mode=os.path.exists('maintenance_mode'))
 
 
