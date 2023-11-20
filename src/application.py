@@ -135,7 +135,7 @@ def index():
 
     data = db.execute(
         "SELECT * FROM announcements ORDER BY id DESC LIMIT 10 OFFSET ?", page)
-    length = len(db.execute("SELECT * FROM announcements"))
+    length = db.execute("SELECT COUNT(*) AS cnt FROM announcements")[0]["cnt"]
 
     if not session or 'username' not in session:
         template = read_file(app.config['HOMEPAGE_FILE'])
@@ -664,15 +664,15 @@ def problems():
              "problems.id=problem_solved.problem_id WHERE (draft=0 AND category=?)"
              "GROUP BY problems.id ORDER BY id ASC LIMIT 50 OFFSET ?"),
             category, page)
-        length = len(db.execute("SELECT * FROM problems WHERE (draft=0 AND category=?)",
-                                category))
+        length = db.execute(("SELECT COUNT(*) AS cnt FROM problems WHERE "
+                             "draft=0 AND category=?"), category)[0]["cnt"]
     else:
         data = db.execute(
             ("SELECT problems.*, COUNT(DISTINCT problem_solved.user_id) AS sols "
              "FROM problems LEFT JOIN problem_solved ON "
              "problems.id=problem_solved.problem_id WHERE draft=0 "
              "GROUP BY problems.id ORDER BY id ASC LIMIT 50 OFFSET ?"), page)
-        length = len(db.execute("SELECT * FROM problems WHERE draft=0"))
+        length = db.execute("SELECT COUNT(*) AS cnt FROM problems WHERE draft=0")[0]["cnt"]  # noqa E501
 
     categories = db.execute("SELECT DISTINCT category FROM problems WHERE draft=0")
     categories.sort(key=lambda x: x['category'])
@@ -768,7 +768,7 @@ def draft_problems():
     page = (int(page) - 1) * 50
 
     data = db.execute("SELECT * FROM problems WHERE draft=1 LIMIT 50 OFFSET ?", page)
-    length = len(db.execute("SELECT * FROM problems WHERE draft=1"))
+    length = db.execute("SELECT COUNT(*) AS cnt FROM problems WHERE draft=1")[0]["cnt"]
 
     return render_template('problem/draft_problems.html',
                            data=data, length=-(-length // 50))

@@ -59,8 +59,8 @@ def admin_submissions():
     page = (int(page) - 1) * 50
     modifier += " 1=1"
 
-    length = len(db.execute(("SELECT submissions.*, users.username FROM submissions "
-                             "LEFT JOIN users ON user_id=users.id") + modifier, *args))
+    length = db.execute(("SELECT COUNT(*) AS cnt FROM submissions LEFT JOIN users ON "
+                         "user_id=users.id") + modifier, *args)[0]["cnt"]
 
     args.append(page)
     submissions = db.execute(("SELECT submissions.*, users.username FROM submissions "
@@ -80,7 +80,7 @@ def admin_users():
     page = (int(page) - 1) * 50
 
     data = db.execute("SELECT * FROM users ORDER BY id ASC LIMIT 50 OFFSET ?", page)
-    length = len(db.execute("SELECT * FROM users"))
+    length = db.execute("SELECT COUNT(*) AS cnt FROM users")[0]["cnt"]
 
     perms = db.execute(("SELECT * FROM user_perms WHERE user_id IN "
                         "(SELECT id FROM users ORDER BY id ASC LIMIT 50 OFFSET ?)"), page)
@@ -352,7 +352,7 @@ def preview_homepage():
 
     data = db.execute(
         "SELECT * FROM announcements ORDER BY id DESC LIMIT 10 OFFSET ?", page)
-    length = len(db.execute("SELECT * FROM announcements"))
+    length = db.execute("SELECT COUNT(*) AS cnt FROM announcements")[0]["cnt"]
 
     template_type = read_file(app.config['HOMEPAGE_FILE'])[0]
     return render_template(f"home_fragment/home{template_type}.html",
