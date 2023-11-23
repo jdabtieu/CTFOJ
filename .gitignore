@@ -4,5 +4,7 @@
 /share
 /Scripts
 /Include
+/include
 /data
 pyvenv.cfg
+__pycache__

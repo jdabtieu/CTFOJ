@@ -268,13 +268,12 @@ def contest_problem(contest_id, problem_id):
                          "AND user_id=:uid AND problem_id=:pid"),
                         cid=contest_id, uid=session["user_id"], pid=problem_id)
     if len(check1) == 0:
-        db.execute(("INSERT INTO contest_solved(contest_id, user_id, problem_id) "
-                    "VALUES(:cid, :uid, :pid)"),
-                   cid=contest_id, pid=problem_id, uid=session["user_id"])
-
         if check[0]["score_users"] != -1:  # Dynamic scoring
             update_dyn_score(contest_id, problem_id)
         else:  # Static scoring
+            db.execute(("INSERT INTO contest_solved(contest_id, user_id, problem_id) "
+                        "VALUES(:cid, :uid, :pid)"),
+                       cid=contest_id, pid=problem_id, uid=session["user_id"])
             points = check[0]["point_value"]
             db.execute(("UPDATE contest_users SET lastAC=datetime('now'), "
                         "points=points+:points WHERE contest_id=:cid AND user_id=:uid"),

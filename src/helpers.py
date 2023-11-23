@@ -242,6 +242,10 @@ def update_dyn_score(contest_id, problem_id, update_curr_user=True):
     Prereqs for using this function: user solve entry must already be in contest_solved
     """
     db.execute("BEGIN")
+    if update_curr_user:
+        db.execute(("INSERT INTO contest_solved(contest_id, user_id, problem_id) "
+                    "VALUES(:cid, :uid, :pid)"),
+                   cid=contest_id, pid=problem_id, uid=session["user_id"])
     check = db.execute(("SELECT * FROM contest_problems WHERE contest_id=:cid AND "
                         "problem_id=:pid"), cid=contest_id, pid=problem_id)
     solves = len(db.execute(
