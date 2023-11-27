@@ -13,25 +13,20 @@ logger = logging.getLogger("CTFOJ")
 
 
 @api.route("/console")
-@perm_required(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER"])
+@perm_required(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER", "CONTENT_MANAGER"])
 def admin_console():
     return render_template("admin/console.html", ver="v4.1.1",
                            maintenance_mode=os.path.exists('maintenance_mode'))
 
 
 @api.route("/submissions")
-@perm_required(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER"])
+@perm_required(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER", "CONTENT_MANAGER"])
 def admin_submissions():
     submissions = None
 
+    query = request.args
     modifier = " WHERE"
     args = []
-
-    # Permission-based overrides
-    query = request.args.copy()
-    if not check_perm(["ADMIN", "SUPERADMIN"]):
-        if check_perm(["PROBLEM_MANAGER"]):
-            query["contest_id"] = "None"
 
     # Construct query
     if query.get("username"):
@@ -43,7 +38,8 @@ def admin_submissions():
         args.append(query.get("problem_id"))
 
     if query.get("contest_id"):
-        if query.get("contest_id") == "None":
+        if (query.get("contest_id") == "None" or
+                not check_perm(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"])):
             modifier += " contest_id IS NULL AND"
         else:
             modifier += " contest_id=? AND"
@@ -186,6 +182,9 @@ def update_perms():
     # Calculate old/new perms
     perms_add = new_perms - cur_perms
     perms_remove = cur_perms - new_perms
+    if not perms_add and not perms_remove:
+        flash("No perms were updated", "warning")
+        return redirect("/admin/users")
 
     # Get friendly names
     inv_perms = {v: k for k, v in USER_PERM.items()}
@@ -209,7 +208,10 @@ def update_perms():
 
     # Flash and log message
     msg = f"Permissions changed for user #{user_id} ({user[0]['username']}). "
-    msg += f"Granted {friendly_perms_add}, revoked {friendly_perms_remove}."
+    if friendly_perms_add:
+        msg += f"Granted {friendly_perms_add}. "
+    if friendly_perms_remove:
+        msg += f"Revoked {friendly_perms_remove}. "
     flash(msg, "success")
     logger.info(msg + f" Performed by user #{session['user_id']} ({session['username']})",
                 extra={"section": "auth"})
@@ -217,7 +219,7 @@ def update_perms():
 
 
 @api.route("/createannouncement", methods=["GET", "POST"])
-@admin_required
+@perm_required(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"])
 def createannouncement():
     if request.method == "GET":
         return render_template("admin/createannouncement.html")
@@ -244,7 +246,7 @@ def createannouncement():
 
 
 @api.route("/deleteannouncement", methods=["POST"])
-@admin_required
+@perm_required(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"])
 def delete_announcement():
     aid = request.form.get("aid")
     if not aid:
@@ -260,7 +262,7 @@ def delete_announcement():
 
 
 @api.route("/editannouncement/<aid>", methods=["GET", "POST"])
-@admin_required
+@perm_required(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"])
 def editannouncement(aid):
     data = db.execute("SELECT * FROM announcements WHERE id=:aid", aid=aid)
 
@@ -316,7 +318,7 @@ def maintenance():
 
 
 @api.route("/edithomepage", methods=["GET", "POST"])
-@admin_required
+@perm_required(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"])
 def edit_homepage():
     if request.method == "GET":
         return render_template("admin/edithomepage.html")
@@ -343,7 +345,7 @@ def edit_homepage():
 
 
 @api.route("/previewhomepage")
-@admin_required
+@perm_required(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"])
 def preview_homepage():
     page = request.args.get("page")
     if not page:

@@ -54,7 +54,7 @@
                            placeholder="Filter by problem ID">
                     <label for="problem_id">Problem ID</label>
                 </div>
-                {% if check_perm(["ADMIN", "SUPERADMIN"]) %}
+                {% if check_perm(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"]) %}
                 <div class="form-floating">
                     <input class="form-control mb-3"
                            id="contest_id"

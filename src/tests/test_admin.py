@@ -109,7 +109,7 @@ def test_admin(client, database):
 
     result = client.post('/admin/updateperms?user_id=2', follow_redirects=True)
     assert result.status_code == 200
-    assert b"revoked [&#39;ADMIN&#39;]" in result.data
+    assert b"Revoked [&#39;ADMIN&#39;]" in result.data
 
     # Test announcements creation and editing
     result = client.post('/admin/createannouncement', data={

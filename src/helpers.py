@@ -19,6 +19,7 @@ USER_PERM = {
     "SUPERADMIN": 0,
     "ADMIN": 1,
     "PROBLEM_MANAGER": 2,
+    "CONTENT_MANAGER": 3,
 }
 
 
@@ -120,6 +121,13 @@ def api_admin() -> bool:
     Check whether the user is an admin, using API key or session
     """
     return check_perm(["ADMIN", "SUPERADMIN"], api_get_perms())
+
+
+def api_perm(perms) -> bool:
+    """
+    Check whether the API user matches any given permission, using API key or session
+    """
+    return check_perm(perms, api_get_perms())
 
 
 def login_required(f):

@@ -30,7 +30,7 @@
                         <li><a class="nav-link" href="/ranking">Practice Leaderboard</a></li>
                         <li><a class="nav-link" href="/contests">Contests</a></li>
                         {% block contest_leaderboard %}{% endblock %}
-                        {% if check_perm(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER"]) %}
+                        {% if check_perm(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER", "CONTENT_MANAGER"]) %}
                             <li><a class="nav-link" href="/admin/console">Admin Console</a></li>
                         {% endif %}
                     </ul>

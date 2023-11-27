@@ -71,7 +71,7 @@ def problem(problem_id):
 
 
 @api.route('<problem_id>/publish', methods=["POST"])
-@perm_required(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER"])
+@perm_required(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER", "CONTENT_MANAGER"])
 def publish_problem(problem_id):
     data = db.execute("SELECT * FROM problems WHERE id=:problem_id",
                       problem_id=problem_id)
@@ -105,7 +105,7 @@ def problem_editorial(problem_id):
 
 
 @api.route('<problem_id>/edit', methods=["GET", "POST"])
-@perm_required(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER"])
+@perm_required(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER", "CONTENT_MANAGER"])
 def editproblem(problem_id):
     data = db.execute("SELECT * FROM problems WHERE id=:problem_id",
                       problem_id=problem_id)
@@ -197,7 +197,7 @@ def editproblem(problem_id):
 
 
 @api.route('<problem_id>/editeditorial', methods=["GET", "POST"])
-@perm_required(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER"])
+@perm_required(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER", "CONTENT_MANAGER"])
 def problem_editeditorial(problem_id):
     data = db.execute("SELECT * FROM problems WHERE id=:problem_id",
                       problem_id=problem_id)
@@ -225,7 +225,7 @@ def problem_editeditorial(problem_id):
 
 
 @api.route('<problem_id>/delete', methods=["POST"])
-@perm_required(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER"])
+@perm_required(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER", "CONTENT_MANAGER"])
 def delete_problem(problem_id):
     data = db.execute("SELECT * FROM problems WHERE id=:pid", pid=problem_id)
 
@@ -252,7 +252,7 @@ def delete_problem(problem_id):
 
 
 @api.route('<problem_id>/download')
-@perm_required(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER"])
+@perm_required(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER", "CONTENT_MANAGER"])
 def download_problem(problem_id):
     temp_zipfile = BytesIO()
     zf = zipfile.ZipFile(temp_zipfile, 'w', zipfile.ZIP_DEFLATED)

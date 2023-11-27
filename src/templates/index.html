@@ -5,7 +5,7 @@
 
 {% block main %}
 <h1>Announcements</h1>
-{% if check_perm(["ADMIN", "SUPERADMIN"]) %}
+{% if check_perm(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"]) %}
     <div id="confirm" class="hidden">
         <form method="post" style="margin-bottom: 1rem;" action="/admin/deleteannouncement">
             <input class="btn btn-danger"
@@ -24,7 +24,7 @@
         <h3>{{ announcement["name"] }}</h3>
         <p style="margin: 0;">Posted <span class="dt">{{ announcement["date"] }}</span></p>
         <div id="announcement-{{ announcement['id'] }}" class="hidden smarkdown"></div>
-        {% if check_perm(["ADMIN", "SUPERADMIN"]) %}
+        {% if check_perm(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"]) %}
             <a href="/admin/editannouncement/{{ announcement['id'] }}"
                style="position: absolute; top: 12px; right: 36px;">
                 <img src="/assets/images/pencil.svg"

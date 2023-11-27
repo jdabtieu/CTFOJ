@@ -15,7 +15,7 @@
     {% endif %}
     {{ data["name"] }}
 </h1>
-{% if check_perm(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER"]) %}
+{% if check_perm(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER", "CONTENT_MANAGER"]) %}
     <div id="confirm" style="display: none;">
         <form method="post" style="margin-bottom: 1rem;" action="">
             <input class="btn btn-danger" type="submit" value="">
@@ -157,7 +157,7 @@
             {% if data["editorial"] %}
                 <br><a href="{{ request.path }}/editorial">View editorial</a>
             {% endif %}
-            {% if check_perm(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER"]) %}
+            {% if check_perm(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER", "CONTENT_MANAGER"]) %}
                 <br><a href="/admin/submissions?problem_id={{ request.path.split('/')[2] }}">
                         View submissions
                     </a>
@@ -195,7 +195,7 @@
         document.getElementById("hint").classList.toggle("hidden");
     });
 </script>
-{% if check_perm(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER"]) %}
+{% if check_perm(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER", "CONTENT_MANAGER"]) %}
 <script>
     document.querySelector(".btn-delete").addEventListener("click", function () {
         document.getElementById("confirm").style.display = "";

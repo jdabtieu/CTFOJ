@@ -84,7 +84,7 @@ def contest(contest_id):
 
 
 @api.route('/<contest_id>/edit', methods=["GET", "POST"])
-@admin_required
+@perm_required(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"])
 def editcontest(contest_id):
     data = db.execute("SELECT * FROM contests WHERE id=:cid", cid=contest_id)
 
@@ -130,7 +130,7 @@ def editcontest(contest_id):
 
 
 @api.route("/<contest_id>/delete", methods=["GET", "POST"])
-@admin_required
+@perm_required(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"])
 def delete_contest(contest_id):
     # Ensure contest exists
     if not contest_exists(contest_id):
@@ -186,7 +186,7 @@ def contest_notify(contest_id):
 
 
 @api.route("/<contest_id>/drafts")
-@admin_required
+@perm_required(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"])
 def contest_drafts(contest_id):
     # Ensure contest exists
     contest_info = db.execute("SELECT * FROM contests WHERE id=:cid", cid=contest_id)
@@ -285,7 +285,7 @@ def contest_problem(contest_id, problem_id):
 
 
 @api.route("/<contest_id>/problem/<problem_id>/publish", methods=["POST"])
-@admin_required
+@perm_required(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"])
 def publish_contest_problem(contest_id, problem_id):
     # Ensure contest and problem exist
     if not contest_exists(contest_id):
@@ -309,7 +309,7 @@ def publish_contest_problem(contest_id, problem_id):
 
 
 @api.route('/<contest_id>/problem/<problem_id>/edit', methods=["GET", "POST"])
-@admin_required
+@perm_required(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"])
 def edit_contest_problem(contest_id, problem_id):
 
     # Ensure contest exists
@@ -497,7 +497,7 @@ def contest_unhide(contest_id):
 
 
 @api.route("/<contest_id>/addproblem", methods=["GET", "POST"])
-@admin_required
+@perm_required(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"])
 def contest_add_problem(contest_id):
     # Ensure contest exists
     contest_info = db.execute(
@@ -605,7 +605,7 @@ def contest_add_problem(contest_id):
 
 
 @api.route('/<contest_id>/problem/<problem_id>/export', methods=["GET", "POST"])
-@admin_required
+@perm_required(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"])
 def export_contest_problem(contest_id, problem_id):
     # Ensure contest exists
     data1 = db.execute("SELECT * FROM contests WHERE id=:cid", cid=contest_id)
@@ -677,7 +677,7 @@ def export_contest_problem(contest_id, problem_id):
 
 
 @api.route('/<contest_id>/problem/<problem_id>/download')
-@admin_required
+@perm_required(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"])
 def download_contest_problem(contest_id, problem_id):
     temp_zipfile = BytesIO()
     zf = zipfile.ZipFile(temp_zipfile, 'w', zipfile.ZIP_DEFLATED)

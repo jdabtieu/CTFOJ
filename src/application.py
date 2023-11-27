@@ -585,7 +585,7 @@ def contests():
 
 
 @app.route("/contests/create", methods=["GET", "POST"])
-@admin_required
+@perm_required(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"])
 def create_contest():
     if request.method == "GET":
         return render_template("contest/create.html")
@@ -688,7 +688,7 @@ def problems():
 
 
 @app.route("/problems/create", methods=["GET", "POST"])
-@perm_required(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER"])
+@perm_required(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER", "CONTENT_MANAGER"])
 def create_problem():
     if request.method == "GET":
         return render_template("problem/create.html")
@@ -760,7 +760,7 @@ def create_problem():
 
 
 @app.route('/problems/draft')
-@perm_required(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER"])
+@perm_required(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER", "CONTENT_MANAGER"])
 def draft_problems():
     page = request.args.get("page")
     if not page:

@@ -33,7 +33,7 @@ def problem():
     problem_id = request.args["id"]
 
     data = db.execute("SELECT * FROM problems WHERE id=:pid", pid=problem_id)
-    if len(data) == 0 or (data[0]["draft"] and not check_perm(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER"], api_get_perms())):
+    if len(data) == 0 or (data[0]["draft"] and not api_perm(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER", "CONTENT_MANAGER"])):
         return json_fail("Problem not found", 404)
 
     description = read_file(f"metadata/problems/{problem_id}/description.md")
@@ -65,16 +65,18 @@ def query_instancer():
         if len(contest) != 1:
             return json_fail("Contest not found", 404)
         start = datetime.strptime(contest[0]["start"], "%Y-%m-%d %H:%M:%S")
-        if datetime.utcnow() < start and not api_admin():
+        has_perm = api_perm(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"])
+        if datetime.utcnow() < start and not has_perm:
             return json_fail("The contest has not started", 403)
         data = db.execute(("SELECT * FROM contest_problems WHERE "
                            "contest_id=:cid AND problem_id=:pid"),
                           cid=contest_id, pid=problem_id)
-        if len(data) == 0 or (data[0]["draft"] and not api_admin()):
+        if len(data) == 0 or (data[0]["draft"] and not has_perm):
             return json_fail("Problem not found", 404)
     else:
+        has_perm = api_perm(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER", "CONTENT_MANAGER"])
         data = db.execute("SELECT * FROM problems WHERE id=:pid", pid=problem_id)
-        if len(data) == 0 or (data[0]["draft"] and not check_perm(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER"], api_get_perms())):
+        if len(data) == 0 or (data[0]["draft"] and not has_perm):
             return json_fail("Problem not found", 404)
 
     body = {
@@ -110,16 +112,18 @@ def create_instancer():
         if len(contest) != 1:
             return json_fail("Contest not found", 404)
         start = datetime.strptime(contest[0]["start"], "%Y-%m-%d %H:%M:%S")
-        if datetime.utcnow() < start and not api_admin():
+        has_perm = api_perm(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"])
+        if datetime.utcnow() < start and not has_perm:
             return json_fail("The contest has not started", 403)
         data = db.execute(("SELECT * FROM contest_problems WHERE "
                            "contest_id=:cid AND problem_id=:pid"),
                           cid=contest_id, pid=problem_id)
-        if len(data) == 0 or (data[0]["draft"] and not api_admin()):
+        if len(data) == 0 or (data[0]["draft"] and not has_perm):
             return json_fail("Problem not found", 404)
     else:
+        has_perm = api_perm(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER", "CONTENT_MANAGER"])
         data = db.execute("SELECT * FROM problems WHERE id=:pid", pid=problem_id)
-        if len(data) == 0 or (data[0]["draft"] and not check_perm(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER"], api_get_perms())):
+        if len(data) == 0 or (data[0]["draft"] and not has_perm):
             return json_fail("Problem not found", 404)
 
     body = {
@@ -156,16 +160,18 @@ def destroy_instancer():
         if len(contest) != 1:
             return json_fail("Contest not found", 404)
         start = datetime.strptime(contest[0]["start"], "%Y-%m-%d %H:%M:%S")
-        if datetime.utcnow() < start and not api_admin():
+        has_perm = api_perm(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"])
+        if datetime.utcnow() < start and not has_perm:
             return json_fail("The contest has not started", 403)
         data = db.execute(("SELECT * FROM contest_problems WHERE "
                            "contest_id=:cid AND problem_id=:pid"),
                           cid=contest_id, pid=problem_id)
-        if len(data) == 0 or (data[0]["draft"] and not api_admin()):
+        if len(data) == 0 or (data[0]["draft"] and not has_perm):
             return json_fail("Problem not found", 404)
     else:
+        has_perm = api_perm(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER", "CONTENT_MANAGER"])
         data = db.execute("SELECT * FROM problems WHERE id=:pid", pid=problem_id)
-        if len(data) == 0 or (data[0]["draft"] and not check_perm(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER"], api_get_perms())):
+        if len(data) == 0 or (data[0]["draft"] and not has_perm):
             return json_fail("Problem not found", 404)
 
     body = {
@@ -199,12 +205,13 @@ def contest_problem():
     if len(contest) != 1:
         return json_fail("Contest not found", 404)
     start = datetime.strptime(contest[0]["start"], "%Y-%m-%d %H:%M:%S")
-    if datetime.utcnow() < start and not api_admin():
+    has_perm = api_perm(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"])
+    if datetime.utcnow() < start and not has_perm:
         return json_fail("The contest has not started", 403)
     data = db.execute(("SELECT * FROM contest_problems WHERE "
                        "contest_id=:cid AND problem_id=:pid"),
                       cid=contest_id, pid=problem_id)
-    if len(data) == 0 or (data[0]["draft"] and not api_admin()):
+    if len(data) == 0 or (data[0]["draft"] and not has_perm):
         return json_fail("Problem not found", 404)
 
     description = read_file(f"metadata/contests/{contest_id}/{problem_id}/description.md")

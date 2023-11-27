@@ -6,7 +6,7 @@
 {% block main %}
 <div style="position: relative; margin-bottom: 0.5rem;">
     <h1 style="display: inline;">{{ title }}</h1>
-    {% if check_perm(["ADMIN", "SUPERADMIN"]) %}
+    {% if check_perm(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"]) %}
         <div class="dropdown" style="display: inline; margin-left: 4px;">
             <button class="btn btn-secondary dropdown-toggle" type="button"
                     data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
@@ -18,10 +18,12 @@
                    href="{{ request.path }}/addproblem">Add Problem</a>
                 <a class="dropdown-item"
                    href="{{ request.path }}/drafts">View Draft Problems</a>
+                {% if check_perm(["ADMIN", "SUPERADMIN"]) %}
+                    <a class="dropdown-item"
+                       href="{{ request.path }}/notify">Notify Participants</a>
+                {% endif %}
                 <a class="dropdown-item"
-                   href="{{ request.path }}/notify">Notify Participants</a>
-                <a class="dropdown-item"
-                   href="/api/contest/scoreboard/{{ request.path[9:] }}?key={{ scoreboard_key }}">Export CTFtime Scoreboard</a>
+                   href="/api/contest/scoreboard/{{ request.path[9:] }}?key={{ scoreboard_key }}">View CTFtime Scoreboard</a>
             </div>
         </div>
     {% endif %}
@@ -62,7 +64,7 @@
                 {% else %}
                     <td>{{ row["point_value"] }}</td>
                 {% endif %}
-                {% if check_perm(["ADMIN", "SUPERADMIN"]) %}
+                {% if check_perm(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"]) %}
                     <td><a href="/admin/submissions?problem_id={{ row['problem_id'] }}&contest_id={{ request.path[9:] }}&correct=AC">
                         {{ row["sols"] }}
                     </a></td>

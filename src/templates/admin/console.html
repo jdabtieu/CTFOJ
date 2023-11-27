@@ -14,7 +14,7 @@
 </div>
 <h1>Admin Console</h1>
 <div class="row">
-    {% if check_perm(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER"]) %}
+    {% if check_perm(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER", "CONTENT_MANAGER"]) %}
     <div class="col-sm-6 admin-card">
         <div class="card bg-ld-green">
             <div class="card-body">
@@ -30,7 +30,7 @@
         </div>
     </div>
     {% endif %}
-    {% if check_perm(["ADMIN", "SUPERADMIN"]) %}
+    {% if check_perm(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"]) %}
     <div class="col-sm-6 admin-card">
         <div class="card bg-ld-red">
             <div class="card-body">
@@ -44,7 +44,7 @@
         </div>
     </div>
     {% endif %}
-    {% if check_perm(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER"]) %}
+    {% if check_perm(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER", "CONTENT_MANAGER"]) %}
     <div class="col-sm-6 admin-card">
         <div class="card bg-ld-purple">
             <div class="card-body">
@@ -58,7 +58,7 @@
         </div>
     </div>
     {% endif %}
-    {% if check_perm(["ADMIN", "SUPERADMIN"]) %}
+    {% if check_perm(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"]) %}
     <div class="col-sm-6 admin-card">
         <div class="card bg-ld-blue">
             <div class="card-body">
