@@ -247,7 +247,6 @@ def update_dyn_score(contest_id, problem_id, update_curr_user=True):
     Updates the dynamic scoring of contest_id/problem_id, using the db object
     For details see: https://www.desmos.com/calculator/eifeir81wk
                      https://github.com/jdabtieu/CTFOJ/issues/2
-    Prereqs for using this function: user solve entry must already be in contest_solved
     """
     db.execute("BEGIN")
     if update_curr_user:
