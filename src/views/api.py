@@ -73,6 +73,8 @@ def query_instancer():
                           cid=contest_id, pid=problem_id)
         if len(data) == 0 or (data[0]["draft"] and not has_perm):
             return json_fail("Problem not found", 404)
+        if not data[0]['instanced']: # Check if the problem is instanced
+            return json_fail("This problem is not instanced", 400)
     else:
         has_perm = api_perm(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER", "CONTENT_MANAGER"])
         data = db.execute("SELECT * FROM problems WHERE id=:pid", pid=problem_id)
@@ -120,6 +122,8 @@ def create_instancer():
                           cid=contest_id, pid=problem_id)
         if len(data) == 0 or (data[0]["draft"] and not has_perm):
             return json_fail("Problem not found", 404)
+        if not data[0]['instanced']: # Check if the problem is instanced
+            return json_fail("This problem is not instanced", 400)
     else:
         has_perm = api_perm(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER", "CONTENT_MANAGER"])
         data = db.execute("SELECT * FROM problems WHERE id=:pid", pid=problem_id)
@@ -173,6 +177,8 @@ def destroy_instancer():
         data = db.execute("SELECT * FROM problems WHERE id=:pid", pid=problem_id)
         if len(data) == 0 or (data[0]["draft"] and not has_perm):
             return json_fail("Problem not found", 404)
+        if not data[0]['instanced']: # Check if the problem is instanced
+            return json_fail("This problem is not instanced", 400)
 
     body = {
         "name": request.args["id"],
