@@ -14,6 +14,14 @@ def endpoint_test(client, endpoint, is_admin):
     assert result.status_code == 404
     assert b'Contest not found' in result.data
 
+    result = client.get(f'/api/instancer/{endpoint}?id=testingcontest/notinstanced')
+    if is_admin:
+        assert result.status_code == 400
+        assert b'not instanced' in result.data
+    else:
+        assert result.status_code == 403
+        assert b'The contest has not started' in result.data
+
     result = client.get(f'/api/instancer/{endpoint}?id=testingcontest/bad')
     if is_admin:
         assert result.status_code == 404
@@ -65,6 +73,20 @@ def test_instancer(client, database):
         'flag': 'ctf{hello}',
         'flag_hint': 'ctf{...}',
         'instanced': True,
+        'draft': True,
+        'file': ('fake_empty_file', ''),
+    })
+    assert result.status_code == 302
+
+    result = client.post('/contest/testingcontest/addproblem', data={
+        'id': 'notinstanced',
+        'name': 'not instanced',
+        'description': 'a short fun problem',
+        'hints': 'try looking at the title',
+        'point_value': 1,
+        'category': 'general',
+        'flag': 'ctf{hello}',
+        'flag_hint': 'ctf{...}',
         'draft': True,
         'file': ('fake_empty_file', ''),
     })

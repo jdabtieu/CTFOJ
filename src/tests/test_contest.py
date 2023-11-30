@@ -105,7 +105,6 @@ def test_contest(client, database):
         'category': 'general',
         'flag': 'ctf{hello}',
         'flag_hint': 'ctf{...}',
-        'instanced': False,
         'draft': True,
         'file': ('test_upload.txt', 'test_upload.txt')
     })

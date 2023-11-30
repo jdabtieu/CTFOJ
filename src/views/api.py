@@ -49,37 +49,43 @@ def problem():
     return json_success(returns)
 
 
-@api.route("/instancer/query")
-@api_login_required
-def query_instancer():
-    if "id" not in request.args:
-        return json_fail("Must provide instancer ID", 400)
-
-    # Check perms
-    key = request.args["id"].split("/", 1)
+def check_instancer_perms(id):
+    # Check perms for query, create, and delete
+    key = id.split("/", 1)
     contest_id = key[0] if len(key) == 2 else None
     problem_id = key[-1]
 
     if contest_id:
         contest = db.execute("SELECT * FROM contests WHERE id=?", contest_id)
         if len(contest) != 1:
-            return json_fail("Contest not found", 404)
+            return ("Contest not found", 404)
         start = datetime.strptime(contest[0]["start"], "%Y-%m-%d %H:%M:%S")
         has_perm = api_perm(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"])
         if datetime.utcnow() < start and not has_perm:
-            return json_fail("The contest has not started", 403)
+            return ("The contest has not started", 403)
         data = db.execute(("SELECT * FROM contest_problems WHERE "
                            "contest_id=:cid AND problem_id=:pid"),
                           cid=contest_id, pid=problem_id)
-        if len(data) == 0 or (data[0]["draft"] and not has_perm):
-            return json_fail("Problem not found", 404)
-        if not data[0]['instanced']: # Check if the problem is instanced
-            return json_fail("This problem is not instanced", 400)
     else:
         has_perm = api_perm(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER", "CONTENT_MANAGER"])
         data = db.execute("SELECT * FROM problems WHERE id=:pid", pid=problem_id)
-        if len(data) == 0 or (data[0]["draft"] and not has_perm):
-            return json_fail("Problem not found", 404)
+
+    if len(data) == 0 or (data[0]["draft"] and not has_perm):
+        return ("Problem not found", 404)
+    if not data[0]["instanced"]: # Check if the problem is instanced
+        return ("This problem is not instanced", 400)
+    return (data[0]["flag"], 200)
+
+
+@api.route("/instancer/query")
+@api_login_required
+def query_instancer():
+    if "id" not in request.args:
+        return json_fail("Must provide instancer ID", 400)
+
+    msg, status = check_instancer_perms(request.args["id"])
+    if status != 200:
+        return json_fail(msg, status)
 
     body = {
         "name": request.args["id"],
@@ -104,36 +110,14 @@ def create_instancer():
     if "id" not in request.args:
         return json_fail("Must provide instancer ID", 400)
 
-    # Check perms
-    key = request.args["id"].split("/", 1)
-    contest_id = key[0] if len(key) == 2 else None
-    problem_id = key[-1]
-
-    if contest_id:
-        contest = db.execute("SELECT * FROM contests WHERE id=?", contest_id)
-        if len(contest) != 1:
-            return json_fail("Contest not found", 404)
-        start = datetime.strptime(contest[0]["start"], "%Y-%m-%d %H:%M:%S")
-        has_perm = api_perm(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"])
-        if datetime.utcnow() < start and not has_perm:
-            return json_fail("The contest has not started", 403)
-        data = db.execute(("SELECT * FROM contest_problems WHERE "
-                           "contest_id=:cid AND problem_id=:pid"),
-                          cid=contest_id, pid=problem_id)
-        if len(data) == 0 or (data[0]["draft"] and not has_perm):
-            return json_fail("Problem not found", 404)
-        if not data[0]['instanced']: # Check if the problem is instanced
-            return json_fail("This problem is not instanced", 400)
-    else:
-        has_perm = api_perm(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER", "CONTENT_MANAGER"])
-        data = db.execute("SELECT * FROM problems WHERE id=:pid", pid=problem_id)
-        if len(data) == 0 or (data[0]["draft"] and not has_perm):
-            return json_fail("Problem not found", 404)
+    msg, status = check_instancer_perms(request.args["id"])
+    if status != 200:
+        return json_fail(msg, status)
 
     body = {
         "name": request.args["id"],
         "player": session["user_id"],
-        "flag": data[0]["flag"],
+        "flag": msg,
     }
 
     headers = {
@@ -154,31 +138,9 @@ def destroy_instancer():
     if "id" not in request.args:
         return json_fail("Must provide instancer ID", 400)
 
-    # Check perms
-    key = request.args["id"].split("/", 1)
-    contest_id = key[0] if len(key) == 2 else None
-    problem_id = key[-1]
-
-    if contest_id:
-        contest = db.execute("SELECT * FROM contests WHERE id=?", contest_id)
-        if len(contest) != 1:
-            return json_fail("Contest not found", 404)
-        start = datetime.strptime(contest[0]["start"], "%Y-%m-%d %H:%M:%S")
-        has_perm = api_perm(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"])
-        if datetime.utcnow() < start and not has_perm:
-            return json_fail("The contest has not started", 403)
-        data = db.execute(("SELECT * FROM contest_problems WHERE "
-                           "contest_id=:cid AND problem_id=:pid"),
-                          cid=contest_id, pid=problem_id)
-        if len(data) == 0 or (data[0]["draft"] and not has_perm):
-            return json_fail("Problem not found", 404)
-    else:
-        has_perm = api_perm(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER", "CONTENT_MANAGER"])
-        data = db.execute("SELECT * FROM problems WHERE id=:pid", pid=problem_id)
-        if len(data) == 0 or (data[0]["draft"] and not has_perm):
-            return json_fail("Problem not found", 404)
-        if not data[0]['instanced']: # Check if the problem is instanced
-            return json_fail("This problem is not instanced", 400)
+    msg, status = check_instancer_perms(request.args["id"])
+    if status != 200:
+        return json_fail(msg, status)
 
     body = {
         "name": request.args["id"],
