@@ -7,7 +7,7 @@ def test_emaintenance(client, database):
         ("INSERT INTO 'users' VALUES(1, 'admin', 'pbkdf2:sha256:150000$XoLKRd3I$"
          "2dbdacb6a37de2168298e419c6c54e768d242aee475aadf1fa9e6c30aa02997f', 'e', "
          "datetime('now'), 0, 1, 0, NULL, 0, 0, 0)"))
-    database.execute("INSERT INTO user_perms VALUES(1, 1, ?)", USER_PERM["ADMIN"])
+    database.execute("INSERT INTO user_perms VALUES(1, ?)", USER_PERM["ADMIN"])
     client.post('/login', data={
         'username': 'admin',
         'password': 'CTFOJadmin'
