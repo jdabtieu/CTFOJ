@@ -212,13 +212,11 @@ def contest_scoreboard(contest_id):
          "JOIN users on user_id=users.id WHERE contest_users.contest_id=:cid AND "
          "hidden=0 ORDER BY points DESC, lastAC ASC"),
         cid=contest_id)
-    teams = db.execute("SELECT id, username FROM users")
-    teams = {x["id"]: x["username"] for x in teams}
     ret = {"standings": []}
     for i in range(len(data)):
         ret["standings"].append({
             "pos": i + 1,
-            "team": teams[data[i]["user_id"]],
+            "team": data[i]["username"],
             "score": data[i]["points"],
         })
 
