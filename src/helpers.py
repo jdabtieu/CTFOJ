@@ -1,3 +1,4 @@
+import hashlib
 import json
 import jwt
 import logging
@@ -21,6 +22,9 @@ USER_PERM = {
     "PROBLEM_MANAGER": 2,
     "CONTENT_MANAGER": 3,
 }
+
+def sha256sum(string):
+    return hashlib.sha256(string.encode("utf-8")).hexdigest()
 
 
 def check_perm(required_perms: list, user_perms: Optional[set] = None) -> bool:
@@ -67,14 +71,14 @@ def api_logged_in() -> bool:
     key = None
     if request.method == "GET" and "key" in request.args:
         key = request.args["key"]
-    if request.method == "POST" and "key" in request.form:
+    elif request.method == "POST" and "key" in request.form:
         key = request.form["key"]
     if key is None:
         return False
 
     # Check API key
     from application import db
-    user = db.execute("SELECT * FROM users WHERE api=?", request.args["key"])
+    user = db.execute("SELECT * FROM users WHERE api=?", sha256sum(request.args["key"]))
     return len(user) == 1
 
 
@@ -109,7 +113,7 @@ def api_get_perms() -> set:
 
     # Check API key
     from application import db
-    user = db.execute("SELECT * FROM users WHERE api=?", request.args["key"])
+    user = db.execute("SELECT * FROM users WHERE api=?", sha256sum(request.args["key"]))
     if len(user) == 0:
         return set()
     perms = db.execute("SELECT * FROM user_perms WHERE user_id=?", user[0]["id"])

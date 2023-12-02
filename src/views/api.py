@@ -1,6 +1,7 @@
 from flask import Blueprint, redirect, current_app as app
-import uuid
+import hashlib
 import logging
+import uuid
 
 from helpers import *  # noqa
 from db import db
@@ -21,7 +22,8 @@ def get_api_key():
     logger.info((f"User #{session['user_id']} ({session['username']}) "
                  "generated a new API key"), extra={"section": "api"})
     new_key = str(uuid.uuid4())
-    db.execute("UPDATE users SET api=? WHERE id=?", new_key, session["user_id"])
+    hashed = hashlib.sha256(new_key.encode("utf-8")).hexdigest()
+    db.execute("UPDATE users SET api=? WHERE id=?", hashed, session["user_id"])
     return new_key
 
 
