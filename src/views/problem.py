@@ -22,7 +22,7 @@ def problem(problem_id):
                       problem_id=problem_id)
 
     # Ensure problem exists
-    if len(data) != 1 or (data[0]["draft"] == 1 and not check_perm(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER"])):
+    if len(data) != 1 or (data[0]["draft"] == 1 and not check_perm(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER", "CONTENT_MANAGER"])):
         return render_template("problem/problem_noexist.html"), 404
 
     data[0]["editorial"] = read_file(f"metadata/problems/{problem_id}/editorial.md")
@@ -98,7 +98,7 @@ def problem_editorial(problem_id):
     if len(data) == 0:
         return render_template("problem/problem_noexist.html"), 404
 
-    if data[0]["draft"] == 1 and session["admin"] != 1:
+    if data[0]["draft"] == 1 and not check_perm(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER", "CONTENT_MANAGER"]):
         return render_template("problem/problem_noexist.html"), 404
 
     return render_template('problem/problemeditorial.html', data=data[0])

@@ -102,7 +102,7 @@ def api_get_perms() -> set:
     key = None
     if request.method == "GET" and "key" in request.args:
         key = request.args["key"]
-    if request.method == "POST" and "key" in request.form:
+    elif request.method == "POST" and "key" in request.form:
         key = request.form["key"]
     if key is None:
         return set()

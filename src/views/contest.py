@@ -210,14 +210,14 @@ def contest_problem(contest_id, problem_id):
     # Ensure contest started or user is admin
     check = db.execute("SELECT * FROM contests WHERE id=?", contest_id)
     start = datetime.strptime(check[0]["start"], "%Y-%m-%d %H:%M:%S")
-    if datetime.utcnow() < start and not check_perm(["ADMIN", "SUPERADMIN"]):
+    if datetime.utcnow() < start and not check_perm(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"]):
         flash('The contest has not started yet!', 'danger')
         return redirect("/contests")
 
     check = db.execute(("SELECT * FROM contest_problems WHERE contest_id=:cid AND "
                         "problem_id=:pid"),
                        cid=contest_id, pid=problem_id)
-    if len(check) != 1 or (check[0]["draft"] and not check_perm(["ADMIN", "SUPERADMIN"])):
+    if len(check) != 1 or (check[0]["draft"] and not check_perm(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"])):
         return render_template("contest/contest_problem_noexist.html"), 404
 
     # Check if problem is solved

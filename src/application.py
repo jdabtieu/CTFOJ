@@ -174,7 +174,7 @@ def get_asset(filename):
 def dl_file(problem_id):
     problem = db.execute("SELECT * FROM problems WHERE id=?", problem_id)
     if len(problem) == 0 or (problem[0]["draft"] and not
-                             check_perm(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER"])):
+                             check_perm(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER", "CONTENT_MANAGER"])):
         return abort(404)
     return send_from_directory("dl/", f"{problem_id}.zip", as_attachment=True)
 
@@ -187,7 +187,7 @@ def dl_contest(contest_id, problem_id):
         return abort(404)
     # Ensure contest started or user is admin
     start = datetime.strptime(contest[0]["start"], "%Y-%m-%d %H:%M:%S")
-    if datetime.utcnow() < start and not check_perm(["ADMIN", "SUPERADMIN"]):
+    if datetime.utcnow() < start and not check_perm(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"]):
         return abort(404)
     problem = db.execute(("SELECT * FROM contest_problems WHERE contest_id=? "
                           "AND problem_id=?"), contest_id, problem_id)
@@ -366,9 +366,10 @@ def confirm_register(token):
     # Log user in
     user = db.execute(
         "SELECT * FROM users WHERE email = :email", email=token['email'])[0]
+    perms = db.execute("SELECT * FROM user_perms WHERE user_id=?", user["id"])
     session["user_id"] = user["id"]
     session["username"] = user["username"]
-    session["perms"] = set()
+    session["perms"] = set([x["perm_id"] for x in perms])
 
     logger.info((f"User #{session['user_id']} ({session['username']}) has successfully "
                  f"registered on IP {request.remote_addr}"), extra={"section": "auth"})
