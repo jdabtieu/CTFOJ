@@ -63,7 +63,7 @@ def test_contest(client, database):
         'description': 'testing contest description',
         'scoreboard_visible': True
     }, follow_redirects=True)
-    assert result.status_code == 409
+    assert result.status_code == 400
     assert b'already exists' in result.data
 
     result = client.post('/contest/testingcontest/edit', data={

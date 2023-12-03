@@ -23,6 +23,7 @@ USER_PERM = {
     "CONTENT_MANAGER": 3,
 }
 
+
 def sha256sum(string):
     return hashlib.sha256(string.encode("utf-8")).hexdigest()
 

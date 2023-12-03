@@ -74,7 +74,7 @@ def check_instancer_perms(id):
 
     if len(data) == 0 or (data[0]["draft"] and not has_perm):
         return ("Problem not found", 404)
-    if not data[0]["instanced"]: # Check if the problem is instanced
+    if not data[0]["instanced"]:  # Check if the problem is instanced
         return ("This problem is not instanced", 400)
     return (data[0]["flag"], 200)
 

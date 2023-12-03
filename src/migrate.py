@@ -1,9 +1,6 @@
 import cs50
-import uuid
 import sys
 import hashlib
-
-from helpers import USER_PERM
 
 msg = """
 Before migrating, please confirm the following:

@@ -26,8 +26,13 @@ def test_register(client, database):
         algorithm='HS256'
     )
 
-    result = client.get(f'/confirmregister/{token}')
-    assert result.status_code == 302
+    result = client.get(f'/confirmregister/{token}', follow_redirects=True)
+    assert result.request.path == "/problem/helloworld"
+
+    result = client.get(f'/confirmregister/{token}', follow_redirects=True)
+    assert result.status_code == 200
+    assert b'invalid' in result.data
+    assert result.request.path == "/register"
 
     # Test invalid requests
     result = client.post('/register', data={
@@ -86,7 +91,7 @@ def test_register(client, database):
         'email': 'testingemail@email.com'
     }, follow_redirects=True)
 
-    assert result.status_code == 409
+    assert result.status_code == 400
     assert b'already exists' in result.data
 
     result = client.post('/register', data={
@@ -96,7 +101,7 @@ def test_register(client, database):
         'email': 'testingemail@email.com'
     }, follow_redirects=True)
 
-    assert result.status_code == 409
+    assert result.status_code == 400
     assert b'already exists' in result.data
 
     result = client.get('/confirmregister/fake', follow_redirects=True)
@@ -138,5 +143,8 @@ def test_register(client, database):
     result = client.get('/cancelregister/faketoken', follow_redirects=True)
     assert b'invalid' in result.data
 
-    result = client.get(f'/cancelregister/{token}')
-    assert result.status_code == 302
+    result = client.get(f'/cancelregister/{token}', follow_redirects=True)
+    assert b'successfully removed' in result.data
+
+    result = client.get(f'/cancelregister/{token}', follow_redirects=True)
+    assert b'invalid' in result.data

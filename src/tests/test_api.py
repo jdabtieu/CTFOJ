@@ -1,8 +1,10 @@
 import hashlib
 import json
 
+
 def sha256sum(string):
     return hashlib.sha256(string.encode("utf-8")).hexdigest()
+
 
 def test_api(client, database):
     '''Test to ensure api functions.'''
@@ -13,7 +15,7 @@ def test_api(client, database):
     client.post('/login', data={'username': 'user', 'password': 'CTFOJadmin'})
     result = client.post('/api/getkey')
     assert (database.execute("SELECT * FROM users")[0]["api"]
-                == hashlib.sha256(result.data).hexdigest())
+            == hashlib.sha256(result.data).hexdigest())
 
     result = client.get('/api')
     assert result.status_code == 308

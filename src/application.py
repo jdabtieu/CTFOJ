@@ -313,27 +313,27 @@ def register():
             return render_template("auth/register.html",
                                    site_key=app.config['HCAPTCHA_SITE']), 400
 
-    # Ensure username and email do not already exist
-    rows = db.execute("SELECT * FROM users WHERE username = :username", username=username)
-    if len(rows) > 0:
-        flash('Username already exists', 'danger')
-        return render_template("auth/register.html",
-                               site_key=app.config['HCAPTCHA_SITE']), 409
+    # Create entry & check for duplicate
+    try:
+        db.execute(("INSERT INTO users(username, password, email, join_date) "
+                    "VALUES(?, ?, ?, datetime('now'))"),
+                   username, generate_password_hash(password), email)
+    except ValueError:
+        if db.execute("SELECT COUNT(*) AS cnt FROM users WHERE username=?", username)[0]["cnt"] > 0:
+            flash('Username already exists', 'danger')
+            return render_template("auth/register.html",
+                                   site_key=app.config['HCAPTCHA_SITE']), 400
+        elif db.execute("SELECT COUNT(*) AS cnt FROM users WHERE email=?", email)[0]["cnt"] > 0:
+            flash('Email already exists', 'danger')
+            return render_template("auth/register.html",
+                                   site_key=app.config['HCAPTCHA_SITE']), 400
+        else:
+            abort(500)
 
-    rows = db.execute("SELECT * FROM users WHERE email = :email", email=email)
-    if len(rows) > 0:
-        flash('Email already exists', 'danger')
-        return render_template("auth/register.html",
-                               site_key=app.config['HCAPTCHA_SITE']), 409
-
-    token = create_jwt({'email': email}, app.config['SECRET_KEY'])
-    text = render_template('email/confirm_account.html',
-                           username=username, token=token)
-
-    db.execute(("INSERT INTO users(username, password, email, join_date) "
-                "VALUES(:username, :password, :email, datetime('now'))"),
-               username=username, password=generate_password_hash(password), email=email)
     if not app.config['TESTING']:
+        token = create_jwt({'email': email}, app.config['SECRET_KEY'])
+        text = render_template('email/confirm_account.html',
+                               username=username, token=token)
         send_email('CTFOJ Account Confirmation',
                    app.config['MAIL_DEFAULT_SENDER'], [email], text)
 
@@ -361,11 +361,14 @@ def confirm_register(token):
               "danger")
         return redirect("/register")
 
-    db.execute("UPDATE users SET verified=1 WHERE email=:email", email=token['email'])
+    r = db.execute("UPDATE users SET verified=1 WHERE email=? AND verified=0", token['email'])
+    if r == 0:
+        flash("Email verification link invalid", "danger")
+        return redirect("/register")
 
     # Log user in
     user = db.execute(
-        "SELECT * FROM users WHERE email = :email", email=token['email'])[0]
+        "SELECT * FROM users WHERE email=?", token['email'])[0]
     perms = db.execute("SELECT * FROM user_perms WHERE user_id=?", user["id"])
     session["user_id"] = user["id"]
     session["username"] = user["username"]
@@ -386,8 +389,11 @@ def cancel_register(token):
     if not token:
         flash("Email verification link invalid", "danger")
         return redirect("/register")
-    db.execute(
-        "DELETE FROM users WHERE verified=0 and email=:email", email=token['email'])
+    r = db.execute("DELETE FROM users WHERE verified=0 and email=?", token['email'])
+    if r == 0:
+        flash("Email verification link invalid", "danger")
+        return redirect("/register")
+
     flash("Your registration has been successfully removed from our database.", "success")
     logger.info((f"User with email {token['email']} has cancelled "
                  f"registration on IP {request.remote_addr}"), extra={"section": "auth"})
@@ -594,24 +600,17 @@ def create_contest():
     # Reached using POST
 
     contest_id = request.form.get("contest_id")
+    start = request.form.get("start")
+    end = request.form.get("end")
+    description = request.form.get("description").replace('\r', '').strip()
+    contest_name = request.form.get("contest_name")
+    scoreboard_key = request.form.get("scoreboard_key")
+    scoreboard_visible = bool(request.form.get("scoreboard_visible"))
 
     # Ensure contest ID is valid
     if not contest_id or not verify_text(contest_id) or contest_id == "None":
         flash('Invalid contest ID', 'danger')
         return render_template("contest/create.html"), 400
-
-    contest_name = request.form.get("contest_name")
-    scoreboard_key = request.form.get("scoreboard_key")
-
-    # Ensure contest doesn't already exist
-    check = db.execute("SELECT * FROM contests WHERE id=:cid OR name=:contest_name",
-                       cid=contest_id, contest_name=contest_name)
-    if len(check) != 0:
-        flash('A contest with that name or ID already exists', 'danger')
-        return render_template("contest/create.html"), 409
-
-    start = request.form.get("start")
-    end = request.form.get("end")
 
     # Ensure start and end dates are valid
     check_start = datetime.strptime(start, "%Y-%m-%dT%H:%M:%S.%fZ")
@@ -620,16 +619,20 @@ def create_contest():
         flash('Contest cannot end before it starts!', 'danger')
         return render_template("contest/create.html"), 400
 
-    description = request.form.get("description").replace('\r', '')
-    scoreboard_visible = bool(request.form.get("scoreboard_visible"))
+    # Ensure the description exists
     if not description:
         flash('Description cannot be empty', 'danger')
         return render_template("contest/create.html"), 400
 
-    db.execute(
-        ("INSERT INTO contests (id, name, start, end, scoreboard_visible, scoreboard_key)"
-         " VALUES (?, ?, datetime(?), datetime(?), ?, ?)"),
-        contest_id, contest_name, start, end, scoreboard_visible, scoreboard_key)
+    # Create & ensure contest ID doesn't already exist
+    try:
+        db.execute(
+            ("INSERT INTO contests (id, name, start, end, scoreboard_visible, scoreboard_key)"
+             " VALUES (?, ?, datetime(?), datetime(?), ?, ?)"),
+            contest_id, contest_name, start, end, scoreboard_visible, scoreboard_key)
+    except ValueError:
+        flash('A contest with that ID already exists', 'danger')
+        return render_template("contest/create.html"), 400
 
     os.makedirs('metadata/contests/' + contest_id)
     write_file('metadata/contests/' + contest_id + '/description.md', description)
