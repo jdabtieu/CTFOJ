@@ -1,6 +1,5 @@
 # CTFOJ
-[![Build](https://github.com/jdabtieu/CTFOJ/workflows/build/badge.svg)](https://github.com/jdabtieu/CTFOJ/actions)
-[![CodeQL Analysis](https://github.com/jdabtieu/CTFOJ/workflows/CodeQL/badge.svg)](https://github.com/jdabtieu/CTFOJ/actions)
+[![Build](https://github.com/jdabtieu/CTFOJ/actions/workflows/python-app.yml/badge.svg)](https://github.com/jdabtieu/CTFOJ/actions)
 [![Codecov Report](https://img.shields.io/codecov/c/github/jdabtieu/CTFOJ)](https://codecov.io/github/jdabtieu/CTFOJ/)
 [![GitHub Release](https://img.shields.io/github/v/release/jdabtieu/CTFOJ)](https://github.com/jdabtieu/CTFOJ/releases)
 [![AGPL-3.0 License](https://img.shields.io/github/license/jdabtieu/CTFOJ)](https://github.com/jdabtieu/CTFOJ/blob/master/LICENSE)
