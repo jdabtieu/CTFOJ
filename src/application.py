@@ -321,14 +321,10 @@ def register():
     except ValueError:
         if db.execute("SELECT COUNT(*) AS cnt FROM users WHERE username=?", username)[0]["cnt"] > 0:
             flash('Username already exists', 'danger')
-            return render_template("auth/register.html",
-                                   site_key=app.config['HCAPTCHA_SITE']), 400
         elif db.execute("SELECT COUNT(*) AS cnt FROM users WHERE email=?", email)[0]["cnt"] > 0:
             flash('Email already exists', 'danger')
-            return render_template("auth/register.html",
-                                   site_key=app.config['HCAPTCHA_SITE']), 400
-        else:
-            abort(500)
+        return render_template("auth/register.html",
+                               site_key=app.config['HCAPTCHA_SITE']), 400
 
     if not app.config['TESTING']:
         token = create_jwt({'email': email}, app.config['SECRET_KEY'])
@@ -731,19 +727,16 @@ def create_problem():
     if not hints:
         hints = ""
 
-    # Ensure problem does not already exist
-    problem_info = db.execute("SELECT * FROM problems WHERE id=:problem_id OR name=:name",
-                              problem_id=problem_id, name=name)
-    if len(problem_info) != 0:
+    # Create & ensure problem doesn't already exist
+    try:
+        db.execute(("INSERT INTO problems (id, name, point_value, category, flag, draft, "
+                    "flag_hint, instanced) VALUES (:id, :name, :point_value, :category, "
+                    ":flag, :draft, :fhint, :inst)"),
+                   id=problem_id, name=name, point_value=point_value, category=category,
+                   flag=flag, draft=draft, fhint=flag_hint, inst=instanced)
+    except ValueError:
         flash('A problem with this name or ID already exists', 'danger')
-        return render_template("problem/create.html"), 409
-
-    # Modify problems table
-    db.execute(("INSERT INTO problems (id, name, point_value, category, flag, draft, "
-                "flag_hint, instanced) VALUES (:id, :name, :point_value, :category, "
-                ":flag, :draft, :fhint, :inst)"),
-               id=problem_id, name=name, point_value=point_value, category=category,
-               flag=flag, draft=draft, fhint=flag_hint, inst=instanced)
+        return render_template("problem/create.html"), 400
 
     # Check if file exists & upload if it does
     file = request.files["file"]

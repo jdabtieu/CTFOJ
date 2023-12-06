@@ -35,6 +35,38 @@ def test_problem(client, database):
     })
     assert result.status_code == 302
 
+    result = client.post('/problems/create', data={
+        'id': 'hello world testing',
+        'name': 'hello world',
+        'description': 'a short fun problem',
+        'hints': 'try looking at the title',
+        'point_value': 1,
+        'category': 'general',
+        'flag': 'ctf{hello}',
+        'flag_hint': 'ctf{...}',
+        'instanced': True,
+        'file': ('test_upload.txt', 'test_upload.txt'),
+        'draft': True
+    })
+    assert result.status_code == 400
+    assert b'Invalid problem ID' in result.data
+
+    result = client.post('/problems/create', data={
+        'id': 'helloworldtesting',
+        'name': 'hello world',
+        'description': 'a short fun problem',
+        'hints': 'try looking at the title',
+        'point_value': 1,
+        'category': 'general',
+        'flag': 'a very nefariout ',
+        'flag_hint': 'ctf{...}',
+        'instanced': True,
+        'file': ('test_upload.txt', 'test_upload.txt'),
+        'draft': True
+    })
+    assert result.status_code == 400
+    assert b'already exists' in result.data
+
     # TODO Assert the instancer interface exists
 
     result = client.post('/problem/helloworldtesting',
