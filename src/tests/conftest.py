@@ -53,7 +53,7 @@ def database():
     db.execute(
         ("CREATE TABLE 'submissions' ("
          "    'id' integer PRIMARY KEY NOT NULL,"
-         "    'date' datetime NOT NULL,"
+         "    'date' datetime NOT NULL DEFAULT(datetime('now')),"
          "    'user_id' integer NOT NULL,"
          "    'problem_id' varchar(32) NOT NULL,"
          "    'contest_id' varchar(32),"

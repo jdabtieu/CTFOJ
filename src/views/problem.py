@@ -26,9 +26,9 @@ def problem(problem_id):
         return render_template("problem/problem_noexist.html"), 404
 
     data[0]["editorial"] = read_file(f"metadata/problems/{problem_id}/editorial.md")
-    data[0]["solved"] = len(
-        db.execute("SELECT * FROM problem_solved WHERE user_id=? AND problem_id=?",
-                   session["user_id"], problem_id)) == 1
+    data[0]["solved"] = db.execute(("SELECT COUNT(*) AS cnt FROM problem_solved WHERE "
+                                    "user_id=? AND problem_id=?"),
+                                   session["user_id"], problem_id)[0]["cnt"] == 1
     if request.method == "GET":
         return render_template('problem/problem.html', data=data[0])
 
@@ -44,26 +44,23 @@ def problem(problem_id):
         return render_template('problem/problem.html', data=data[0]), 400
 
     check = data[0]["flag"] == flag
-    db.execute(("INSERT INTO submissions (date, user_id, problem_id, correct, submitted) "
-                "VALUES (datetime('now'), :user_id, :problem_id, :check, :flag)"),
-               user_id=session["user_id"], problem_id=problem_id, check=check, flag=flag)
+    db.execute(("INSERT INTO submissions (user_id, problem_id, correct, submitted) "
+                "VALUES (?, ?, ?, ?)"), session["user_id"], problem_id, check, flag)
 
     if not check:
         flash('The flag you submitted was incorrect', 'danger')
         return render_template('problem/problem.html', data=data[0])
 
-    # Check if user already solved this problem
-    check = db.execute(
-        "SELECT * FROM problem_solved WHERE user_id=:uid AND problem_id=:pid",
-        uid=session["user_id"], pid=problem_id)
-    if len(check) == 0:
+    # Add entry into problem solve table
+    try:
         db.execute("INSERT INTO problem_solved(user_id, problem_id) VALUES(:uid, :pid)",
                    uid=session["user_id"], pid=problem_id)
-
-        # Update total points and problems solved
+        # Award points if not already solved
         db.execute(("UPDATE users SET total_points=total_points+:pv, "
                     "problems_solved=problems_solved+1 WHERE id=:uid"),
                    pv=data[0]["point_value"], uid=session["user_id"])
+    except ValueError:
+        pass  # Already solved
 
     data[0]["solved"] = True
     flash('Congratulations! You have solved this problem!', 'success')
@@ -80,10 +77,10 @@ def publish_problem(problem_id):
     if len(data) != 1:
         return render_template("problem/problem_noexist.html"), 404
 
-    db.execute("UPDATE problems SET draft=0 WHERE id=:problem_id", problem_id=problem_id)
-
-    logger.info(f"User #{session['user_id']} ({session['username']}) published {problem_id}",  # noqa
-                extra={"section": "problem"})
+    r = db.execute("UPDATE problems SET draft=0 WHERE id=? AND draft=1", problem_id)
+    if r == 1:
+        logger.info(f"User #{session['user_id']} ({session['username']}) published {problem_id}",  # noqa
+                    extra={"section": "problem"})
     flash('Problem successfully published', 'success')
     return redirect("/problem/" + problem_id)
 
@@ -227,13 +224,11 @@ def problem_editeditorial(problem_id):
 @api.route('<problem_id>/delete', methods=["POST"])
 @perm_required(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER", "CONTENT_MANAGER"])
 def delete_problem(problem_id):
-    data = db.execute("SELECT * FROM problems WHERE id=:pid", pid=problem_id)
-
-    # Ensure problem exists
-    if len(data) == 0:
-        return render_template("problem/problem_noexist.html"), 404
-
     db.execute("BEGIN")
+    data = db.execute("SELECT * FROM problems WHERE id=?", problem_id)
+    if len(data) == 0:
+        db.execute("COMMIT")
+        return render_template("problem/problem_noexist.html"), 404
     db.execute("DELETE FROM problems WHERE id=:pid", pid=problem_id)
     db.execute(
         ("UPDATE users SET total_points=total_points-:pv, "

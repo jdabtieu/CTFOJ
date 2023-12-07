@@ -124,7 +124,7 @@ db.execute("ALTER TABLE user_perms_tmp RENAME to user_perms")
 db.execute(
     ("CREATE TABLE 'submissions_tmp' ("
      "    'id' integer PRIMARY KEY NOT NULL,"
-     "    'date' datetime NOT NULL,"
+     "    'date' datetime NOT NULL DEFAULT(datetime('now')),"
      "    'user_id' integer NOT NULL,"
      "    'problem_id' varchar(32) NOT NULL,"
      "    'contest_id' varchar(32),"

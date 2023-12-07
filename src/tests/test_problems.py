@@ -69,6 +69,7 @@ def test_problem(client, database):
 
     # TODO Assert the instancer interface exists
 
+    # Solve problem and gain point
     result = client.post('/problem/helloworldtesting',
                          data={'flag': 'ctf{hello}'}, follow_redirects=True)
     assert result.status_code == 200
@@ -78,10 +79,22 @@ def test_problem(client, database):
     assert result.status_code == 200
     assert b'1 Point' in result.data
 
+    # Solve problem again, so do not gain point
+    result = client.post('/problem/helloworldtesting',
+                         data={'flag': 'ctf{hello}'}, follow_redirects=True)
+    assert result.status_code == 200
+    assert b'Congratulations' in result.data
+
+    result = client.get('/users/admin/profile')
+    assert result.status_code == 200
+    assert b'1 Point' in result.data
+
+    # Publish
     result = client.post('/problem/helloworldtesting/publish', follow_redirects=True)
     assert result.status_code == 200
     assert b'published' in result.data
 
+    # Editorial
     result = client.get('/problem/helloworldtesting/editeditorial')
     assert result.status_code == 200
     result = client.post('/problem/helloworldtesting/editeditorial',
@@ -89,6 +102,7 @@ def test_problem(client, database):
     assert result.status_code == 200
     assert b'edited' in result.data
 
+    # Edit
     result = client.post('/problem/helloworldtesting/edit', data={
         'description': 'a short fun problem 2',
         'hints': 'try looking at the title 2',
@@ -130,12 +144,13 @@ def test_problem(client, database):
     }, follow_redirects=True)
     assert result.status_code == 200
 
-    result = client.get('/dl/helloworldtesting.zip')
-    assert result.data == b'ree2'
-
     result = client.get('/users/admin/profile')
     assert result.status_code == 200
     assert b'2 Points' in result.data
+
+    # Download
+    result = client.get('/dl/helloworldtesting.zip')
+    assert result.data == b'ree2'
 
     client.get('/logout')
 
@@ -153,6 +168,7 @@ def test_problem(client, database):
     result = client.get('/problem/helloworldtesting')
     assert result.status_code == 200
 
+    # API data
     result = client.get('/api/problem?id=helloworldtesting')
     assert json.loads(result.data)['status'] == 'success'
     assert json.loads(result.data)['data']['description'].startswith('a short fun problem 2')
@@ -160,6 +176,7 @@ def test_problem(client, database):
     assert json.loads(result.data)['data']['editorial'] == 'sample editorial'
     assert json.loads(result.data)['data']['flag_hint'] == 'ctf{...}'
 
+    # Editorial
     result = client.get('/problem/helloworldtesting/editorial')
     assert result.status_code == 200
 
@@ -175,6 +192,7 @@ def test_problem(client, database):
     assert b'does not exist' in result.data
     client.get('/logout')
 
+    # Cleanup / Delete
     client.post('/login', data={'username': 'admin', 'password': 'CTFOJadmin'})
     result = client.get('/problem/helloworldtesting/download')
     assert result.status_code == 200
@@ -182,6 +200,9 @@ def test_problem(client, database):
     result = client.post('/problem/helloworldtesting/delete', follow_redirects=True)
     assert result.status_code == 200
     assert b'helloworldtesting' not in result.data
+
+    result = client.post('/problem/helloworldtesting/delete', follow_redirects=True)
+    assert result.status_code == 404
 
     shutil.rmtree('dl')
     os.mkdir('dl')
