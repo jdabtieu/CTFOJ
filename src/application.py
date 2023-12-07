@@ -227,7 +227,7 @@ def login():
     rows = db.execute("SELECT * FROM users WHERE username=:username",
                       username=request.form.get("username"))
     code = login_chk(rows)
-    if code != 0:
+    if code:
         return render_template("auth/login.html",
                                site_key=app.config['HCAPTCHA_SITE']), code
 
@@ -282,27 +282,10 @@ def register():
     confirmation = request.form.get("confirmation")
     email = request.form.get("email")
 
-    # Ensure username is valid
-    if not username or not verify_text(username):
-        flash('Invalid username', 'danger')
+    code = register_chk(username, password, confirmation, email)
+    if code:
         return render_template("auth/register.html",
-                               site_key=app.config['HCAPTCHA_SITE']), 400
-
-    # Ensure password is not blank
-    if not password or len(password) < 8:
-        flash('Password must be at least 8 characters', 'danger')
-        return render_template("auth/register.html",
-                               site_key=app.config['HCAPTCHA_SITE']), 400
-    if not confirmation or password != confirmation:
-        flash('Passwords do not match', 'danger')
-        return render_template("auth/register.html",
-                               site_key=app.config['HCAPTCHA_SITE']), 400
-
-    # Ensure email is valid
-    if "+" in email:
-        flash('Plus character not allowed in email', 'danger')
-        return render_template("auth/register.html",
-                               site_key=app.config['HCAPTCHA_SITE']), 400
+                               site_key=app.config['HCAPTCHA_SITE']), code
     email = email.lower()
 
     # Ensure captcha is valid

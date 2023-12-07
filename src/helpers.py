@@ -330,6 +330,30 @@ def login_chk(rows):
     return 0
 
 
+def register_chk(username, password, confirmation, email):
+    """
+    Determines if the user is allowed to register
+    Used by register() in application.py
+    """
+    if not username or not verify_text(username):
+        flash('Invalid username', 'danger')
+        return 400
+
+    if not password or len(password) < 8:
+        flash('Password must be at least 8 characters', 'danger')
+        return 400
+
+    if not confirmation or password != confirmation:
+        flash('Passwords do not match', 'danger')
+        return 400
+
+    if "+" in email:
+        flash('Plus character not allowed in email', 'danger')
+        return 400
+
+    return 0
+
+
 def contest_ended(info):
     """
     Determine if the contest from db query info has ended
