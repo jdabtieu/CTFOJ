@@ -2,6 +2,7 @@ from cs50 import SQL as cs50_SQL
 import sqlalchemy
 import sys
 
+
 # https://github.com/cs50/python-cs50/issues/178
 if int(sqlalchemy.__version__.split('.')[0]) == 1:
     SQL = cs50_SQL
@@ -18,7 +19,6 @@ else:
                     self.db._autocommit = False
                     self.db.execute("ROLLBACK")
                 raise e
-
 
 
 try:

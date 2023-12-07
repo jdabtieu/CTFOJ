@@ -96,7 +96,6 @@ def test_instancer(client, database):
     endpoint_test(client, 'create', True)
     endpoint_test(client, 'destroy', True)
 
-
     database.execute(
         ("INSERT INTO 'users' VALUES(2, 'normal_user', 'pbkdf2:sha256:150000$XoLKRd3I$"
          "2dbdacb6a37de2168298e419c6c54e768d242aee475aadf1fa9e6c30aa02997f', 'e2', "
