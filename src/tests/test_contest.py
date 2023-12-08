@@ -218,12 +218,23 @@ def test_contest(client, database):
     assert json.loads(result.data)['status'] == 'success'
     assert json.loads(result.data)['data']['testingcontest'] == 'testing contest description'
 
+    # Test export function
     client.post('/login', data={'username': 'admin', 'password': 'CTFOJadmin'})
     result = client.post('/contest/testingcontest/problem/helloworldtesting/export',
                          follow_redirects=True)
     assert result.status_code == 200
     assert b'exported' in result.data
 
+    result = client.post('/contest/testingcontest/problem/helloworldtesting/export',
+                         follow_redirects=True)
+    assert b'already exists' in result.data
+
+    result = client.post('/contest/testingcontest/problem/nonexistent/export',
+                         follow_redirects=True)
+    assert result.status_code == 404
+    assert b'does not exist' in result.data
+
+    # Test scoreboard API
     result = client.get('/api/contest/scoreboard/testingcontest')
     assert result.status_code == 401
 
@@ -234,6 +245,7 @@ def test_contest(client, database):
     assert result.status_code == 200
     assert result.data == b'{"standings": [{"pos": 1, "team": "normal_user", "score": 2}]}'  # noqa
 
+    # Test other admin functions
     result = client.post('/contest/testingcontest/scoreboard/hide', data={
         'user_id': 2
     }, follow_redirects=True)

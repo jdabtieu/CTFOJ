@@ -608,44 +608,38 @@ def contest_add_problem(contest_id):
 @perm_required(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"])
 def export_contest_problem(contest_id, problem_id):
     # Ensure contest exists
-    data1 = db.execute("SELECT * FROM contests WHERE id=:cid", cid=contest_id)
-    if len(data1) != 1:
+    cdata = db.execute("SELECT * FROM contests WHERE id=:cid", cid=contest_id)
+    if len(cdata) != 1:
         return render_template("contest/contest_noexist.html"), 404
 
     # Ensure problem exists
-    data = db.execute(
+    pdata = db.execute(
         "SELECT * FROM contest_problems WHERE contest_id=:cid AND problem_id=:pid",
         cid=contest_id, pid=problem_id)
-    if len(data) != 1:
+    if len(pdata) != 1:
         return render_template("contest/contest_problem_noexist.html"), 404
 
     if request.method == "GET":
-        if not contest_ended(data1):
+        if not contest_ended(cdata):
             flash("Are you sure? The contest hasn't ended yet", 'warning')
-        return render_template('contest/export_problem.html', data=data[0])
+        return render_template('contest/export_problem.html', data=pdata[0])
 
     # Reached via POST
 
     new_id = contest_id + "-" + problem_id  # this should be safe already
-
-    check = db.execute("SELECT * FROM problems WHERE id=:id", id=new_id)
-    if len(check) != 0:
-        flash('This problem has already been exported', 'danger')
-        return render_template('contest/export_problem.html', data=data[0])
-
-    new_name = data1[0]["name"] + " - " + data[0]["name"]
-
-    # change points value
-    if request.form.get("point_value"):
-        new_points = request.form.get("point_value")
-    else:
-        new_points = data[0]["point_value"]
+    new_name = cdata[0]["name"] + " - " + pdata[0]["name"]
+    new_points = request.form.get("point_value") or pdata[0]["point_value"]
 
     # Insert into problems databases
-    db.execute(("INSERT INTO problems(id, name, point_value, category, flag, flag_hint, "
-                "instanced) VALUES(?, ?, ?, ?, ?, ?, ?)"),
-               new_id, new_name, new_points, data[0]["category"], data[0]["flag"],
-               data[0]["flag_hint"], data[0]["instanced"])
+    try:
+        db.execute(("INSERT INTO problems(id, name, point_value, category, flag, "
+                    "flag_hint, instanced) VALUES(?, ?, ?, ?, ?, ?, ?)"),
+                   new_id, new_name, new_points, pdata[0]["category"], pdata[0]["flag"],
+                   pdata[0]["flag_hint"], pdata[0]["instanced"])
+    except ValueError:
+        flash(('This problem has already been exported, or a problem with '
+               f'ID {new_id} already exists'), 'danger')
+        return render_template('contest/export_problem.html', data=pdata[0])
 
     db.execute("INSERT INTO problem_solved(user_id, problem_id) SELECT user_id, :new_id "
                "FROM contest_solved WHERE contest_id=:cid AND problem_id=:pid",
