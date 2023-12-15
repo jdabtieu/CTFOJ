@@ -111,6 +111,12 @@ def test_admin(client, database):
     database.execute("INSERT INTO user_perms VALUES(1, ?)", USER_PERM["SUPERADMIN"])
     client.post('/login', data={'username': 'admin', 'password': 'CTFOJadmin'})
 
+    result = client.get('/admin/users?q=admin')
+    assert result.status_code == 200
+    assert b'e1' in result.data
+    assert b'normal_user' not in result.data
+
+
     result = client.post('/admin/updateperms?user_id=2', follow_redirects=True)
     assert result.status_code == 200
     assert b"Revoked [&#39;ADMIN&#39;]" in result.data

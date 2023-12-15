@@ -70,16 +70,25 @@ def admin_submissions():
 @api.route("/users")
 @admin_required
 def admin_users():
+    query = request.args.get("q")
+    modifier = ""
+    args = []
+    if query:
+        modifier = "WHERE username LIKE ? OR email LIKE ?"
+        query = '%' + query + '%'
+        args = [query, query]
+
     page = request.args.get("page")
     if not page:
         page = "1"
     page = (int(page) - 1) * 50
 
-    data = db.execute("SELECT * FROM users ORDER BY id ASC LIMIT 50 OFFSET ?", page)
-    length = db.execute("SELECT COUNT(*) AS cnt FROM users")[0]["cnt"]
+    data = db.execute((f"SELECT * FROM users {modifier} ORDER BY id ASC "
+                       "LIMIT 50 OFFSET ?"), *args, page)
+    length = db.execute(f"SELECT COUNT(*) AS cnt FROM users {modifier}", *args)[0]["cnt"]
 
-    perms = db.execute(("SELECT * FROM user_perms WHERE user_id IN "
-                        "(SELECT id FROM users ORDER BY id ASC LIMIT 50 OFFSET ?)"), page)
+    perms = db.execute("SELECT * FROM user_perms WHERE user_id IN (?)",
+                       [u["id"] for u in data])
     disp_perms = {}
     for perm in perms:
         if perm["user_id"] not in disp_perms:
