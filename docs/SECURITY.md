@@ -7,8 +7,9 @@ Please refer to the chart below for versions with security support
 | Version     | Supported          |
 | ----------- | ------------------ |
 | Prereleases | :x:                |
-| >= 4.1.0    | :white_check_mark: |
-| < 4.1.0     | :x:                |
+| Betas       | :x:                |
+| >= 4.2.0    | :white_check_mark: |
+| < 4.2.0     | :x:                |
 
 As you can tell, it is strongly recommended to always be on the latest stable major release. When security issues are uncovered, we will do
 our best to promptly release a patched version.

@@ -76,11 +76,11 @@
 {% if check_perm(["ADMIN", "SUPERADMIN"]) %}
 <hr>
 <p>
-    The only thing maintenance mode should be used for is to make significant changes to the
-    database that requires nobody writes to it during that time, as well as 5 minutes before a
-    reboot to let users know that the site will be down momentarily. If the application is rebooted,
-    maintenance mode will remain on. To disable it, log in as an admin account and navigate back to
-    this page or remove the 'maintenance_mode' file on the server.
+    Maintenance mode prevents non-admin users from interacting with the site. Admins can still log
+    in and perform changes as required. Use this for site upgrades and for other situations as
+    needed. If CTFOJ or its server is rebooted, maintenance mode will remain on. To disable it,
+    log in as an admin account and navigate back to this page or remove the 'maintenance_mode' file
+    on the server.
 </p>
 <form action="/admin/maintenance" method="POST">
     {% if maintenance_mode %}
