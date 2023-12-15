@@ -2,6 +2,7 @@ import logging
 import os
 import requests
 import sys
+import uuid
 from datetime import datetime
 
 import jwt
@@ -583,7 +584,7 @@ def create_contest():
     end = request.form.get("end")
     description = request.form.get("description").replace('\r', '').strip()
     contest_name = request.form.get("contest_name")
-    scoreboard_key = request.form.get("scoreboard_key")
+    scoreboard_key = str(uuid.uuid4())
     scoreboard_visible = bool(request.form.get("scoreboard_visible"))
 
     # Ensure contest ID is valid

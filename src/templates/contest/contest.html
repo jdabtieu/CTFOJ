@@ -23,7 +23,8 @@
                        href="{{ request.path }}/notify">Notify Participants</a>
                 {% endif %}
                 <a class="dropdown-item"
-                   href="/api/contest/scoreboard/{{ request.path[9:] }}?key={{ scoreboard_key }}">View CTFtime Scoreboard</a>
+                   href="/api/contest/scoreboard/{{ request.path[9:] }}?key={{ scoreboard_key }}"
+                   target="_blank">View CTFtime Scoreboard</a>
             </div>
         </div>
     {% endif %}

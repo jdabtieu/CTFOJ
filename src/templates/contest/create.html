@@ -52,19 +52,8 @@
     <div class="form-control mb-3" style="border: 0;">
         <div>
             <input type="checkbox" id="scoreboard_visible" name="scoreboard_visible">
-            <label for="scoreboard_visible">Scoreboard Visible?</label>
+            <label for="scoreboard_visible">Scoreboard Visible to Players? <i>(This will not affect the CTFtime scoreboard, which will always be accessible through a scoreboard key)</i></label>
         </div>
-        <div>Live scoreboard feed (for CTFtime): <span id="lsf_host"></span>/api/contest/scoreboard/<span id="lsf_cid"></span>?key=<span id="lsf_key"></span></div>
-        <input type="hidden" name="scoreboard_key">
-        <script>
-          document.querySelector("#lsf_host").innerText = location.origin;
-          let lsf_key = crypto.randomUUID();
-          document.querySelector("#lsf_key").innerText = lsf_key;
-          document.querySelector("input[name=scoreboard_key]").value = lsf_key;
-          document.querySelector("input[name=contest_id]").addEventListener("change", e => {
-              document.querySelector("#lsf_cid").innerText = e.target.value;
-          });
-        </script>
     </div>
     <input class="btn btn-primary" type="submit" value="Create Contest">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>

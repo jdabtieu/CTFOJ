@@ -49,8 +49,7 @@ def test_contest(client, database):
         'start': datetime.strftime(datetime.now(), "%Y-%m-%dT%H:%M:%S.%fZ"),
         'end': datetime.strftime(datetime.now() + timedelta(600), "%Y-%m-%dT%H:%M:%S.%fZ"),  # noqa E501
         'description': 'testing contest description',
-        'scoreboard_visible': True,
-        'scoreboard_key': '00000000-0000-0000-0000-000000000000'
+        'scoreboard_visible': True
     }, follow_redirects=True)
     assert result.status_code == 200
     assert b'Testing Contest' in result.data
@@ -241,7 +240,8 @@ def test_contest(client, database):
     result = client.get('/api/contest/scoreboard/testingcontest?key=' + admin_api)
     assert result.status_code == 401
 
-    result = client.get('/api/contest/scoreboard/testingcontest?key=00000000-0000-0000-0000-000000000000')  # noqa
+    key = database.execute("SELECT scoreboard_key FROM contests WHERE id='testingcontest'")[0]["scoreboard_key"]
+    result = client.get('/api/contest/scoreboard/testingcontest?key=' + key)
     assert result.status_code == 200
     assert result.data == b'{"standings": [{"pos": 1, "team": "normal_user", "score": 2}]}'  # noqa
 
