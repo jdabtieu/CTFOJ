@@ -464,9 +464,13 @@ def contest_hide(contest_id):
         flash("No user ID specified, please try again", "danger")
         return redirect("/contest/" + contest_id + "/scoreboard")
 
-    db.execute(
+    r = db.execute(
         "UPDATE contest_users SET hidden=1 WHERE user_id=:uid AND contest_id=:cid",
         uid=user_id, cid=contest_id)
+
+    if r == 0:
+        flash("That user isn't present in this contest", "warning")
+        return redirect("/contest/" + contest_id + "/scoreboard")
 
     logger.info((f"User #{user_id} hidden from contest {contest_id} by "
                  f"user #{session['user_id']} ({session['username']})"),
@@ -486,9 +490,13 @@ def contest_unhide(contest_id):
         flash("No user ID specified, please try again", "danger")
         return redirect("/contest/" + contest_id + "/scoreboard")
 
-    db.execute(
+    r = db.execute(
         "UPDATE contest_users SET hidden=0 WHERE user_id=:uid AND contest_id=:cid",
         uid=user_id, cid=contest_id)
+
+    if r == 0:
+        flash("That user isn't present in this contest", "warning")
+        return redirect("/contest/" + contest_id + "/scoreboard")
 
     logger.info((f"User #{user_id} unhidden from contest {contest_id} by "
                  f"user #{session['user_id']} ({session['username']})"),

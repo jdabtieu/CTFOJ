@@ -178,8 +178,10 @@ def update_perms():
         flash("Must provide user ID", "danger")
         return redirect("/admin/users")
 
+    db.execute("BEGIN")
     user = db.execute("SELECT * FROM users WHERE id=:id", id=user_id)
     if len(user) == 0:
+        db.execute("COMMIT")
         flash("That user doesn't exist", "danger")
         return redirect("/admin/users")
     user_id = int(user_id)
@@ -192,6 +194,7 @@ def update_perms():
     perms_add = new_perms - cur_perms
     perms_remove = cur_perms - new_perms
     if not perms_add and not perms_remove:
+        db.execute("COMMIT")
         flash("No perms were updated", "warning")
         return redirect("/admin/users")
 
@@ -202,18 +205,21 @@ def update_perms():
 
     # Permission checks for sensitive permissions
     if check_perm(["ADMIN", "SUPERADMIN"], perms_remove) and not check_perm(["SUPERADMIN"]):
+        db.execute("COMMIT")
         flash("Only the super-admin can revoke admin status", "danger")
         return redirect("/admin/users")
 
     if check_perm(["SUPERADMIN"], perms_add) and not check_perm(["SUPERADMIN"]):
+        db.execute("COMMIT")
         flash("Only the super-admin can create super-admins", "danger")
         return redirect("/admin/users")
 
     # Update permissions
     for perm in perms_add:
         db.execute("INSERT INTO user_perms(user_id, perm_id) VALUES(?, ?)", user_id, perm)
-    for perm in perms_remove:
-        db.execute("DELETE FROM user_perms WHERE user_id=? AND perm_id=?", user_id, perm)
+    db.execute("DELETE FROM user_perms WHERE user_id=? AND perm_id IN (?)",
+               user_id, list(perms_remove))
+    db.execute("COMMIT")
 
     # Flash and log message
     msg = f"Permissions changed for user #{user_id} ({user[0]['username']}). "
@@ -261,7 +267,10 @@ def delete_announcement():
     if not aid:
         return "Must provide announcement ID", 400
 
-    db.execute("DELETE FROM announcements WHERE id=:id", id=aid)
+    r = db.execute("DELETE FROM announcements WHERE id=?", aid)
+    if r == 0:
+        flash("That announcement doesn't exist", "warning")
+        return redirect("/")
     os.remove('metadata/announcements/' + aid + '.md')
 
     logger.info((f"User #{session['user_id']} ({session['username']}) deleted "
