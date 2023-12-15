@@ -246,14 +246,15 @@ def create_jwt(data, secret_key, time=1800):
     return jwt.encode(data, secret_key, algorithm='HS256')
 
 
-def update_dyn_score(contest_id, problem_id, update_curr_user=True):
+def update_dyn_score(contest_id, problem_id, update_curr_user=True, transact=True):
     from application import db
     """
     Updates the dynamic scoring of contest_id/problem_id, using the db object
     For details see: https://www.desmos.com/calculator/eifeir81wk
                      https://github.com/jdabtieu/CTFOJ/issues/2
     """
-    db.execute("BEGIN")
+    if transact:
+        db.execute("BEGIN")
     if update_curr_user:
         db.execute(("INSERT INTO contest_solved(contest_id, user_id, problem_id) "
                     "VALUES(:cid, :uid, :pid)"),
@@ -287,7 +288,8 @@ def update_dyn_score(contest_id, problem_id, update_curr_user=True):
                 "(SELECT user_id FROM contest_solved WHERE "
                 "contest_id=:cid AND problem_id=:pid)"),
                point_change=point_diff, cid=contest_id, pid=problem_id)
-    db.execute("COMMIT")
+    if transact:
+        db.execute("COMMIT")
 
 
 def contest_exists(contest_id):
@@ -369,35 +371,56 @@ def rejudge_contest_problem(contest_id, problem_id, new_flag):
     """
     Rejudges a contest problem
     """
+    db.execute("BEGIN")
     data = db.execute(
-        "SELECT * FROM contest_problems WHERE contest_id=:cid AND problem_id=:pid",
-        cid=contest_id, pid=problem_id)[0]
+        "SELECT * FROM contest_problems WHERE contest_id=? AND problem_id=?",
+        contest_id, problem_id)[0]
 
     # Reset all previously correct submissions
-    db.execute(("UPDATE contest_users SET points=points-:points WHERE user_id IN (SELECT "
-                "user_id FROM contest_solved WHERE contest_id=:cid AND problem_id=:pid)"),
-               points=data["point_value"], cid=contest_id, pid=problem_id)
+    affected_users = [x["user_id"] for x in db.execute(
+        "SELECT user_id FROM contest_solved WHERE contest_id=? AND problem_id=?",
+        contest_id, problem_id
+    )]
+    db.execute("UPDATE contest_users SET points=points-? WHERE user_id IN (?)",
+               data["point_value"], affected_users)
     db.execute(
-        "UPDATE submissions SET correct=0 WHERE contest_id=:cid AND problem_id=:pid",
-        cid=contest_id, pid=problem_id)
-    db.execute("DELETE FROM contest_solved WHERE contest_id=:cid AND problem_id=:pid",
-               cid=contest_id, pid=problem_id)
+        "UPDATE submissions SET correct=0 WHERE contest_id=? AND problem_id=?",
+        contest_id, problem_id)
+    db.execute("DELETE FROM contest_solved WHERE contest_id=? AND problem_id=?",
+               contest_id, problem_id)
     if data["score_users"] >= 0:  # Reset dynamic scoring
-        update_dyn_score(contest_id, problem_id, update_curr_user=False)
+        update_dyn_score(contest_id, problem_id, False, False)
 
     # Set all new correct submissions
-    db.execute(("UPDATE submissions SET correct=1 WHERE contest_id=:cid AND "
-                "problem_id=:pid AND submitted=:flag"),
-               cid=contest_id, pid=problem_id, flag=new_flag)
+    db.execute(("UPDATE submissions SET correct=1 WHERE contest_id=? AND "
+                "problem_id=? AND submitted=?"),
+               contest_id, problem_id, new_flag)
+    affected_users += [x["user_id"] for x in db.execute(
+        ("SELECT DISTINCT user_id FROM submissions WHERE contest_id=? AND "
+         "problem_id=? AND correct=1"),
+        contest_id, problem_id)]
+    affected_users = list(set(affected_users))  # Remove duplicates
     db.execute(("INSERT INTO contest_solved (user_id, contest_id, problem_id) "
                 "SELECT DISTINCT user_id, contest_id, problem_id FROM submissions WHERE "
-                "contest_id=:cid AND problem_id=:pid AND correct=1"),
-               cid=contest_id, pid=problem_id)
+                "contest_id=? AND problem_id=? AND correct=1"),
+               contest_id, problem_id)
     if data["score_users"] == -1:  # Instructions for static scoring
         old_points = data["point_value"]
     else:  # Instructions for dynamic scoring
         old_points = data["score_max"]
-        update_dyn_score(contest_id, problem_id, update_curr_user=False)
-    db.execute(("UPDATE contest_users SET points=points+:points WHERE user_id IN (SELECT "
-                "user_id FROM contest_solved WHERE contest_id=:cid AND problem_id=:pid)"),
-               points=old_points, cid=contest_id, pid=problem_id)
+        update_dyn_score(contest_id, problem_id, False, False)
+    db.execute(("UPDATE contest_users SET points=points+? WHERE user_id IN (SELECT "
+                "user_id FROM contest_solved WHERE contest_id=? AND problem_id=?)"),
+               old_points, contest_id, problem_id)
+    db.execute("UPDATE contest_users SET lastAC=NULL WHERE user_id IN (?)",
+               affected_users)
+    new_lastAC = db.execute(
+        ("SELECT user_id, max(firstAC) AS lastAC FROM ("
+         "SELECT user_id, min(date) AS firstAC, problem_id FROM submissions WHERE "
+         "contest_id=? AND correct=1 GROUP BY user_id, problem_id ORDER BY user_id ASC) "
+         "GROUP BY user_id"), contest_id)
+    for entry in new_lastAC:
+        # sqlite3 < 3.33 doesn't support UPDATE FROM
+        db.execute("UPDATE contest_users SET lastAC=? WHERE user_id=?",
+                   entry["lastAC"], entry["user_id"])
+    db.execute("COMMIT")

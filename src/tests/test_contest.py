@@ -278,7 +278,6 @@ def test_contest(client, database):
         'users_point_value': 0,
         'category': 'general',
         'flag': 'ctf{hello}',
-        'draft': False,
         'file': ('test_upload.txt', 'test_upload.txt')
     })
     os.remove("test_upload.txt")
@@ -349,3 +348,150 @@ def test_contest(client, database):
     shutil.rmtree('dl')
     os.mkdir('dl')
     shutil.rmtree('metadata/problems/testingcontest-helloworldtesting')
+
+
+def test_contest_rejudge(client, database):
+    """
+    Test rejudge behavior because of how complex it is
+    """
+
+    # Set up users
+    database.execute(
+        ("INSERT INTO 'users' VALUES(1, 'admin', 'pbkdf2:sha256:150000$XoLKRd3I$"
+         "2dbdacb6a37de2168298e419c6c54e768d242aee475aadf1fa9e6c30aa02997f', 'e1', "
+         "datetime('now'), 0, 1, 0, NULL, 0, 0, 0)"))
+    database.execute("INSERT INTO user_perms VALUES(1, ?)", USER_PERM["ADMIN"])
+    client.post('/login', data={'username': 'admin', 'password': 'CTFOJadmin'})
+
+    # Set up contest
+    result = client.post('/contests/create', data={
+        'contest_id': 'testingcontest',
+        'contest_name': 'Testing Contest',
+        'start': datetime.strftime(datetime.now(), "%Y-%m-%dT%H:%M:%S.%fZ"),
+        'end': datetime.strftime(datetime.now() + timedelta(600), "%Y-%m-%dT%H:%M:%S.%fZ"),  # noqa E501
+        'description': 'testing contest description',
+        'scoreboard_visible': True
+    }, follow_redirects=True)
+    assert result.status_code == 200
+    assert b'Testing Contest' in result.data
+
+    file = open("test_upload.txt", "w")
+    file.write('ree')
+    file.close()
+    result = client.post('/contest/testingcontest/addproblem', data={
+        'id': 'static',
+        'name': 'static',
+        'description': 'static',
+        'hints': 'static',
+        'point_value': 1,
+        'category': 'general',
+        'flag': 'ctf{hello}',
+        'flag_hint': 'ctf{...}',
+        'file': ('test_upload.txt', 'test_upload.txt')
+    })
+    assert result.status_code == 302
+
+    result = client.post('/contest/testingcontest/addproblem', data={
+        'id': 'dynamic',
+        'name': 'dynamic',
+        'description': 'dynamic',
+        'hints': 'dynamic',
+        'score_type': 'dynamic',
+        'min_point_value': 1,
+        'max_point_value': 500,
+        'users_point_value': 1,
+        'category': 'general',
+        'flag': 'ctf{hello}',
+        'flag_hint': 'ctf{...}',
+        'file': ('test_upload.txt', 'test_upload.txt')
+    })
+    assert result.status_code == 302
+    os.remove('test_upload.txt')
+
+    # WA --> First AC
+    result = client.post('/contest/testingcontest/problem/dynamic', data={
+        'flag': 'ctf{wrong}'
+    })
+    assert result.status_code == 200
+
+    result = client.get('/contest/testingcontest/scoreboard')
+    assert result.status_code == 200
+    assert b'None' in result.data
+
+    result = client.post('/contest/testingcontest/problem/dynamic/edit', data={
+        'name': 'dynamic',
+        'description': 'dynamic is fun',
+        'category': 'web',
+        'flag': 'ctf{wrong}',
+        'rejudge': True,
+        'file': ('fake_empty_file', ''),
+    }, follow_redirects=True)
+    assert result.status_code == 200
+    assert b'successfully' in result.data
+
+    result1 = client.get('/contest/testingcontest/scoreboard')
+    assert result1.status_code == 200
+    assert b'None' not in result1.data
+
+    # First AC --> WA
+    result = client.post('/contest/testingcontest/problem/dynamic/edit', data={
+        'name': 'dynamic',
+        'description': 'dynamic is fun',
+        'category': 'web',
+        'flag': 'ctf{hello}',
+        'rejudge': True,
+        'file': ('fake_empty_file', ''),
+    }, follow_redirects=True)
+    assert result.status_code == 200
+    assert b'successfully' in result.data
+
+    result = client.get('/contest/testingcontest/scoreboard')
+    assert result.status_code == 200
+    assert b'None' in result.data
+
+    # WA --> AC and AC --> WA
+    result = client.post('/contest/testingcontest/problem/static', data={
+        'flag': 'ctf{hello}'
+    })
+    assert result.status_code == 200
+
+    result2 = client.get('/contest/testingcontest/scoreboard')
+    assert result2.status_code == 200
+    assert b'None' not in result2.data
+
+    result = client.post('/contest/testingcontest/problem/dynamic/edit', data={
+        'name': 'dynamic',
+        'description': 'dynamic is fun',
+        'category': 'web',
+        'flag': 'ctf{wrong}',
+        'rejudge': True,
+        'file': ('fake_empty_file', ''),
+    }, follow_redirects=True)
+    assert result.status_code == 200
+    assert b'successfully' in result.data
+
+    result = client.get('/contest/testingcontest/scoreboard')
+    assert result.status_code == 200
+    assert b'None' not in result.data
+    assert result.data.replace(b'501', b'1') == result2.data  # Check points and last AC
+
+
+    result = client.post('/contest/testingcontest/problem/static/edit', data={
+        'name': 'static',
+        'description': 'static is fun',
+        'category': 'web',
+        'point_value': 1,
+        'flag': 'ctf{wrong}',
+        'rejudge': True,
+        'file': ('fake_empty_file', ''),
+    }, follow_redirects=True)
+    assert result.status_code == 200
+    assert b'successfully' in result.data
+
+    result = client.get('/contest/testingcontest/scoreboard')
+    assert result.status_code == 200
+    assert b'None' not in result.data
+    assert result.data == result1.data  # Check points and last AC
+
+    client.post('/contest/testingcontest/delete', follow_redirects=True)
+    assert result.status_code == 200
