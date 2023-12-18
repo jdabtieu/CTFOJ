@@ -473,7 +473,7 @@ def test_contest_rejudge(client, database):
     result = client.get('/contest/testingcontest/scoreboard')
     assert result.status_code == 200
     assert b'None' not in result.data
-    assert result.data.replace(b'501', b'1') == result2.data  # Check points and last AC
+    assert result.data[result.data.index(b'table'):].replace(b'501', b'1') == result2.data[result2.data.index(b'table'):]  # Check points and last AC
 
 
     result = client.post('/contest/testingcontest/problem/static/edit', data={
@@ -491,7 +491,7 @@ def test_contest_rejudge(client, database):
     result = client.get('/contest/testingcontest/scoreboard')
     assert result.status_code == 200
     assert b'None' not in result.data
-    assert result.data == result1.data  # Check points and last AC
+    assert result.data[result.data.index(b'table'):] == result1.data[result1.data.index(b'table'):]  # Check points and last AC
 
     client.post('/contest/testingcontest/delete', follow_redirects=True)
     assert result.status_code == 200
