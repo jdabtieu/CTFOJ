@@ -1,3 +1,4 @@
+from enum import Enum
 from flask import (Blueprint, flash, redirect, render_template, request,
                    send_file, session, current_app as app)
 import logging
@@ -14,6 +15,12 @@ from db import db
 api = Blueprint("contest", __name__)
 
 logger = logging.getLogger("CTFOJ")
+
+
+class CUser(Enum):
+    NORMAL = 0
+    HIDDEN = 1
+    BANNED = 2
 
 
 @api.route("/<contest_id>")
@@ -57,14 +64,11 @@ def contest(contest_id):
          "GROUP BY problem_id ORDER BY problem_id ASC, category ASC;"),
         cid=contest_id)
 
-    solve_count = dict()
-    for row in db.execute(("SELECT problem_id, COUNT(user_id) AS solves FROM "
-                           "contest_solved WHERE contest_id=:cid AND user_id NOT IN ("
-                           "SELECT user_id FROM contest_users WHERE contest_id=:cid AND "
-                           "hidden=1) GROUP BY problem_id"), cid=contest_id):
-        if row["problem_id"] is None:
-            continue
-        solve_count[row["problem_id"]] = row["solves"]
+    solves = db.execute(("SELECT problem_id, COUNT(user_id) AS solves FROM "
+                         "contest_solved WHERE contest_id=:cid AND user_id NOT IN ("
+                         "SELECT user_id FROM contest_users WHERE contest_id=:cid AND "
+                         "hidden != 0) GROUP BY problem_id"), cid=contest_id)
+    solve_count = {x["problem_id"]: x["solves"] for x in solves}
 
     for row in info:
         problem_id = row["problem_id"]
@@ -142,10 +146,12 @@ def delete_contest(contest_id):
     # Reached using POST
 
     db.execute("BEGIN")
-    db.execute("DELETE FROM contests WHERE id=:cid", cid=contest_id)
-    db.execute("DELETE FROM contest_users WHERE contest_id=:cid", cid=contest_id)
-    db.execute("DELETE FROM contest_solved WHERE contest_id=:cid", cid=contest_id)
-    db.execute("DELETE FROM contest_problems WHERE contest_id=:cid", cid=contest_id)
+    db.execute(("UPDATE users SET contests_completed=contests_completed-1 WHERE id IN "
+                "(SELECT id FROM contest_users WHERE contest_id=?)"), contest_id)
+    db.execute("DELETE FROM contests WHERE id=?", contest_id)
+    db.execute("DELETE FROM contest_users WHERE contest_id=?", contest_id)
+    db.execute("DELETE FROM contest_solved WHERE contest_id=?", contest_id)
+    db.execute("DELETE FROM contest_problems WHERE contest_id=?", contest_id)
     db.execute("COMMIT")
 
     shutil.rmtree('metadata/contests/' + contest_id)
@@ -236,12 +242,11 @@ def contest_problem(contest_id, problem_id):
         flash('This contest has ended', 'danger')
         return render_template("contest/contest_problem.html", data=check[0]), 400
 
-    # Check if user is disqualified and in the contest
-    user = db.execute(
-        "SELECT * FROM contest_users WHERE user_id=:uid AND contest_id=:cid",
-        uid=session["user_id"], cid=contest_id)
-    if len(user) > 0 and user[0]["points"] == -999999:
-        flash('You are disqualified from this contest', 'danger')
+    # Check if user is banned from this contest
+    user = db.execute("SELECT * FROM contest_users WHERE user_id=? AND contest_id=?",
+                      session["user_id"], contest_id)
+    if len(user) > 0 and user[0]["hidden"] == CUser.BANNED.value:
+        flash('You are banned from this contest', 'danger')
         return render_template("contest/contest_problem.html", data=check[0])
     if len(user) == 0:
         db.execute("INSERT INTO contest_users(contest_id, user_id) VALUES (:cid, :uid)",
@@ -252,14 +257,13 @@ def contest_problem(contest_id, problem_id):
         flash('Invalid flag', 'danger')
         return render_template("contest/contest_problem.html", data=check[0]), 400
 
-    db.execute(
-        ("INSERT INTO submissions(date, user_id, problem_id, contest_id, correct, "
-         "submitted) VALUES(datetime('now'), :uid, :pid, :cid, :correct, :flag)"),
-        uid=session["user_id"], pid=problem_id, cid=contest_id,
-        correct=(flag == check[0]["flag"]), flag=flag)
+    flag_correct = flag == check[0]["flag"]
+    db.execute(("INSERT INTO submissions(user_id, problem_id, contest_id, correct, "
+                "submitted) VALUES(?, ?, ?, ?, ?)"),
+               session["user_id"], problem_id, contest_id, flag_correct, flag)
 
     # Check if flag is correct
-    if flag != check[0]["flag"]:
+    if not flag_correct:
         flash('Your flag is incorrect', 'danger')
         return render_template("contest/contest_problem.html", data=check[0])
 
@@ -269,7 +273,16 @@ def contest_problem(contest_id, problem_id):
                         cid=contest_id, uid=session["user_id"], pid=problem_id)
     if len(check1) == 0:
         if check[0]["score_users"] != -1:  # Dynamic scoring
-            update_dyn_score(contest_id, problem_id)
+            print(user[0]["hidden"], CUser.NORMAL.value)
+            if user[0]["hidden"] != CUser.NORMAL.value:  # is hidden
+                db.execute(("INSERT INTO contest_solved(contest_id, user_id, problem_id) "
+                            "VALUES(:cid, :uid, :pid)"),
+                            cid=contest_id, pid=problem_id, uid=session["user_id"])
+                db.execute(("UPDATE contest_users SET lastAC=datetime('now'), "
+                            "points=points+:points WHERE contest_id=:cid AND user_id=:uid"),
+                           cid=contest_id, points=check[0]["point_value"], uid=session["user_id"])
+            else:
+                update_dyn_score(contest_id, problem_id)
         else:  # Static scoring
             db.execute(("INSERT INTO contest_solved(contest_id, user_id, problem_id) "
                         "VALUES(:cid, :uid, :pid)"),
@@ -279,9 +292,8 @@ def contest_problem(contest_id, problem_id):
                         "points=points+:points WHERE contest_id=:cid AND user_id=:uid"),
                        cid=contest_id, points=points, uid=session["user_id"])
 
-    check[0]["solved"] = True
     flash('Congratulations! You have solved this problem!', 'success')
-    return render_template("contest/contest_problem.html", data=check[0])
+    return redirect(f"/contest/{contest_id}/problem/{problem_id}")
 
 
 @api.route("/<contest_id>/problem/<problem_id>/publish", methods=["POST"])
@@ -415,13 +427,18 @@ def contest_scoreboard(contest_id):
 
     if check_perm(["ADMIN", "SUPERADMIN"]):
         hidden = db.execute(
-            ("SELECT user_id, points, lastAC, username FROM contest_users "
+            ("SELECT user_id, points, lastAC, username, hidden FROM contest_users "
              "JOIN users on user_id=users.id WHERE contest_users.contest_id=:cid AND "
              "hidden=1 ORDER BY points DESC, lastAC ASC"),
             cid=contest_id)
+        hidden += db.execute(  # Put banned users at the bottom of the list
+            ("SELECT user_id, points, lastAC, username, hidden FROM contest_users "
+             "JOIN users on user_id=users.id WHERE contest_users.contest_id=:cid AND "
+             "hidden=2 ORDER BY points DESC, lastAC ASC"),
+            cid=contest_id)
     else:
         hidden = db.execute(
-            ("SELECT user_id, points, lastAC, username FROM contest_users "
+            ("SELECT user_id, points, lastAC, username, hidden FROM contest_users "
              "JOIN users on user_id=users.id WHERE contest_users.contest_id=:cid AND "
              "hidden=1 AND user_id=:uid ORDER BY points DESC, lastAC ASC"),
             cid=contest_id, uid=session["user_id"])
@@ -430,9 +447,7 @@ def contest_scoreboard(contest_id):
                            title=contest_info[0]["name"], data=data, hidden=hidden)
 
 
-@api.route("/<contest_id>/scoreboard/ban", methods=["POST"])
-@admin_required
-def contest_dq(contest_id):
+def _contest_hide(contest_id, hide_enum, hide_msg):
     # Ensure contest exists
     if not contest_exists(contest_id):
         return render_template("contest/contest_noexist.html"), 404
@@ -442,66 +457,98 @@ def contest_dq(contest_id):
         flash("No user ID specified, please try again", "danger")
         return redirect("/contest/" + contest_id + "/scoreboard")
 
-    db.execute(
-        "UPDATE contest_users SET points=-999999 WHERE user_id=:uid AND contest_id=:cid",
-        uid=user_id, cid=contest_id)
+    db.execute("BEGIN")
+    stat = db.execute("SELECT hidden FROM contest_users WHERE user_id=? AND contest_id=?",
+                      user_id, contest_id)
+    if len(stat) == 0:
+        db.execute("ROLLBACK")
+        flash("That user is not present in the contest", "danger")
+        return redirect("/contest/" + contest_id + "/scoreboard")
 
-    logger.info((f"User #{user_id} banned from contest {contest_id} by "
+    db.execute("UPDATE contest_users SET hidden=? WHERE user_id=? AND contest_id=?",
+               hide_enum, user_id, contest_id)
+    if stat[0]["hidden"] == 0:  # We need to update dynscore
+        updatelist = db.execute(
+            ("SELECT contest_solved.problem_id FROM contest_solved INNER JOIN "
+             "contest_problems ON contest_solved.problem_id=contest_problems.problem_id "
+             "WHERE user_id=? AND contest_solved.contest_id=? AND "
+             "contest_problems.contest_id=? AND contest_problems.score_users != -1"),
+            user_id, contest_id, contest_id)
+        for problem in updatelist:
+            update_dyn_score(contest_id, problem["problem_id"], False, False, -1)
+
+    db.execute("COMMIT")
+    flash(f"User successfully {hide_msg}!", "success")
+    logger.info((f"User #{user_id} {hide_msg} from contest {contest_id} by "
                  f"user #{session['user_id']} ({session['username']})"),
                 extra={"section": "contest"})
     return redirect("/contest/" + contest_id + "/scoreboard")
+
+
+def _contest_unhide(contest_id, hide_msg):
+    # Ensure contest exists
+    if not contest_exists(contest_id):
+        return render_template("contest/contest_noexist.html"), 404
+
+    user_id = request.form.get("user_id")
+    if not user_id:
+        flash("No user ID specified, please try again", "danger")
+        return redirect("/contest/" + contest_id + "/scoreboard")
+
+    db.execute("BEGIN")
+    stat = db.execute("SELECT hidden FROM contest_users WHERE user_id=? AND contest_id=?",
+                      user_id, contest_id)
+    if len(stat) == 0:
+        db.execute("ROLLBACK")
+        flash("That user is not present in the contest", "danger")
+        return redirect("/contest/" + contest_id + "/scoreboard")
+    if stat[0]["hidden"] == 0:
+        db.execute("ROLLBACK")
+        flash("That user is not " + hide_msg, "danger")
+        return redirect("/contest/" + contest_id + "/scoreboard")
+
+    db.execute("UPDATE contest_users SET hidden=0 WHERE user_id=? AND contest_id=?",
+               user_id, contest_id)
+    # We need to update dynscore
+    updatelist = db.execute(
+        ("SELECT contest_solved.problem_id FROM contest_solved INNER JOIN "
+            "contest_problems ON contest_solved.problem_id=contest_problems.problem_id "
+            "WHERE user_id=? AND contest_solved.contest_id=? AND "
+            "contest_problems.contest_id=? AND contest_problems.score_users != -1"),
+        user_id, contest_id, contest_id)
+    for problem in updatelist:
+        update_dyn_score(contest_id, problem["problem_id"], False, False)
+
+    db.execute("COMMIT")
+    flash(f"User successfully un{hide_msg}!", "success")
+    logger.info((f"User #{user_id} un{hide_msg} from contest {contest_id} by "
+                 f"user #{session['user_id']} ({session['username']})"),
+                extra={"section": "contest"})
+    return redirect("/contest/" + contest_id + "/scoreboard")
+
+
+@api.route("/<contest_id>/scoreboard/ban", methods=["POST"])
+@admin_required
+def contest_dq(contest_id):
+    return _contest_hide(contest_id, CUser.BANNED.value, "banned")
 
 
 @api.route("/<contest_id>/scoreboard/hide", methods=["POST"])
 @admin_required
 def contest_hide(contest_id):
-    # Ensure contest exists
-    if not contest_exists(contest_id):
-        return render_template("contest/contest_noexist.html"), 404
+    return _contest_hide(contest_id, CUser.HIDDEN.value, "hidden")
 
-    user_id = request.form.get("user_id")
-    if not user_id:
-        flash("No user ID specified, please try again", "danger")
-        return redirect("/contest/" + contest_id + "/scoreboard")
 
-    r = db.execute(
-        "UPDATE contest_users SET hidden=1 WHERE user_id=:uid AND contest_id=:cid",
-        uid=user_id, cid=contest_id)
-
-    if r == 0:
-        flash("That user isn't present in this contest", "warning")
-        return redirect("/contest/" + contest_id + "/scoreboard")
-
-    logger.info((f"User #{user_id} hidden from contest {contest_id} by "
-                 f"user #{session['user_id']} ({session['username']})"),
-                extra={"section": "contest"})
-    return redirect("/contest/" + contest_id + "/scoreboard")
+@api.route("/<contest_id>/scoreboard/unban", methods=["POST"])
+@admin_required
+def contest_unban(contest_id):
+    return _contest_unhide(contest_id, "banned")
 
 
 @api.route("/<contest_id>/scoreboard/unhide", methods=["POST"])
 @admin_required
 def contest_unhide(contest_id):
-    # Ensure contest exists
-    if not contest_exists(contest_id):
-        return render_template("contest/contest_noexist.html"), 404
-
-    user_id = request.form.get("user_id")
-    if not user_id:
-        flash("No user ID specified, please try again", "danger")
-        return redirect("/contest/" + contest_id + "/scoreboard")
-
-    r = db.execute(
-        "UPDATE contest_users SET hidden=0 WHERE user_id=:uid AND contest_id=:cid",
-        uid=user_id, cid=contest_id)
-
-    if r == 0:
-        flash("That user isn't present in this contest", "warning")
-        return redirect("/contest/" + contest_id + "/scoreboard")
-
-    logger.info((f"User #{user_id} unhidden from contest {contest_id} by "
-                 f"user #{session['user_id']} ({session['username']})"),
-                extra={"section": "contest"})
-    return redirect("/contest/" + contest_id + "/scoreboard")
+    return _contest_unhide(contest_id, "hidden")
 
 
 @api.route("/<contest_id>/addproblem", methods=["GET", "POST"])

@@ -42,8 +42,7 @@
                     <td data-id="{{ data[i]['user_id'] }}" data-username="{{ data[i]['username'] }}">
                         <a href="#">
                             <img src="/assets/images/restrict.svg"
-                                 onerror="this.src='/assets/images/restrict.png'"
-                                 class="svg-red icon scoreboard-dq"
+                                 class="svg-red icon scoreboard-ban"
                                  alt="Disqualify user"
                                  title="Disqualify user">
                         </a>
@@ -80,7 +79,7 @@
                 <tr>
                     <td>{{ i + 1 }}</td>
                     <td class="username">{{ hidden[i]["username"] }}</td>
-                    <td>{{ hidden[i]["points"] }}</td>
+                    <td class="{{ 'user-ban' if hidden[i]['hidden'] == 2 }}">{{ hidden[i]["points"] }}</td>
                     {% if hidden[i]["lastAC"] %}
                         <td class="dt">{{ hidden[i]["lastAC"] }}</td>
                     {% else %}
@@ -88,19 +87,33 @@
                     {% endif %}
                     {% if check_perm(["ADMIN", "SUPERADMIN"]) %}
                         <td data-id="{{ hidden[i]['user_id'] }}" data-username="{{ hidden[i]['username'] }}">
-                            <a href="#">
-                                <img src="/assets/images/restrict.svg"
-                                     onerror="this.src='/assets/images/restrict.png'"
-                                     class="svg-red icon scoreboard-dq"
-                                     alt="Disqualify user"
-                                     title="Disqualify user">
-                            </a>
-                            <a href="#">
-                                <img src="/assets/images/ghost.svg"
-                                     class="icon scoreboard-unhide"
-                                     alt="Unhide user"
-                                     title="Unhide user">
-                            </a>
+                            {% if hidden[i]['hidden'] == 1 %}
+                                <a href="#">
+                                    <img src="/assets/images/restrict.svg"
+                                        class="svg-red icon scoreboard-ban"
+                                        alt="Ban user"
+                                        title="Ban user">
+                                </a>
+                                <a href="#">
+                                    <img src="/assets/images/ghost.svg"
+                                        class="icon scoreboard-unhide"
+                                        alt="Unhide user"
+                                        title="Unhide user">
+                                </a>
+                            {% elif hidden[i]['hidden'] == 2 %}
+                                <a href="#">
+                                    <img src="/assets/images/restrict.svg"
+                                        class="svg-red icon scoreboard-unban"
+                                        alt="Unban user"
+                                        title="Unban user">
+                                </a>
+                                <a href="#">
+                                    <img src="/assets/images/ghost.svg"
+                                        class="icon scoreboard-hide"
+                                        alt="Hide user"
+                                        title="Hide user">
+                                </a>
+                            {% endif %}
                         </td>
                     {% endif %}
                 </tr>
@@ -115,16 +128,28 @@
     <script>
         const path = "{{ request.path }}";
         const confirmDiv = document.getElementById("confirm");
-        for (let node of document.getElementsByClassName("scoreboard-dq")) {
+        for (let node of document.getElementsByClassName("scoreboard-ban")) {
             node.parentElement.addEventListener("click", function() {
                 var username = this.parentElement.getAttribute("data-username");
                 var userId = this.parentElement.getAttribute("data-id");
                 confirmDiv.style.display = "block";
                 confirmDiv.querySelector(".btn")
-                        .setAttribute("value", `Are you sure you want to disqualify ${username}? ` +
+                        .setAttribute("value", `Are you sure you want to ban ${username}? ` +
                                                "This action is irreversible. Click here to confirm");
                 confirmDiv.querySelector("input[name=user_id]").setAttribute("value", userId);
                 confirmDiv.querySelector("form").setAttribute("action", path + "/ban");
+            });
+        }
+        for (let node of document.getElementsByClassName("scoreboard-unban")) {
+            node.parentElement.addEventListener("click", function() {
+                var username = this.parentElement.getAttribute("data-username");
+                var userId = this.parentElement.getAttribute("data-id");
+                confirmDiv.style.display = "block";
+                confirmDiv.querySelector(".btn")
+                        .setAttribute("value", `Are you sure you want to unban ${username}? ` +
+                                               "This action is irreversible. Click here to confirm");
+                confirmDiv.querySelector("input[name=user_id]").setAttribute("value", userId);
+                confirmDiv.querySelector("form").setAttribute("action", path + "/unban");
             });
         }
         for (let node of document.getElementsByClassName("scoreboard-hide")) {

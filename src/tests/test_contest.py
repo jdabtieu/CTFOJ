@@ -156,13 +156,15 @@ def test_contest(client, database):
     }, follow_redirects=True)
     assert result.status_code == 200
     assert b'Hidden' not in result.data
+    assert b'unhidden' in result.data
 
     result = client.get('/contest/testingcontest')
     assert result.status_code == 200
     assert b'1' in result.data  # 1 non-hidden solves
 
     client.post('/contest/testingcontest/scoreboard/hide', data={
-        'user_id': 1}, follow_redirects=True)
+        'user_id': 1
+    }, follow_redirects=True)
 
     result = client.post('/contest/testingcontest/notify', data={
         'subject': 'test subject',
@@ -252,6 +254,32 @@ def test_contest(client, database):
     assert result.status_code == 200
     assert b'Hidden' in result.data
 
+    result = client.post('/contest/testingcontest/scoreboard/ban', data={
+        'user_id': 2
+    }, follow_redirects=True)
+    assert result.status_code == 200
+    assert b'banned' in result.data
+    assert b'Hidden' in result.data
+
+    result = client.post('/contest/testingcontest/scoreboard/unban', data={
+        'user_id': 2
+    }, follow_redirects=True)
+    assert result.status_code == 200
+    assert b'unbanned' in result.data
+
+    result = client.post('/contest/testingcontest/scoreboard/hide', data={
+        'user_id': 2
+    }, follow_redirects=True)
+    assert result.status_code == 200
+    assert b'Hidden' in result.data
+
+    result = client.post('/contest/testingcontest/scoreboard/unhide', data={
+        'user_id': 1
+    }, follow_redirects=True)
+    assert result.status_code == 200
+    assert b'unhidden' in result.data
+    assert b'Hidden' in result.data
+
     result = client.get('/admin/submissions')
     assert result.status_code == 200
     assert b'testingcontest-helloworldtesting' in result.data
@@ -285,10 +313,8 @@ def test_contest(client, database):
 
     result = client.post('/contest/testingcontest/problem/dynscore', data={
         'flag': 'ctf{hello}'
-    })
+    }, follow_redirects=True)
     assert result.status_code == 200
-
-    result = client.get('/contest/testingcontest/problem/dynscore')
     assert b'457' in result.data
 
     result = client.post('/contest/testingcontest/problem/dynscore/edit', data={
@@ -316,6 +342,10 @@ def test_contest(client, database):
     result = client.get('/contest/testingcontest/problem/dynscore')
     assert b'500' in result.data
 
+    client.post('/contest/testingcontest/scoreboard/hide', data={
+        'user_id': 1
+    }, follow_redirects=True)
+
     client.get('/logout')
 
     client.post('/login', data={
@@ -337,7 +367,7 @@ def test_contest(client, database):
 
     result = client.post('/contest/testingcontest/scoreboard/ban', follow_redirects=True, data={'user_id': 2})
     assert result.status_code == 200
-    assert b'-999999' in result.data
+    assert b'user-ban' in result.data
 
     result = client.get('/contest/testingcontest/problem/dynscore/download', follow_redirects=True)
     assert result.status_code == 200
@@ -411,7 +441,7 @@ def test_contest_rejudge(client, database):
     # WA --> First AC
     result = client.post('/contest/testingcontest/problem/dynamic', data={
         'flag': 'ctf{wrong}'
-    })
+    }, follow_redirects=True)
     assert result.status_code == 200
 
     result = client.get('/contest/testingcontest/scoreboard')
@@ -452,7 +482,7 @@ def test_contest_rejudge(client, database):
     # WA --> AC and AC --> WA
     result = client.post('/contest/testingcontest/problem/static', data={
         'flag': 'ctf{hello}'
-    })
+    }, follow_redirects=True)
     assert result.status_code == 200
 
     result2 = client.get('/contest/testingcontest/scoreboard')

@@ -59,7 +59,7 @@ CREATE TABLE 'contest_users' (
     'user_id' integer NOT NULL,
     'points' integer NOT NULL DEFAULT (0),
     'lastAC' datetime,
-    'hidden' integer NOT NULL DEFAULT(0),
+    'hidden' integer NOT NULL DEFAULT(0), -- 1: hidden, 2: banned
     UNIQUE(contest_id, user_id) ON CONFLICT ABORT
 );
 CREATE TABLE 'contest_solved' (

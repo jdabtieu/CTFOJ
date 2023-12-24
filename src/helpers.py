@@ -15,6 +15,8 @@ from flask import redirect, request, session, flash, make_response
 from flask_mail import Message
 from werkzeug.security import check_password_hash
 
+from db import db
+
 
 USER_PERM = {
     "SUPERADMIN": 0,
@@ -78,7 +80,6 @@ def api_logged_in() -> bool:
         return False
 
     # Check API key
-    from application import db
     user = db.execute("SELECT * FROM users WHERE api=?", sha256sum(request.args["key"]))
     return len(user) == 1
 
@@ -113,7 +114,6 @@ def api_get_perms() -> set:
         return set()
 
     # Check API key
-    from application import db
     user = db.execute("SELECT * FROM users WHERE api=?", sha256sum(request.args["key"]))
     if len(user) == 0:
         return set()
@@ -246,8 +246,7 @@ def create_jwt(data, secret_key, time=1800):
     return jwt.encode(data, secret_key, algorithm='HS256')
 
 
-def update_dyn_score(contest_id, problem_id, update_curr_user=True, transact=True):
-    from application import db
+def update_dyn_score(contest_id, problem_id, update_curr_user=True, transact=True, d_solves=1):
     """
     Updates the dynamic scoring of contest_id/problem_id, using the db object
     For details see: https://www.desmos.com/calculator/eifeir81wk
@@ -261,14 +260,16 @@ def update_dyn_score(contest_id, problem_id, update_curr_user=True, transact=Tru
                    cid=contest_id, pid=problem_id, uid=session["user_id"])
     check = db.execute(("SELECT * FROM contest_problems WHERE contest_id=:cid AND "
                         "problem_id=:pid"), cid=contest_id, pid=problem_id)
-    solves = len(db.execute(
-        "SELECT user_id FROM contest_solved WHERE contest_id=:cid AND problem_id=:pid",
-        cid=contest_id, pid=problem_id))
+    solves = db.execute(
+        ("SELECT COUNT(user_id) AS cnt FROM contest_solved WHERE contest_id=? AND "
+         "problem_id=? AND user_id NOT IN (SELECT user_id FROM contest_users WHERE "
+         "contest_id=? AND hidden != 0)"),
+        contest_id, problem_id, contest_id)[0]["cnt"]
     N_min = check[0]["score_min"]
     N_max = check[0]["score_max"]
     N_users = check[0]["score_users"]
     d = 11 * math.log(N_max - N_min) + N_users
-    old_points = min(math.ceil(math.e**((d - solves + 1) / 11) + N_min), N_max)
+    old_points = min(math.ceil(math.e**((d - (solves - d_solves)) / 11) + N_min), N_max)
     new_points = min(math.ceil(math.e**((d - solves) / 11) + N_min), N_max)
     point_diff = new_points - old_points
 
@@ -293,7 +294,6 @@ def update_dyn_score(contest_id, problem_id, update_curr_user=True, transact=Tru
 
 
 def contest_exists(contest_id):
-    from application import db
     """
     Checks if the contest with contest_id exists
     """
@@ -367,7 +367,6 @@ def contest_ended(info):
 
 
 def rejudge_contest_problem(contest_id, problem_id, new_flag):
-    from application import db
     """
     Rejudges a contest problem
     """

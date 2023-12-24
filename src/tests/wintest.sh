@@ -12,7 +12,7 @@ if [[ $(ls | grep wintest.sh | wc -c) -eq 0 ]]; then
 fi
 ls /tmp/CTFOJ_test 2>/dev/null
 if [[ $? -eq 0 ]]; then
-    echo "/tmp/CTFOJ directory exists! Delete it for this test to run."
+    echo "/tmp/CTFOJ_test directory exists! Delete it for this test to run."
     echo "**STOPPING**"
     exit 1
 fi
@@ -30,7 +30,7 @@ echo 'Setting up test environment...Done!'
 
 # Run tests
 echo 'Running tests...'
-python -m pytest -v tests
+python -m pytest -vv tests
 echo 'Running tests...Done!'
 
 # Cleanup
