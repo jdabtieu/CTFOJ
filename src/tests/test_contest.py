@@ -247,7 +247,19 @@ def test_contest(client, database):
     assert result.status_code == 200
     assert result.data == b'{"standings": [{"pos": 1, "team": "normal_user", "score": 2}]}'  # noqa
 
-    # Test other admin functions
+    # Test hiding and banning
+    result = client.post('/contest/testingcontest/scoreboard/hide', data={
+        'user_id': 20
+    }, follow_redirects=True)
+    assert result.status_code == 200
+    assert b'is not present' in result.data
+
+    result = client.post('/contest/testingcontest/scoreboard/unhide', data={
+        'user_id': 2
+    }, follow_redirects=True)
+    assert result.status_code == 200
+    assert b'is not hidden' in result.data
+
     result = client.post('/contest/testingcontest/scoreboard/hide', data={
         'user_id': 2
     }, follow_redirects=True)
@@ -279,6 +291,8 @@ def test_contest(client, database):
     assert result.status_code == 200
     assert b'unhidden' in result.data
     assert b'Hidden' in result.data
+
+    # Test other admin functions
 
     result = client.get('/admin/submissions')
     assert result.status_code == 200
