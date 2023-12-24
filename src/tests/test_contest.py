@@ -108,8 +108,23 @@ def test_contest(client, database):
         'draft': True,
         'file': ('test_upload.txt', 'test_upload.txt')
     })
-    os.remove('test_upload.txt')
     assert result.status_code == 302
+
+    result = client.post('/contest/testingcontest/addproblem', data={
+        'id': 'helloworldtesting',
+        'name': 'hello world',
+        'description': 'a short fun problem',
+        'hints': 'try looking at the title',
+        'point_value': 1,
+        'category': 'general',
+        'flag': 'ctf{hello}',
+        'flag_hint': 'ctf{...}',
+        'draft': True,
+        'file': ('test_upload.txt', 'test_upload.txt')
+    })
+    assert result.status_code == 409
+    assert b'already exists' in result.data
+    os.remove('test_upload.txt')
 
     result = client.get('/contest/testingcontest/problem/helloworldtesting')
     assert result.status_code == 200
@@ -134,6 +149,11 @@ def test_contest(client, database):
                          follow_redirects=True)
     assert result.status_code == 200
     assert b'published' in result.data
+
+    result = client.post('/contest/testingcontest/problem/nonexistent/publish',
+                         follow_redirects=True)
+    assert result.status_code == 404
+    assert b'does not exist' in result.data
 
     # TODO assert that the instanced box shows up
 

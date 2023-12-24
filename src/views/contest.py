@@ -53,10 +53,7 @@ def contest(contest_id):
     solved_info = db.execute(
         "SELECT problem_id FROM contest_solved WHERE contest_id=:cid AND user_id=:uid",
         cid=contest_id, uid=session["user_id"])
-
-    solved_data = set()
-    for row in solved_info:
-        solved_data.add(row["problem_id"])
+    solved_data = set([x["problem_id"] for x in solved_info])
 
     data = []
     info = db.execute(
@@ -291,20 +288,14 @@ def contest_problem(contest_id, problem_id):
 @api.route("/<contest_id>/problem/<problem_id>/publish", methods=["POST"])
 @perm_required(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"])
 def publish_contest_problem(contest_id, problem_id):
-    # Ensure contest and problem exist
     if not contest_exists(contest_id):
         return render_template("contest/contest_noexist.html"), 404
 
-    check = db.execute(
-        "SELECT * FROM contest_problems WHERE contest_id=:cid AND problem_id=:pid",
-        cid=contest_id, pid=problem_id)
-
-    if len(check) != 1:
+    r = db.execute(
+        "UPDATE contest_problems SET draft=0 WHERE problem_id=? AND contest_id=?",
+        problem_id, contest_id)
+    if r == 0:
         return render_template("contest/contest_problem_noexist.html"), 404
-
-    db.execute(
-        "UPDATE contest_problems SET draft=0 WHERE problem_id=:pid AND contest_id=:cid",
-        pid=problem_id, cid=contest_id)
 
     logger.info((f"User #{session['user_id']} ({session['username']}) published "
                  f"{problem_id} from contest {contest_id}"), extra={"section": "contest"})
@@ -315,7 +306,6 @@ def publish_contest_problem(contest_id, problem_id):
 @api.route('/<contest_id>/problem/<problem_id>/edit', methods=["GET", "POST"])
 @perm_required(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"])
 def edit_contest_problem(contest_id, problem_id):
-
     # Ensure contest exists
     if not contest_exists(contest_id):
         return render_template("contest/contest_noexist.html"), 404
@@ -564,7 +554,7 @@ def contest_add_problem(contest_id):
 
     problem_id = request.form.get("id")
     name = request.form.get("name")
-    description = request.form.get("description")
+    description = (request.form.get("description") or '').replace('\r', '')
     hints = request.form.get("hints")
     category = request.form.get("category")
     flag = request.form.get("flag")
@@ -588,16 +578,6 @@ def contest_add_problem(contest_id):
         flash('Invalid flag', 'danger')
         return render_template("contest/create_problem.html"), 400
 
-    # Ensure problem does not already exist
-    problem_info = db.execute(("SELECT * FROM contest_problems WHERE contest_id=:cid AND "
-                               "(problem_id=:pid OR name=:name)"),
-                              cid=contest_id, pid=problem_id, name=name)
-    if len(problem_info) != 0:
-        flash('A problem with this name or ID already exists', 'danger')
-        return render_template("contest/create_problem.html"), 409
-
-    description = description.replace('\r', '')
-
     # Check for static vs dynamic scoring
     score_type = request.form.get("score_type")
     if score_type == "dynamic":
@@ -609,11 +589,15 @@ def contest_add_problem(contest_id):
             return render_template("contest/create_problem.html"), 400
 
         # Modify problems table
-        db.execute(("INSERT INTO contest_problems VALUES(:cid, :pid, :name, :pv, "
-                    ":category, :flag, :draft, :min, :max, :users, :fhint, :inst)"),
-                   cid=contest_id, pid=problem_id, name=name, pv=max_points,
-                   category=category, flag=flag, draft=draft, min=min_points,
-                   max=max_points, users=users_decay, fhint=flag_hint, inst=instanced)
+        try:
+            db.execute(("INSERT INTO contest_problems VALUES(:cid, :pid, :name, :pv, "
+                        ":category, :flag, :draft, :min, :max, :users, :fhint, :inst)"),
+                       cid=contest_id, pid=problem_id, name=name, pv=max_points,
+                       category=category, flag=flag, draft=draft, min=min_points,
+                       max=max_points, users=users_decay, fhint=flag_hint, inst=instanced)
+        except ValueError:
+            flash('A problem with this ID already exists', 'danger')
+            return render_template("contest/create_problem.html"), 409
     else:  # assume static
         point_value = request.form.get("point_value")
         if not point_value:
@@ -621,13 +605,15 @@ def contest_add_problem(contest_id):
             return render_template("contest/create_problem.html"), 400
 
         # Modify problems table
-        db.execute(("INSERT INTO contest_problems(contest_id, problem_id, name, "
-                    "point_value, category, flag, draft, flag_hint, instanced) "
-                    "VALUES(:cid, :pid, :name, :pv, :category, :flag, :draft, "
-                    ":fhint, :inst)"),
-                   cid=contest_id, pid=problem_id, name=name, pv=point_value,
-                   category=category, flag=flag, draft=draft, fhint=flag_hint,
-                   inst=instanced)
+        try:
+            db.execute(("INSERT INTO contest_problems(contest_id, problem_id, name, "
+                        "point_value, category, flag, draft, flag_hint, instanced) "
+                        "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)"),
+                       contest_id, problem_id, name, point_value, category, flag, draft,
+                       flag_hint, instanced)
+        except ValueError:
+            flash('A problem with this ID already exists', 'danger')
+            return render_template("contest/create_problem.html"), 409
 
     # Check if file exists & upload if it does
     file = request.files["file"]
