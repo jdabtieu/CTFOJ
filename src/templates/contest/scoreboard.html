@@ -135,7 +135,7 @@
                 confirmDiv.style.display = "block";
                 confirmDiv.querySelector(".btn")
                         .setAttribute("value", `Are you sure you want to ban ${username}? ` +
-                                               "This action is irreversible. Click here to confirm");
+                                               "Click here to confirm");
                 confirmDiv.querySelector("input[name=user_id]").setAttribute("value", userId);
                 confirmDiv.querySelector("form").setAttribute("action", path + "/ban");
             });
@@ -147,7 +147,7 @@
                 confirmDiv.style.display = "block";
                 confirmDiv.querySelector(".btn")
                         .setAttribute("value", `Are you sure you want to unban ${username}? ` +
-                                               "This action is irreversible. Click here to confirm");
+                                               "Click here to confirm");
                 confirmDiv.querySelector("input[name=user_id]").setAttribute("value", userId);
                 confirmDiv.querySelector("form").setAttribute("action", path + "/unban");
             });
