@@ -246,14 +246,13 @@ def create_jwt(data, secret_key, time=1800):
     return jwt.encode(data, secret_key, algorithm='HS256')
 
 
-def update_dyn_score(contest_id, problem_id, update_curr_user=True, transact=True, d_solves=1):
+def update_dyn_score(contest_id, problem_id, update_curr_user=True, d_solves=1):
     """
-    Updates the dynamic scoring of contest_id/problem_id, using the db object
+    Updates the dynamic scoring of contest_id/problem_id, using the db object.
+    A transaction must be started before calling this function.
     For details see: https://www.desmos.com/calculator/eifeir81wk
                      https://github.com/jdabtieu/CTFOJ/issues/2
     """
-    if transact:
-        db.execute("BEGIN")
     if update_curr_user:
         db.execute(("INSERT INTO contest_solved(contest_id, user_id, problem_id) "
                     "VALUES(:cid, :uid, :pid)"),
@@ -289,8 +288,6 @@ def update_dyn_score(contest_id, problem_id, update_curr_user=True, transact=Tru
                 "(SELECT user_id FROM contest_solved WHERE "
                 "contest_id=:cid AND problem_id=:pid)"),
                point_change=point_diff, cid=contest_id, pid=problem_id)
-    if transact:
-        db.execute("COMMIT")
 
 
 def contest_exists(contest_id):
@@ -356,13 +353,20 @@ def register_chk(username, password, confirmation, email):
     return 0
 
 
+def parse_datetime(s):
+    """
+    Parses a datetime stored in the database into a Python datetime object
+    """
+    return datetime.strptime(s, "%Y-%m-%d %H:%M:%S")
+
+
 def contest_ended(info):
     """
     Determine if the contest from db query info has ended
     Returns whether the contest is over or not
     info should be an array (len 1) of a dict representing the contest data from the db
     """
-    end = datetime.strptime(info[0]["end"], "%Y-%m-%d %H:%M:%S")
+    end = parse_datetime(info[0]["end"])
     return datetime.utcnow() > end
 
 
@@ -388,7 +392,7 @@ def rejudge_contest_problem(contest_id, problem_id, new_flag):
     db.execute("DELETE FROM contest_solved WHERE contest_id=? AND problem_id=?",
                contest_id, problem_id)
     if data["score_users"] >= 0:  # Reset dynamic scoring
-        update_dyn_score(contest_id, problem_id, False, False)
+        update_dyn_score(contest_id, problem_id, False)
 
     # Set all new correct submissions
     db.execute(("UPDATE submissions SET correct=1 WHERE contest_id=? AND "
@@ -407,7 +411,7 @@ def rejudge_contest_problem(contest_id, problem_id, new_flag):
         old_points = data["point_value"]
     else:  # Instructions for dynamic scoring
         old_points = data["score_max"]
-        update_dyn_score(contest_id, problem_id, False, False)
+        update_dyn_score(contest_id, problem_id, False)
     db.execute(("UPDATE contest_users SET points=points+? WHERE user_id IN (SELECT "
                 "user_id FROM contest_solved WHERE contest_id=? AND problem_id=?)"),
                old_points, contest_id, problem_id)

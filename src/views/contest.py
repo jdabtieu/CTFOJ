@@ -32,7 +32,7 @@ def contest(contest_id):
         return render_template("contest/contest_noexist.html"), 404
 
     # Ensure contest started or user is admin
-    start = datetime.strptime(contest_info[0]["start"], "%Y-%m-%d %H:%M:%S")
+    start = parse_datetime(contest_info[0]["start"])
     if datetime.utcnow() < start and not check_perm(["ADMIN", "SUPERADMIN"]):
         flash('The contest has not started yet!', 'danger')
         return redirect("/contests")
@@ -40,11 +40,12 @@ def contest(contest_id):
     title = contest_info[0]["name"]
     scoreboard_key = contest_info[0]["scoreboard_key"]
 
+    db.execute("BEGIN")
     user_info = db.execute(
         "SELECT * FROM contest_users WHERE contest_id=:cid AND user_id=:uid",
         cid=contest_id, uid=session["user_id"])
 
-    if len(user_info) == 0 and datetime.utcnow() < datetime.strptime(contest_info[0]["end"], "%Y-%m-%d %H:%M:%S"):
+    if len(user_info) == 0 and datetime.utcnow() < parse_datetime(contest_info[0]["end"]):
         db.execute("INSERT INTO contest_users (contest_id, user_id) VALUES(:cid, :uid)",
                    cid=contest_id, uid=session["user_id"])
         db.execute("UPDATE users SET contests_completed=contests_completed+1 WHERE id=?",
@@ -66,6 +67,7 @@ def contest(contest_id):
                          "SELECT user_id FROM contest_users WHERE contest_id=:cid AND "
                          "hidden != 0) GROUP BY problem_id"), cid=contest_id)
     solve_count = {x["problem_id"]: x["solves"] for x in solves}
+    db.execute("COMMIT")
 
     for row in info:
         problem_id = row["problem_id"]
@@ -212,8 +214,8 @@ def contest_problem(contest_id, problem_id):
 
     # Ensure contest started or user is admin
     check = db.execute("SELECT * FROM contests WHERE id=?", contest_id)
-    start = datetime.strptime(check[0]["start"], "%Y-%m-%d %H:%M:%S")
-    if datetime.utcnow() < start and not check_perm(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"]):
+    if (datetime.utcnow() < parse_datetime(check[0]["start"])
+            and not check_perm(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"])):
         flash('The contest has not started yet!', 'danger')
         return redirect("/contests")
 
@@ -224,10 +226,10 @@ def contest_problem(contest_id, problem_id):
         return render_template("contest/contest_problem_noexist.html"), 404
 
     # Check if problem is solved
-    check[0]["solved"] = len(db.execute(
-        ("SELECT * FROM contest_solved WHERE contest_id=:cid AND "
-         "problem_id=:pid AND user_id=:uid"),
-        cid=contest_id, pid=problem_id, uid=session["user_id"])) == 1
+    check[0]["solved"] = db.execute(
+        ("SELECT COUNT(*) AS cnt FROM contest_solved WHERE contest_id=? AND "
+         "problem_id=? AND user_id=?"),
+        contest_id, problem_id, session["user_id"])[0]["cnt"]
 
     if request.method == "GET":
         return render_template("contest/contest_problem.html", data=check[0])
@@ -265,6 +267,7 @@ def contest_problem(contest_id, problem_id):
         return render_template("contest/contest_problem.html", data=check[0])
 
     # Check if user has already found this flag
+    db.execute("BEGIN")
     check1 = db.execute(("SELECT * FROM contest_solved WHERE contest_id=:cid "
                          "AND user_id=:uid AND problem_id=:pid"),
                         cid=contest_id, uid=session["user_id"], pid=problem_id)
@@ -280,6 +283,7 @@ def contest_problem(contest_id, problem_id):
             db.execute(("UPDATE contest_users SET lastAC=datetime('now'), "
                         "points=points+:points WHERE contest_id=:cid AND user_id=:uid"),
                        cid=contest_id, points=points, uid=session["user_id"])
+    db.execute("COMMIT")
 
     flash('Congratulations! You have solved this problem!', 'success')
     return redirect(f"/contest/{contest_id}/problem/{problem_id}")
@@ -314,7 +318,7 @@ def edit_contest_problem(contest_id, problem_id):
     data = db.execute(
         "SELECT * FROM contest_problems WHERE contest_id=:cid AND problem_id=:pid",
         cid=contest_id, pid=problem_id)
-    if len(data) != 1:
+    if len(data) == 0:
         return render_template("contest/contest_problem_noexist.html"), 404
 
     if request.method == "GET":
@@ -323,14 +327,12 @@ def edit_contest_problem(contest_id, problem_id):
     # Reached via POST
 
     new_name = request.form.get("name")
-    new_description = request.form.get("description")
-    new_hint = request.form.get("hints")
+    new_description = (request.form.get("description") or "").replace('\r', '')
+    new_hint = (request.form.get("hints") or "")
     new_category = request.form.get("category")
     new_points = request.form.get("point_value")
     new_flag = request.form.get("flag")
-    new_flag_hint = request.form.get("flag_hint")
-    if not new_flag_hint:
-        new_flag_hint = ""
+    new_flag_hint = (request.form.get("flag_hint") or "")
     new_instanced = bool(request.form.get("instanced"))
 
     if (not new_name or not new_description or not new_category
@@ -348,13 +350,10 @@ def edit_contest_problem(contest_id, problem_id):
         new_flag = data[0]["flag"]
         new_flag_hint = data[0]["flag_hint"]
 
-    new_description = new_description.replace('\r', '')
-    if not new_hint:
-        new_hint = ""
-
     # Only edit score for statically scored problems whose value has changed
     if data[0]["score_users"] == -1 and data[0]["point_value"] != new_points:
         point_change = int(new_points) - data[0]["point_value"]
+        db.execute("BEGIN")
         db.execute(("UPDATE contest_users SET points=points+:point_change WHERE "
                     "contest_id=:cid AND user_id IN (SELECT user_id FROM contest_solved "
                     "WHERE contest_id=:cid AND problem_id=:pid)"),
@@ -362,6 +361,7 @@ def edit_contest_problem(contest_id, problem_id):
         db.execute(("UPDATE contest_problems SET point_value=:pv WHERE contest_id=:cid "
                     "AND problem_id=:pid"),
                    pv=int(new_points), cid=contest_id, pid=problem_id)
+        db.execute("COMMIT")
 
     db.execute(("UPDATE contest_problems SET name=:name, category=:category, flag=:flag, "
                 "flag_hint=:fhint, instanced=:inst WHERE contest_id=:cid AND problem_id=:pid"),
@@ -385,7 +385,7 @@ def edit_contest_problem(contest_id, problem_id):
                  f"{problem_id} in contest {contest_id}"),
                 extra={"section": "contest"})
     flash('Problem successfully edited', 'success')
-    return redirect("/contest/" + contest_id + "/problem/" + problem_id)
+    return redirect(f"/contest/{contest_id}/problem/{problem_id}")
 
 
 @api.route("/<contest_id>/scoreboard")
@@ -457,7 +457,7 @@ def _contest_hide(contest_id, hide_enum, hide_msg):
              "contest_problems.contest_id=? AND contest_problems.score_users != -1"),
             user_id, contest_id, contest_id)
         for problem in updatelist:
-            update_dyn_score(contest_id, problem["problem_id"], False, False, -1)
+            update_dyn_score(contest_id, problem["problem_id"], False, -1)
 
     db.execute("COMMIT")
     flash(f"User successfully {hide_msg}!", "success")
@@ -499,7 +499,7 @@ def _contest_unhide(contest_id, hide_msg):
             "contest_problems.contest_id=? AND contest_problems.score_users != -1"),
         user_id, contest_id, contest_id)
     for problem in updatelist:
-        update_dyn_score(contest_id, problem["problem_id"], False, False)
+        update_dyn_score(contest_id, problem["problem_id"], False)
 
     db.execute("COMMIT")
     flash(f"User successfully un{hide_msg}!", "success")

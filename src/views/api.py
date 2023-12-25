@@ -61,7 +61,7 @@ def check_instancer_perms(id):
         contest = db.execute("SELECT * FROM contests WHERE id=?", contest_id)
         if len(contest) != 1:
             return ("Contest not found", 404)
-        start = datetime.strptime(contest[0]["start"], "%Y-%m-%d %H:%M:%S")
+        start = parse_datetime(contest[0]["start"])
         has_perm = api_perm(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"])
         if datetime.utcnow() < start and not has_perm:
             return ("The contest has not started", 403)
@@ -174,7 +174,7 @@ def contest_problem():
     contest = db.execute("SELECT * FROM contests WHERE id=?", contest_id)
     if len(contest) != 1:
         return json_fail("Contest not found", 404)
-    start = datetime.strptime(contest[0]["start"], "%Y-%m-%d %H:%M:%S")
+    start = parse_datetime(contest[0]["start"])
     has_perm = api_perm(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"])
     if datetime.utcnow() < start and not has_perm:
         return json_fail("The contest has not started", 403)

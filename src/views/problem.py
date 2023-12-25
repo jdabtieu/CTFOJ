@@ -117,14 +117,12 @@ def editproblem(problem_id):
     # Reached via POST
 
     new_name = request.form.get("name")
-    new_description = request.form.get("description")
-    new_hint = request.form.get("hints")
+    new_description = (request.form.get("description") or "").replace('\r', '')
+    new_hint = (request.form.get("hints") or "")
     new_category = request.form.get("category")
     new_points = int(request.form.get("point_value"))
     new_flag = request.form.get("flag")
-    new_flag_hint = request.form.get("flag_hint")
-    if not new_flag_hint:
-        new_flag_hint = ""
+    new_flag_hint = (request.form.get("flag_hint") or "")
     new_instanced = bool(request.form.get("instanced"))
 
     if not new_name or not new_description or not new_category or not new_points:
@@ -161,10 +159,6 @@ def editproblem(problem_id):
         new_flag = data[0]["flag"]
         new_flag_hint = data[0]["flag_hint"]
 
-    new_description = new_description.replace('\r', '')
-    if not new_hint:
-        new_hint = ""
-
     db.execute(("UPDATE problems SET name=:name, category=:category, point_value=:pv, "
                 "flag=:flag, flag_hint=:fhint, instanced=:inst WHERE id=:problem_id"),
                name=new_name, category=new_category, pv=new_points,
@@ -187,7 +181,7 @@ def editproblem(problem_id):
     write_file('metadata/problems/' + problem_id + '/description.md', new_description)
     write_file('metadata/problems/' + problem_id + '/hints.md', new_hint)
 
-    logger.info((f"User #{session['user_id']} ({session['username']}) updated problem "
+    logger.info((f"User #{session['user_id']} ({session['username']}) edited problem "
                  f"{problem_id}"), extra={"section": "problem"})
     flash('Problem successfully edited', 'success')
     return redirect("/problem/" + problem_id)

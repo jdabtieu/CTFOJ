@@ -187,7 +187,7 @@ def dl_contest(contest_id, problem_id):
     if len(contest) == 0:
         return abort(404)
     # Ensure contest started or user is admin
-    start = datetime.strptime(contest[0]["start"], "%Y-%m-%d %H:%M:%S")
+    start = parse_datetime(contest[0]["start"])
     if datetime.utcnow() < start and not check_perm(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"]):
         return abort(404)
     problem = db.execute(("SELECT * FROM contest_problems WHERE contest_id=? "
