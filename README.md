@@ -13,7 +13,7 @@ CTFOJ is a open-source online judge to host capture-the-flag problems and contes
 - Create contests
     - Contest problems support dynamic scoring
     - Contests have a live scoreboard that can be configured to be viewable by admins only or all competitors
-    - CTFtime live scoreboard & export available
+    - CTFtime live scoreboard integration
     - Hints can be added to any problem
     - Mass notify users through email
 - Live Instancing
@@ -26,12 +26,11 @@ CTFOJ is a open-source online judge to host capture-the-flag problems and contes
 - User management
     - Remotely reset passwords
     - Ban users
-    - Disqualify users from contest
+    - Multiple roles and permission levels
+    - Disqualify and hide users from contests
 - 2FA support
-- SMTP support
 - API access
-- Automatic contest starting and ending
-- Global leaderboard
+- Global and contest-specific leaderboard
 - Profile pages
 - \+ many more
 
