@@ -60,9 +60,11 @@
         </nav>
 
         <main class="container">
+            {% set maintenance = namespace(flag=false) %}
             {% with msg = get_flashed_messages(with_categories=True) %}
                 {% if msg %}
                     {% for category, message in msg %}
+                        {% if category != "maintenance" %}
                         <div class="alert alert-{{ category }} alert-dismissible fade show"
                              role="alert">
                             {{ message }}
@@ -71,6 +73,19 @@
                                     data-bs-dismiss="alert"
                                     aria-label="Close"></button>
                         </div>
+                        {% else %}
+                            {% if not maintenance.flag %}
+                                {% set maintenance.flag = true %}
+                                <div class="alert alert-warning alert-dismissible fade show"
+                                     role="alert">
+                                    {{ message }}
+                                    <button type="button"
+                                            class="btn-close"
+                                            data-bs-dismiss="alert"
+                                            aria-label="Close"></button>
+                                </div>
+                            {% endif %}
+                        {% endif %}
                     {% endfor %}
                 {% endif %}
             {% endwith %}

@@ -116,11 +116,10 @@ def check_for_maintenance():
             else:
                 return
 
-        # Prevent Internal Server error if session only contains CSRF token
         if not check_perm(["ADMIN", "SUPERADMIN"]):
             return render_template("error/maintenance.html"), 503
         else:
-            flash("Maintenance mode is enabled", "warning")
+            flash("Maintenance mode is enabled", "maintenance")
 
 
 @app.route("/")
