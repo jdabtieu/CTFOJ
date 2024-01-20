@@ -1,19 +1,9 @@
 import os
-import secrets
-import sys
 
-# DO NOT MODIFY THESE SETTINGS! Scroll down to line 27 for settings that you should change
+# DO NOT MODIFY THESE SETTINGS! Scroll down to line 17 for settings that you should change
 # The secret key is located in secret_key.txt by default
-try:
-    with open("secret_key.txt", "r") as file:
-        secret_key = file.readline().strip()
-        SECRET_KEY = secret_key
-except Exception as e:
-    sys.stderr.write(str(e))
-    with open("secret_key.txt", "w") as file:
-        SECRET_KEY = secrets.token_hex(48)  # 384 bits
-        file.write(SECRET_KEY)
-
+with open("secret_key.txt", "r") as file:
+    SECRET_KEY = file.readline().strip()
 TEMPLATES_AUTO_RELOAD = True
 SESSION_PERMANENT = True
 PERMANENT_SESSION_LIFETIME = 30 * 24 * 60 * 60  # 30d

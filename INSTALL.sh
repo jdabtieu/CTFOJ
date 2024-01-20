@@ -74,6 +74,7 @@ EOF
 mkdir -p "$DATA_DIR/logs" "$DATA_DIR/dl" "$DATA_DIR/backups" "$DATA_DIR/metadata/contests"
 mkdir -p "$DATA_DIR/metadata/problems" "$DATA_DIR/metadata/announcements"
 echo "Finishing setup..."
+python -c "import secrets; print(secrets.token_hex(48))" > secret_key.txt  # 384 bits
 ln -s "$DATA_DIR/logs" logs
 ln -s "$DATA_DIR/dl" dl
 ln -s "$DATA_DIR/metadata" metadata
