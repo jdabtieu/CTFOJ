@@ -2,7 +2,7 @@ import os
 import secrets
 import sys
 
-# DO NOT MODIFY THESE SETTINGS! Scroll down to line 22 for settings that you should change
+# DO NOT MODIFY THESE SETTINGS! Scroll down to line 27 for settings that you should change
 # The secret key is located in secret_key.txt by default
 try:
     with open("secret_key.txt", "r") as file:
@@ -10,12 +10,14 @@ try:
         SECRET_KEY = secret_key
 except Exception as e:
     sys.stderr.write(str(e))
-    with open("secret_key.txt", "w+") as file:
-        file.write(secrets.token_hex(48))  # 384 bits
-        SECRET_KEY = file.readline().strip()
+    with open("secret_key.txt", "w") as file:
+        SECRET_KEY = secrets.token_hex(48)  # 384 bits
+        file.write(SECRET_KEY)
 
 TEMPLATES_AUTO_RELOAD = True
-SESSION_PERMANENT = False
+SESSION_PERMANENT = True
+PERMANENT_SESSION_LIFETIME = 30 * 24 * 60 * 60  # 30d
+WTF_CSRF_TIME_LIMIT = PERMANENT_SESSION_LIFETIME
 SESSION_TYPE = "filesystem"
 SESSION_COOKIE_SAMESITE = "Strict"
 SESSION_COOKIE_HTTPONLY = True
@@ -23,6 +25,8 @@ SESSION_FILE_DIR = "session"
 os.makedirs(SESSION_FILE_DIR, 0o770, True)
 
 # Configure your email settings here
+# If using Gmail, you must use an App Password instead of your account password:
+# https://support.google.com/accounts/answer/185833
 MAIL_SERVER = "smtp.gmail.com"
 MAIL_PORT = 587
 MAIL_USE_TLS = True
@@ -30,7 +34,7 @@ MAIL_USERNAME = "your email address"
 MAIL_PASSWORD = "your email password"
 MAIL_DEFAULT_SENDER = ("sender name", "sender email")
 
-# Configure your hcaptcha settings here
+# Configure your hCaptcha settings here
 USE_CAPTCHA = False
 HCAPTCHA_SECRET = "0xdeADbeEf"
 HCAPTCHA_SITE = "site_key"
