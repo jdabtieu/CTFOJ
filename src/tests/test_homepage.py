@@ -1,6 +1,7 @@
 import json
 
 from helpers import USER_PERM
+from application import app  # noqa
 
 
 def test_homepage(client, database):
@@ -43,7 +44,13 @@ def test_homepage(client, database):
     result = client.post('/admin/edithomepage', follow_redirects=True)
     assert b'settings.py' in result.data
 
-    result = client.post('/admin/edithomepage', follow_redirects=True, data={"content": "some content"})
+    result = client.post('/admin/edithomepage', follow_redirects=True, data={"content": "some content", "method": "2"})
     assert b'successfully' in result.data
 
     client.get('/logout')
+
+    app.config["USE_HOMEPAGE"] = True
+    result = client.get('/')
+    assert result.status_code == 200
+    assert b"some content" in result.data
+    app.config["USE_HOMEPAGE"] = False
