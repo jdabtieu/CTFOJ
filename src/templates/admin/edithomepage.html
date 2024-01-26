@@ -41,7 +41,7 @@
                   rows="20"
                   required></textarea>
         <div id="preview" class="md-preview">
-            <div class="card" id="home-container" class="home1">
+            <div class="card" class="home1">
                 <div id="home"></div>
             </div>
         </div>
@@ -62,14 +62,7 @@
     }
     content.addEventListener("input", update);
 
-    fetch("/api/homepage").then(b => b.text())
-            .then(b => JSON.parse(b)).then(b => {
-        if (b["status"] !== "success") {
-            console.log(`API fail: status: ${b["status"]}, message: ${b["message"]}`);
-            return;
-        }
-        content.value = b["data"]["data"];
-        update();
-    });
+    content.value = {{ data | tojson }};
+    update();
 </script>
 {% endblock %}

@@ -2,24 +2,13 @@
 
 {% block title %}Home{% endblock %}
 
-{% block preload %}
-<link rel="preload" href="/api/homepage" as="fetch" crossorigin="anonymous">
-{% endblock %}
-
 {% block main %}
-<div class="card home1" id="home-container">
+<div id="home-container">
     <div id="home"></div>
 </div>
 {% endblock %}
 {% block script %}
 <script>
-    fetch("/api/homepage").then(b => b.text())
-            .then(b => JSON.parse(b)).then(b => {
-        if (b["status"] !== "success") {
-            console.log(`API fail: status: ${b["status"]}, message: ${b["message"]}`);
-            return;
-        }
-        inject(document.getElementById("home"), b["data"]["data"], true)
-    });
+    inject(document.getElementById("home"), {{ props["homepage"] | tojson }}, true);
 </script>
 {% endblock %}

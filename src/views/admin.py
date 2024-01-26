@@ -338,8 +338,9 @@ def maintenance():
 @api.route("/edithomepage", methods=["GET", "POST"])
 @perm_required(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"])
 def edit_homepage():
+    data = read_file(app.config['HOMEPAGE_FILE'])[2:]
     if request.method == "GET":
-        return render_template("admin/edithomepage.html")
+        return render_template("admin/edithomepage.html", data=data)
 
     # Reached via POST
 
@@ -347,8 +348,8 @@ def edit_homepage():
     content = request.form.get("content")
 
     if not content:
-        flash('You have not entered all required fields', 'danger')
-        return render_template("admin/edithomepage.html"), 400
+        flash('To disable the homepage, edit settings.py instead', 'danger')
+        return render_template("admin/edithomepage.html", data=data), 400
     if not layout_method or layout_method not in ["1", "2"]:
         layout_method = "1"
 
@@ -365,16 +366,15 @@ def edit_homepage():
 @api.route("/previewhomepage")
 @perm_required(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"])
 def preview_homepage():
-    page = request.args.get("page")
-    if not page:
-        page = "1"
-    page = (int(page) - 1) * 10
+    template = read_file(app.config['HOMEPAGE_FILE'])
+    template_type = int(template[0])
+    props = {"homepage": read_file(app.config['HOMEPAGE_FILE'])[2:]}
+    if template_type == 2:
+        page = request.args.get("page") or "1"
+        page = (int(page) - 1) * 10
 
-    data = db.execute(
-        "SELECT * FROM announcements ORDER BY id DESC LIMIT 10 OFFSET ?", page)
-    length = db.execute("SELECT COUNT(*) AS cnt FROM announcements")[0]["cnt"]
-
-    template_type = read_file(app.config['HOMEPAGE_FILE'])[0]
-    return render_template(f"home_fragment/home{template_type}.html",
-                           data=data,
-                           length=-(-length // 10))
+        props["data"] = db.execute(
+            "SELECT * FROM announcements ORDER BY id DESC LIMIT 10 OFFSET ?", page)
+        props["length"] = db.execute(
+            "SELECT COUNT(*) AS cnt FROM announcements")[0]["cnt"]
+    return render_template(f"home_fragment/home{template_type}.html", props=props)

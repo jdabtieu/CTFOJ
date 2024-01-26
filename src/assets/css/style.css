@@ -19,21 +19,11 @@
     margin: 16px 0;
 }
 
-#home-container.home1 {
-    min-height: 80vh;
-}
-
 #home {
     position: relative;
     padding: 16px;
     width: 100%;
     overflow-x: auto;
-}
-
-#home-container.home1 #home {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
 }
 
 .homepage-layout-img {

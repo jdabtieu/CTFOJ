@@ -124,10 +124,27 @@ def check_for_maintenance():
 
 @app.route("/")
 def index():
+    if session.get('username'):
+        return logged_in_homepage()
+
     # Redirect to login page if homepage setting disabled
-    if not app.config["USE_HOMEPAGE"] and (not session or 'username' not in session):
+    if not app.config["USE_HOMEPAGE"]:
         return redirect("/login")
 
+    template = read_file(app.config['HOMEPAGE_FILE'])
+    template_type = int(template[0])
+    props = {"homepage": read_file(app.config['HOMEPAGE_FILE'])[2:]}
+    if template_type == 2:
+        page = request.args.get("page") or "1"
+        page = (int(page) - 1) * 10
+
+        props["data"] = db.execute(
+            "SELECT * FROM announcements ORDER BY id DESC LIMIT 10 OFFSET ?", page)
+        props["length"] = db.execute(
+            "SELECT COUNT(*) AS cnt FROM announcements")[0]["cnt"]
+    return render_template(f"home_fragment/home{template_type}.html", props=props)
+
+def logged_in_homepage():
     page = request.args.get("page")
     if not page:
         page = "1"
@@ -137,15 +154,7 @@ def index():
         "SELECT * FROM announcements ORDER BY id DESC LIMIT 10 OFFSET ?", page)
     length = db.execute("SELECT COUNT(*) AS cnt FROM announcements")[0]["cnt"]
 
-    if not session or 'username' not in session:
-        template = read_file(app.config['HOMEPAGE_FILE'])
-        template_type = int(template[0])
-        return render_template(f"home_fragment/home{template_type}.html",
-                               data=data,
-                               length=-(-length // 10))
-    else:
-        return render_template("index.html", data=data, length=-(-length // 10))
-
+    return render_template("index.html", data=data, length=-(-length // 10))
 
 @app.route("/privacy")
 def privacy():
@@ -805,7 +814,6 @@ def security_policies(response):
     response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
     response.headers['X-Content-Type-Options'] = 'nosniff'
     response.headers['X-Frame-Options'] = 'SAMEORIGIN'
-    response.headers['X-XSS-Protection'] = '1; mode=block'
     return response
 
 

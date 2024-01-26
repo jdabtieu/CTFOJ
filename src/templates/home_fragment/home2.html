@@ -2,16 +2,12 @@
 
 {% block title %}Home{% endblock %}
 
-{% block preload %}
-<link rel="preload" href="/api/homepage" as="fetch" crossorigin="anonymous">
-{% endblock %}
-
 {% block main %}
 <div class="card home2" id="home-container">
     <div id="home" class="hidden"></div>
 </div>
 <h2>Announcements</h2>
-{% for announcement in data %}
+{% for announcement in props["data"] %}
     <div class="card post-card">
         <div class="see-more-wrapper">
             <a href="#" class="see-more" style="margin-left: 8px;">See More</a>
@@ -21,20 +17,13 @@
         <div id="announcement-{{ announcement['id'] }}" class="hidden smarkdown"></div>
     </div>
 {% endfor %}
-<div id="pagination" data-pages="{{ length }}"></div>
+<div id="pagination" data-pages="{{ props['length'] }}"></div>
 {% endblock %}
 {% block script %}
 <script>
-    fetch("/api/homepage").then(b => b.text())
-            .then(b => JSON.parse(b)).then(b => {
-        if (b["status"] !== "success") {
-            console.log(`API fail: status: ${b["status"]}, message: ${b["message"]}`);
-            return;
-        }
-        inject(document.getElementById("home"), b["data"]["data"], true)
-    });
+    inject(document.getElementById("home"), {{ props["homepage"] | tojson }}, true);
     const idList = []
-    {% for announcement in data %}
+    {% for announcement in props["data"] %}
         idList.push({{ announcement['id'] }})
     {% endfor %}
     fetch("/api/announcements?id=" + idList).then(b => b.text())

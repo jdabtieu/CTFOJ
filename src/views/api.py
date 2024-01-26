@@ -258,16 +258,3 @@ def _announcement():
     for item in res:
         returns[item["id"]] = read_file(f"metadata/announcements/{item['id']}.md")
     return json_success(returns)
-
-
-@api.route("/homepage")
-def homepage():
-    if app.config["USE_HOMEPAGE"]:
-        return _homepage()
-    elif not api_admin():
-        return json_fail("Unauthorized", 401)
-    return _homepage()
-
-
-def _homepage():
-    return json_success({"data": read_file(app.config['HOMEPAGE_FILE'])[2:]})

@@ -56,19 +56,20 @@ def test_admin(client, database):
     assert b'Log In' in result_nouser.data
 
     # Test admin-only API
-    with open('metadata/homepage.html', 'w') as file:
-        file.write('1\nadmin only')
-    result = client.get('/api/homepage')
-    assert result.status_code == 401
-    result = client.get('/api/homepage?key=00000000-0000-0000-0000-000000000000')
-    assert result.status_code == 401
-    result = client.get('/api/homepage?key=' + user_api)
-    assert result.status_code == 401
-    result = client.get('/api/homepage?key=' + admin_api)
-    assert result.status_code == 200
+    # We don't have homepage API anymore. But save this snippet for future APIs.
+    # with open('metadata/homepage.html', 'w') as file:
+    #     file.write('1\nadmin only')
+    # result = client.get('/api/homepage')
+    # assert result.status_code == 401
+    # result = client.get('/api/homepage?key=00000000-0000-0000-0000-000000000000')
+    # assert result.status_code == 401
+    # result = client.get('/api/homepage?key=' + user_api)
+    # assert result.status_code == 401
+    # result = client.get('/api/homepage?key=' + admin_api)
+    # assert result.status_code == 200
     client.post('/login', data={'username': 'admin', 'password': 'CTFOJadmin'})
-    result = client.get('/api/homepage')
-    assert result.status_code == 200
+    # result = client.get('/api/homepage')
+    # assert result.status_code == 200
 
     # Admins should be able to ban and unban people
     result = client.post('/admin/ban', follow_redirects=True)
