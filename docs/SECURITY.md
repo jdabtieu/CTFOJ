@@ -18,4 +18,4 @@ Although CTFOJ works on both Windows and Linux, it is strongly recommended to ru
 
 ## Reporting a Vulnerability
 
-To report a security vulnerability, please email @jdabtieu at [jonathan.wu3@outlook.com](jonathan.wu3@outlook.com).
+To report a security vulnerability, please email @jdabtieu at [me@jonathanw.dev](me@jonathanw.dev).
