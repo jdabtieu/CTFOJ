@@ -11,7 +11,7 @@ from typing import Optional
 from datetime import datetime, timedelta
 from functools import wraps
 
-from flask import redirect, request, session, flash, make_response
+from flask import redirect, request, session, flash, make_response, current_app as app
 from flask_mail import Message
 from werkzeug.security import check_password_hash
 
@@ -427,3 +427,29 @@ def rejudge_contest_problem(contest_id, problem_id, new_flag):
         db.execute("UPDATE contest_users SET lastAC=? WHERE user_id=?",
                    entry["lastAC"], entry["user_id"])
     db.execute("COMMIT")
+
+
+def check_submit_rate_limit(contest_id, problem_id):
+    """
+    Checks if the user has submitted too many times in the past minute/hour
+    """
+    rl_min = app.config.get("SUBMIT_RATE_LIMIT_MIN")
+    rl_hour = app.config.get("SUBMIT_RATE_LIMIT_HOUR")
+
+    if rl_min:  # Do not rate limit if rl_min is zero or undefined
+        past_min = db.execute(("SELECT COUNT(*) AS cnt FROM submissions WHERE "
+                            "contest_id=? AND problem_id=? AND user_id=? AND "
+                            "date > datetime('now', '-1 minute')"),
+                            contest_id, problem_id, session["user_id"])[0]["cnt"]
+        if past_min >= rl_min:
+            return (f"You are submitting too fast! You may only submit {rl_min} time(s) "
+                    "per minute. Please wait a while before submitting again.")
+    if rl_hour:  # Do not rate limit if rl_min is zero or undefined
+        past_hour = db.execute(("SELECT COUNT(*) AS cnt FROM submissions WHERE "
+                                "contest_id=? AND problem_id=? AND user_id=? AND "
+                                "date > datetime('now', '-1 hour')"),
+                                contest_id, problem_id, session["user_id"])[0]["cnt"]
+        if past_hour >= rl_hour:
+            return (f"You are submitting too fast! You may only submit {rl_hour} time(s) "
+                    "per hour. Please wait a while before submitting again.")
+    return None

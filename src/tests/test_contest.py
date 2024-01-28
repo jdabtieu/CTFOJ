@@ -6,6 +6,7 @@ from datetime import datetime
 from datetime import timedelta
 
 from helpers import USER_PERM
+from application import app  # noqa
 
 
 def test_contest(client, database):
@@ -223,11 +224,38 @@ def test_contest(client, database):
     assert result.status_code == 404
     assert json.loads(result.data)['status'] == 'fail'
 
+    # Test rate limiting
+    app.config["SUBMIT_RATE_LIMIT_MIN"] = 1
+    app.config["SUBMIT_RATE_LIMIT_HOUR"] = 2
+    result = client.post('/contest/testingcontest/problem/helloworldtesting', data={
+        'flag': 'ctf{wrong}'
+    }, follow_redirects=True)
+    assert result.status_code == 200
+    assert b'incorrect' in result.data
+
+    result = client.post('/contest/testingcontest/problem/helloworldtesting', data={
+        'flag': 'ctf{wrong}'
+    }, follow_redirects=True)
+    assert result.status_code == 400
+    assert b'per minute' in result.data
+
+    database.execute(
+        "DELETE FROM submissions WHERE contest_id='testingcontest' AND user_id=2")
+
     result = client.post('/contest/testingcontest/problem/helloworldtesting', data={
         'flag': 'ctf{hello}'
     }, follow_redirects=True)
     assert result.status_code == 200
     assert b'Congratulations' in result.data
+
+    result = client.post('/contest/testingcontest/problem/helloworldtesting', data={
+        'flag': 'ctf{wrong}'
+    }, follow_redirects=True)
+    assert result.status_code == 200
+    assert b'incorrect' in result.data
+
+    app.config["SUBMIT_RATE_LIMIT_MIN"] = 45
+    app.config["SUBMIT_RATE_LIMIT_HOUR"] = 700
 
     result = client.get('/contest/testingcontest/scoreboard')
     assert result.status_code == 200
@@ -538,7 +566,6 @@ def test_contest_rejudge(client, database):
     assert result.status_code == 200
     assert b'None' not in result.data
     assert result.data[result.data.index(b'table'):].replace(b'501', b'1') == result2.data[result2.data.index(b'table'):]  # Check points and last AC
-
 
     result = client.post('/contest/testingcontest/problem/static/edit', data={
         'name': 'static',

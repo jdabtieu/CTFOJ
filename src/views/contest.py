@@ -251,6 +251,12 @@ def contest_problem(contest_id, problem_id):
         db.execute("INSERT INTO contest_users(contest_id, user_id) VALUES (:cid, :uid)",
                    cid=contest_id, uid=session["user_id"])
 
+    if not check[0]["solved"]:
+        submit_rate_limited = check_submit_rate_limit(contest_id, problem_id)
+        if submit_rate_limited:
+            flash(submit_rate_limited, 'warning')
+            return render_template("contest/contest_problem.html", data=check[0]), 400
+
     flag = request.form.get("flag")
     if not flag or not verify_flag(flag):
         flash('Invalid flag', 'danger')

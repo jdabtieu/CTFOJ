@@ -144,6 +144,7 @@ def index():
             "SELECT COUNT(*) AS cnt FROM announcements")[0]["cnt"]
     return render_template(f"home_fragment/home{template_type}.html", props=props)
 
+
 def logged_in_homepage():
     page = request.args.get("page")
     if not page:
@@ -155,6 +156,7 @@ def logged_in_homepage():
     length = db.execute("SELECT COUNT(*) AS cnt FROM announcements")[0]["cnt"]
 
     return render_template("index.html", data=data, length=-(-length // 10))
+
 
 @app.route("/privacy")
 def privacy():

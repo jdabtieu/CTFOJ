@@ -86,3 +86,10 @@ Then, update INSTANCER_HOST with the http(s) hostname of the instancer server
 """
 INSTANCER_TOKEN = ""
 INSTANCER_HOST = "http://ctfoj.instancer:8080"
+
+"""
+Limit the number of submissions that can be made per contest problem per user per minute.
+This is used to prevent brute force attacks. Set to 0 to disable.
+"""
+SUBMIT_RATE_LIMIT_MIN = 45
+SUBMIT_RATE_LIMIT_HOUR = 700

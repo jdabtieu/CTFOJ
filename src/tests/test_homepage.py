@@ -1,5 +1,3 @@
-import json
-
 from helpers import USER_PERM
 from application import app  # noqa
 

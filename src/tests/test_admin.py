@@ -12,7 +12,6 @@ def test_admin(client, database):
          "datetime('now'), 0, 1, 0, NULL, 0, 0, 0)"))
     database.execute("INSERT INTO user_perms VALUES(1, ?)", USER_PERM["ADMIN"])
     client.post('/login', data={'username': 'admin', 'password': 'CTFOJadmin'})
-    admin_api = client.post('/api/getkey').data.decode("utf-8")
     result = client.get('/admin/users')
     assert result.status_code == 200
     assert b'Users' in result.data
@@ -43,7 +42,6 @@ def test_admin(client, database):
         'username': 'normal_user',
         'password': 'CTFOJadmin'
     }, follow_redirects=True)
-    user_api = client.post('/api/getkey').data.decode("utf-8")
     assert b'Welcome' in result_user.data
     result_user = client.get('/admin/users')
     assert result_user.status_code == 302
@@ -116,7 +114,6 @@ def test_admin(client, database):
     assert result.status_code == 200
     assert b'e1' in result.data
     assert b'normal_user' not in result.data
-
 
     result = client.post('/admin/updateperms?user_id=2', follow_redirects=True)
     assert result.status_code == 200

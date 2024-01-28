@@ -368,7 +368,10 @@ input:-webkit-autofill:active{
     color: black;
 }
 
-
 .dark .perm-select .multiselect-dropdown-list div:hover {
     background-color: #5d5d5d;
+}
+
+.dark .table {
+    --bs-table-hover-color: #fff;
 }
