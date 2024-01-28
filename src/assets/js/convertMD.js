@@ -4,7 +4,7 @@ converter.setOption('strikethrough', true);
 
 function addCSS(content) {
     let style = `
-        <link rel="stylesheet" href="/assets/css/bootstrap.min.css">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
         <link href="/assets/css/style.css" rel="stylesheet">`;
     return style + content;
 }
@@ -28,6 +28,7 @@ function _inject(shadow, content, editing) {
 
 function inject(targetDiv, content, unhide) {
     let shadow = targetDiv.attachShadow({mode: "open"});
+    targetDiv.style.minHeight = 0;
     _inject(shadow, content);
     if (unhide) {
         targetDiv.classList.remove("hidden");

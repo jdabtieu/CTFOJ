@@ -23,7 +23,7 @@
         </div>
         <h3>{{ announcement["name"] }}</h3>
         <p style="margin: 0;">Posted <span class="dt">{{ announcement["date"] }}</span></p>
-        <div id="announcement-{{ announcement['id'] }}" class="hidden smarkdown"></div>
+        <div id="announcement-{{ announcement['id'] }}" class="smarkdown"></div>
         {% if check_perm(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"]) %}
             <a href="/admin/editannouncement/{{ announcement['id'] }}"
                style="position: absolute; top: 12px; right: 36px;">
@@ -59,7 +59,7 @@
             return;
         }
         for (let id of idList) {
-            inject(document.getElementById("announcement-" + id), b["data"][id], true);
+            inject(document.getElementById("announcement-" + id), b["data"][id], false);
         }
         seeMore();
     });

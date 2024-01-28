@@ -158,6 +158,9 @@ div.md-preview {
     min-width: 0px;
     height: fit-content;
 }
+.smarkdown {
+    min-height: 300px;
+}
 
 /****************** MISC DISPLAY FIXES ***********************/
 .font-mono {
@@ -235,8 +238,8 @@ body {
 }
 
 input:-webkit-autofill,
-input:-webkit-autofill:hover, 
-input:-webkit-autofill:focus, 
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
 input:-webkit-autofill:active{
     -webkit-background-clip: text;
 }

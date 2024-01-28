@@ -16,7 +16,7 @@
         <h3><a href="/contest/{{ contest['id'] }}">{{ contest["name"] }}</a></h3>
         <p style="margin-bottom: 0;">Start: <span class="dt">{{ contest["start"] }}</span></p>
         <p style="margin-bottom: 0;">End: <span class="dt">{{ contest["end"] }}</span></p>
-        <div id="contest-{{ contest['id'] }}" class="hidden smarkdown"></div>
+        <div id="contest-{{ contest['id'] }}" class="smarkdown"></div>
         {% if check_perm(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"]) %}
             <a href="/contest/{{ contest['id'] }}/edit"
                style="position: absolute; top: 12px; right: 36px;">
@@ -48,7 +48,7 @@
         <h3><a href="/contest/{{ contest['id'] }}">{{ contest["name"] }}</a></h3>
         <p style="margin-bottom: 0;">Start: <span class="dt">{{ contest["start"] }}</span></p>
         <p style="margin-bottom: 0;">End: <span class="dt">{{ contest["end"] }}</span></p>
-        <div id="contest-{{ contest['id'] }}" class="hidden smarkdown"></div>
+        <div id="contest-{{ contest['id'] }}" class="smarkdown"></div>
         {% if check_perm(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"]) %}
             <a href="/contest/{{ contest['id'] }}/edit"
                style="position: absolute; top: 12px; right: 36px;">
@@ -80,7 +80,7 @@
         <h3><a href="/contest/{{ contest['id'] }}">{{ contest["name"] }}</a></h3>
         <p style="margin-bottom: 0;">Start: <span class="dt">{{ contest["start"] }}</span></p>
         <p style="margin-bottom: 0;">End: <span class="dt">{{ contest["end"] }}</span></p>
-        <div id="contest-{{ contest['id'] }}" class="hidden smarkdown"></div>
+        <div id="contest-{{ contest['id'] }}" class="smarkdown"></div>
         {% if check_perm(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"]) %}
             <a href="/contest/{{ contest['id'] }}/edit"
                style="position: absolute; top: 12px; right: 36px;">
@@ -119,7 +119,7 @@
             return;
         }
         for (let id of idList) {
-            inject(document.getElementById("contest-" + id), b["data"][id], true);
+            inject(document.getElementById("contest-" + id), b["data"][id], false);
         }
         seeMore();
     });
