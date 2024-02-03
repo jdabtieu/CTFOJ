@@ -1,23 +1,16 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 import datetime
 import os
 import shutil
 
-# Backup database if exists
-if os.path.exists('database.db'):
-    shutil.copy2('database.db', 'backups/database.db.bak')
+# Back up data
+timestamp = datetime.date.strftime(datetime.datetime.now(), "%d-%m-%Y-%H-%M-%S")
+os.makedirs(f'backups/{timestamp}', 0o770)
+shutil.copy2('database.db', f'backups/{timestamp}/database.db')
+shutil.copytree('metadata/', f'backups/{timestamp}/metadata/')
 
-# backup metadata if exists
-if os.path.exists('metadata'):
-    # remove older folder
-    try:
-        shutil.rmtree('backups/metadata/')
-    except Exception:
-        pass
-    shutil.copytree('metadata/', 'backups/metadata/')
-
-# rotate logs
+# Rotate logs
 if os.path.exists('logs/application.log'):
     timestamp = datetime.date.strftime(datetime.datetime.now(), "%d-%m-%Y")
     shutil.copy2("logs/application.log", f"logs/{timestamp}-application.log")
