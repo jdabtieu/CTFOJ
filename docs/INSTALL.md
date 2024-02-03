@@ -93,11 +93,16 @@ You may optionally replace the default favicon.png file in the static folder
 with another icon of your choice (must be named favicon.png). This icon will be
 displayed in the title bar of a CTFOJ tab in users' web browsers.
 
-`daily_tasks.py` creates automatic backups of the database and splits logs by
-date. To set it up, use your task scheduler to run it once per day, in the src
-directory. For example, for cron, you can use:
+`daily_tasks.py` creates automatic backups of site data and splits logs by
+date. To set it up, use your task scheduler to run it once per day/week, 
+depending on your preferred backup frequency. For example, for cron, the following
+command will run it every day at 8am UTC.
 ```cron
-0 0 * * * cd /path/to/install/CTFOJ/src && python3 daily_tasks.py
+0 8 * * * cd /path/to/install/CTFOJ/src && python3 daily_tasks.py
+```
+And this command will run it every Sunday at 8am UTC.
+```cron
+0 8 * * 0 cd /path/to/install/CTFOJ/src && python3 daily_tasks.py
 ```
 Make sure you replace `/path/to/install` with your CTFOJ installation path.
 
