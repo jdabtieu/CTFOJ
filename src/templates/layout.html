@@ -58,7 +58,7 @@
                 </div>
             </div>
         </nav>
-
+        <script src="/assets/js/nav.js"></script>
         <main class="container">
             {% set maintenance = namespace(flag=false) %}
             {% with msg = get_flashed_messages(with_categories=True) %}
@@ -101,7 +101,6 @@
             </p>
         </footer>
 
-        <script src="/assets/js/nav.js"></script>
         <script src="/assets/js/showdown.min.js"></script>
         <script src="/assets/js/purify.min.js"></script>
         <script src="/assets/js/convertMD.js"></script>
