@@ -124,3 +124,73 @@ HEAD is now at ###### Some message here
 
 Finally, you'll want to restart your WSGI application to apply the changes.
 The command will vary depending on your WSGI application.
+
+# Running with Gunicorn and Nginx
+This is the recommended setup, although other combinations involving Apache or uWSGI or something else should also work.
+
+For Gunicorn, we want it to run as a service. To do this, create `/etc/systemd/system/ctfoj.service` and paste in the following content, replacing the marked fields:
+```init
+[Unit]
+Description=CTFOJ Instance
+After=network.target
+
+[Service]
+User=<username of the user to run ctfoj under, typically, your username>
+Group=<group name for your web server, should be nginx for modern nginx or www-data for anything else>
+WorkingDirectory=/path/to/install/CTFOJ/src
+Environment="PATH=/path/to/install/CTFOJ/src/bin"
+ExecStart=/path/to/install/CTFOJ/src/bin/gunicorn --workers 3 --bind unix:ctfoj.sock -m 007 wsgi:app
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Then, we can start it and sets it to start on startup with the following commands:
+```
+$ sudo systemctl start ctfoj
+$ sudo systemctl enable ctfoj
+```
+
+To check that things are working, we can run
+```
+$ sudo systemctl status ctfoj
+```
+
+If at any point in the future you update CTFOJ with a git pull and/or make other changes, you can run `sudo systemctl restart ctfoj` to reload the web app.
+
+Now, to configure Nginx, we wanto to create `/etc/nginx/conf.d/ctfoj.conf` with the following content, replacing the two `/path/to/install` fields:
+```nginx
+server {
+        server_name             <your domain name>;
+        proxy_set_header        X-Real-IP        $remote_addr;
+        proxy_set_header        X-Forwarded-For  $proxy_add_x_forwarded_for;
+        proxy_set_header        Host             $host;
+        proxy_set_header        X-Forwarded-Proto $scheme;
+        root /path/to/install/CTFOJ/src;
+        client_max_body_size 300M;
+        listen                  80;
+
+        location /static/ {
+                log_not_found off;
+                access_log off;
+                expires max;
+                try_files $uri =404;
+        }
+
+        location /assets/ {
+                log_not_found off;
+                access_log off;
+                expires 1w;
+                try_files $uri =404;
+        }
+
+        location / {
+                proxy_pass http://unix:/path/to/install/CTFOJ/src/ctfoj.sock;
+        }
+}
+```
+
+You can then optionally enable SSL (strongly recommended) with
+```bash
+sudo apt install certbot python3-certbot-nginx
+sudo certbot --nginx -d <your domain name>
