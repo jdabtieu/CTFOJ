@@ -1,6 +1,6 @@
 function seeMore() {
     document.querySelectorAll(".see-more").forEach(e => {
-        if (e.parentElement.parentElement.querySelector(".smarkdown").offsetHeight < 490) {
+        if (e.parentElement.parentElement.offsetHeight < 599) {
             e.parentElement.remove();
         } else {
             e.addEventListener("click", event => {
