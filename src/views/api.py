@@ -228,7 +228,6 @@ def contest_scoreboard(contest_id):
 
 
 @api.route("/contests")
-@api_login_required
 def contests():
     if "id" not in request.args:
         return json_fail("Must specify ids", 400)

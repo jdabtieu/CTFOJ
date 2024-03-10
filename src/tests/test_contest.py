@@ -196,8 +196,8 @@ def test_contest(client, database):
     client.get('/logout')
 
     result = client.get('/api/contests?id=testingcontest')
-    assert result.status_code == 401
-    assert json.loads(result.data)['status'] == 'fail'
+    assert result.status_code == 200
+    assert json.loads(result.data)['data']['testingcontest'] == 'testing contest description'
 
     database.execute(
         ("INSERT INTO 'users' VALUES(2, 'normal_user', 'pbkdf2:sha256:150000$XoLKRd3I$"

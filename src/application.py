@@ -568,7 +568,6 @@ def reset_password_user(token):
 
 
 @app.route("/contests")
-@login_required
 def contests():
     past = db.execute(
         "SELECT * FROM contests WHERE end < datetime('now') ORDER BY end DESC")
