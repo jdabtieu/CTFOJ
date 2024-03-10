@@ -1,10 +1,10 @@
 {% extends "layout.html" %}
 
-{% block title %}Submissions{% endblock %}
-{% block active %}Admin Console{% endblock %}
+{% block title %}My Submissions{% endblock %}
+{% block active %}Contests{% endblock %}
 
 {% block main %}
-<h1>Submissions</h1>
+<h1>My Submissions</h1>
 <div id="pagination" data-pages="{{ length }}"></div>
 <div class="flex-desktop">
     <div style="flex: 3; overflow-x: auto;">
@@ -12,11 +12,9 @@
             <thead class="table-dark">
                 <tr>
                     <th scope="col" style="width: 10%;">ID</th>
-                    <th scope="col" style="width: 20%;">Time</th>
-                    <th scope="col" style="width: 18%;">Username</th>
-                    <th scope="col" style="width: 20%;">Problem ID</th>
-                    <th scope="col" style="width: 20%;">Contest ID</th>
-                    <th scope="col" style="width: 12%;">Status</th>
+                    <th scope="col" style="width: 35%;">Time</th>
+                    <th scope="col" style="width: 40%;">Problem ID</th>
+                    <th scope="col" style="width: 15%;">Status</th>
                 </tr>
             </thead>
             <tbody>
@@ -24,13 +22,10 @@
                 <tr>
                     <td>{{ row["id"] }}</td>
                     <td class="dt">{{ row["date"] }}</td>
-                    <td>{{ row["username"] }}</td>
                     <td>{{ row["problem_id"] }}</td>
-                    <td>{{ row["contest_id"] }}</td>
                     <td onclick='alert({{ row["submitted"] | tojson }})'><a href="#" onclick="return false;">
                         {{ 'AC' if row["correct"] else 'WA' }}
                     </a>
-                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -42,27 +37,11 @@
             <form>
                 <div class="form-floating">
                     <input class="form-control mb-3"
-                           id="username"
-                           name="username"
-                           placeholder="Filter by username">
-                    <label for="username">Username</label>
-                </div>
-                <div class="form-floating">
-                    <input class="form-control mb-3"
                            id="problem_id"
                            name="problem_id"
                            placeholder="Filter by problem ID">
                     <label for="problem_id">Problem ID</label>
                 </div>
-                {% if check_perm(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"]) %}
-                <div class="form-floating">
-                    <input class="form-control mb-3"
-                           id="contest_id"
-                           name="contest_id"
-                           placeholder="Filter by contest ID">
-                    <label for="contest_id">Contest ID</label>
-                </div>
-                {% endif %}
                 <div class="form-floating">
                     <select class="form-control form-select mb-3" id="correct" name="correct">
                         <option value="">All</option>
@@ -80,14 +59,8 @@
 {% block script %}
 <script>
     var queryStrings = new URL(window.location.href).searchParams;
-    if (queryStrings.get("username") != null) {
-        document.querySelector("#username").setAttribute("value", queryStrings.get("username"));
-    }
     if (queryStrings.get("problem_id") != null) {
         document.querySelector("#problem_id").setAttribute("value", queryStrings.get("problem_id"));
-    }
-    if (queryStrings.get("contest_id") != null) {
-        document.querySelector("#contest_id")?.setAttribute("value", queryStrings.get("contest_id"));
     }
     if (queryStrings.get("correct") != null) {
         document.querySelector("#correct").value = queryStrings.get("correct");

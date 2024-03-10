@@ -6,7 +6,7 @@
 {% block main %}
 <h1>Nonexistent contest</h1>
 <div>
-    The contest with id {{ request.path[9:] }} does not exist.
+    The contest with id {{ request.path.split('/')[2] }} does not exist.
 </div>
 <a href="/">Back to home</a>
 {% endblock %}

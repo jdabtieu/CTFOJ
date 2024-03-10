@@ -169,6 +169,10 @@
                         </a>
                 {% endif %}
                 <br><a href="{{ request.path }}/export">Export problem</a>
+            {% else %}
+            <br><a href="/contest/{{ request.path.split('/')[2] }}/submissions?problem_id={{ request.path.split('/')[4] }}">
+                My submissions
+            </a>
             {% endif %}
         </div>
     </div>

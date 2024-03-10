@@ -722,3 +722,53 @@ def download_contest_problem(contest_id, problem_id):
     temp_zipfile.seek(0)
     return send_file(temp_zipfile, mimetype='zip',
                      download_name=f'{problem_id}.zip', as_attachment=True)
+
+
+@api.route("/<contest_id>/submissions")
+@login_required
+def contest_submissions(contest_id):
+    if check_perm(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER", "CONTENT_MANAGER"]):
+        return redirect("/admin/submissions?contest_id=" + contest_id)
+
+    # Ensure contest exists
+    contest_info = db.execute("SELECT * FROM contests WHERE id=?", contest_id)
+    if len(contest_info) != 1:
+        return render_template("contest/contest_noexist.html"), 404
+
+    # Ensure contest started or user is admin
+    start = parse_datetime(contest_info[0]["start"])
+    if datetime.utcnow() < start:
+        flash('The contest has not started yet!', 'danger')
+        return redirect("/contests")
+
+    submissions = None
+
+    query = request.args
+    modifier = " WHERE username=? AND contest_id=? AND"
+    args = [session["username"], contest_id]
+
+    # Construct query
+    if query.get("problem_id"):
+        modifier += " problem_id=? AND"
+        args.append(query.get("problem_id"))
+
+    if query.get("correct"):
+        modifier += " correct=? AND"
+        args.append(query.get("correct") == "AC")
+
+    page = request.args.get("page")
+    if not page:
+        page = "1"
+    page = (int(page) - 1) * 50
+    modifier += " 1=1"
+
+    length = db.execute(("SELECT COUNT(*) AS cnt FROM submissions LEFT JOIN users ON "
+                         "user_id=users.id") + modifier, *args)[0]["cnt"]
+
+    args.append(page)
+    submissions = db.execute(("SELECT submissions.*, users.username FROM submissions "
+                              f"LEFT JOIN users ON user_id=users.id {modifier}"
+                              " LIMIT 50 OFFSET ?"), *args)
+
+    return render_template("contest/submissions.html",
+                           data=submissions, length=-(-length // 50))

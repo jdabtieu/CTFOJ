@@ -261,6 +261,10 @@ def test_contest(client, database):
     assert result.status_code == 200
     assert b'Hidden' not in result.data
 
+    result = client.get('/contest/testingcontest/submissions')
+    assert result.status_code == 200
+    assert b'ctf{wrong}' in result.data
+
     client.get('/logout')
 
     result = client.get('/api/contests?id=testingcontest&key=' + user_api)
@@ -341,6 +345,9 @@ def test_contest(client, database):
     assert b'Hidden' in result.data
 
     # Test other admin functions
+    
+    result = client.get('/contest/testingcontest/submissions', follow_redirects=True)
+    assert result.request.path == '/admin/submissions'
 
     result = client.get('/admin/submissions')
     assert result.status_code == 200
