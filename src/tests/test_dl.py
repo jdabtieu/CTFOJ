@@ -108,7 +108,9 @@ def test_dl(client, database):
     }, follow_redirects=True)
     assert result.status_code == 200
 
-    result = client.post('/problem/helloworldtesting/publish', follow_redirects=True)
+    result = client.post('/problem/helloworldtesting/changestat', data={
+        'status': 'PUBLISHED'
+    }, follow_redirects=True)
     assert result.status_code == 200
 
     client.post('/login', data={'username': 'normal_user', 'password': 'CTFOJadmin'})

@@ -32,7 +32,7 @@ CREATE TABLE 'problems' (
     'point_value' integer NOT NULL DEFAULT(0),
     'category' varchar(64),
     'flag' varchar(256) NOT NULL,
-    'draft' boolean NOT NULL DEFAULT(0),
+    'status' integer NOT NULL DEFAULT(0), -- see helpers.py
     'flag_hint' varchar(256) NOT NULL DEFAULT(''),
     'instanced' boolean NOT NULL DEFAULT(0)
 );
@@ -75,7 +75,7 @@ CREATE TABLE 'contest_problems' (
     'point_value' integer NOT NULL DEFAULT(0),
     'category' varchar(64),
     'flag' varchar(256) NOT NULL,
-    'draft' boolean NOT NULL DEFAULT(0),
+    'status' integer NOT NULL DEFAULT(0), -- 0: published, 1: draft
     'score_min' integer NOT NULL DEFAULT(0),
     'score_max' integer NOT NULL DEFAULT(0),
     'score_users' integer NOT NULL DEFAULT(-1),

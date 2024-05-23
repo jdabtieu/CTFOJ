@@ -20,6 +20,7 @@
         <form method="post" style="margin-bottom: 1rem;" action="">
             <input class="btn btn-danger" type="submit" value="">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <input type="hidden" name="status" id="confirm-status" value=""/>
         </form>
     </div>
 {% endif %}
@@ -165,9 +166,12 @@
                 <br><a href="{{ request.path }}/edit">Edit problem</a>
                 <br><a href="{{ request.path }}/download">Download problem</a>
                 <br><a href="#" class="btn-delete">Delete problem</a>
-                {% if data["draft"] %}
-                    <br><a href="#" class="btn-publish">Publish draft</a>
-                {% endif %}
+                <br>Change problem type to <select id="select-status">
+                        <option disabled selected>----------</option>
+                        {% for k, v in stats.items() %}
+                            <option>{{ k }}</option>
+                        {% endfor %}
+                    </select>
             {% endif %}
         </div>
     </div>
@@ -205,17 +209,14 @@
                 .setAttribute("value", "Are you sure you want to delete this problem? " +
                                        "Click here to confirm.");
     });
-</script>
-{% endif %}
-{% if data["draft"] %}
-<script>
-    document.querySelector(".btn-publish").addEventListener("click", function () {
+    document.querySelector("#select-status").addEventListener("change", function (e) {
         document.getElementById("confirm").style.display = "";
         document.querySelector("#confirm form")
-                .setAttribute("action", window.location.pathname + "/publish");
+                .setAttribute("action", window.location.pathname + "/changestat");
+        document.querySelector("#confirm-status").value = e.target.value;
         document.querySelector("#confirm form .btn")
-                .setAttribute("value", "Are you sure you want to publish this problem? " +
-                                       "Click here to confirm.");
+                .setAttribute("value", "Are you sure you want to make this problem " +
+                                       e.target.value + "? Click here to confirm.");
     });
 </script>
 {% endif %}

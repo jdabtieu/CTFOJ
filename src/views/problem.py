@@ -22,26 +22,29 @@ def problem(problem_id):
                       problem_id=problem_id)
 
     # Ensure problem exists
-    if len(data) != 1 or (data[0]["draft"] == 1 and not check_perm(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER", "CONTENT_MANAGER"])):
+    if len(data) != 1 or (data[0]["status"] == PROBLEM_STAT["DRAFT"] and
+            not check_perm(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER", "CONTENT_MANAGER"])):  # noqa
         return render_template("problem/problem_noexist.html"), 404
 
     data[0]["editorial"] = read_file(f"metadata/problems/{problem_id}/editorial.md")
     data[0]["solved"] = db.execute(("SELECT COUNT(*) AS cnt FROM problem_solved WHERE "
                                     "user_id=? AND problem_id=?"),
                                    session["user_id"], problem_id)[0]["cnt"] == 1
+    if data[0]["status"] == PROBLEM_STAT["ARCHIVED"]:
+        flash("This problem is archived. This means that it may no longer be solveable", "warning")
     if request.method == "GET":
-        return render_template('problem/problem.html', data=data[0])
+        return render_template('problem/problem.html', data=data[0], stats=PROBLEM_STAT)
 
     # Reached via POST
     flag = request.form.get("flag")
 
     if not flag:
         flash('Cannot submit an empty flag', 'danger')
-        return render_template('problem/problem.html', data=data[0]), 400
+        return render_template('problem/problem.html', data=data[0], stats=PROBLEM_STAT), 400
 
     if not verify_flag(flag):
         flash('Invalid flag', 'danger')
-        return render_template('problem/problem.html', data=data[0]), 400
+        return render_template('problem/problem.html', data=data[0], stats=PROBLEM_STAT), 400
 
     check = data[0]["flag"] == flag
     db.execute(("INSERT INTO submissions (user_id, problem_id, correct, submitted) "
@@ -49,7 +52,7 @@ def problem(problem_id):
 
     if not check:
         flash('The flag you submitted was incorrect', 'danger')
-        return render_template('problem/problem.html', data=data[0])
+        return render_template('problem/problem.html', data=data[0], stats=PROBLEM_STAT)
 
     # Add entry into problem solve table
     try:
@@ -64,12 +67,12 @@ def problem(problem_id):
 
     data[0]["solved"] = True
     flash('Congratulations! You have solved this problem!', 'success')
-    return render_template('problem/problem.html', data=data[0])
+    return render_template('problem/problem.html', data=data[0], stats=PROBLEM_STAT)
 
 
-@api.route('<problem_id>/publish', methods=["POST"])
+@api.route('<problem_id>/changestat', methods=["POST"])
 @perm_required(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER", "CONTENT_MANAGER"])
-def publish_problem(problem_id):
+def change_problem_status(problem_id):
     data = db.execute("SELECT * FROM problems WHERE id=:problem_id",
                       problem_id=problem_id)
 
@@ -77,11 +80,18 @@ def publish_problem(problem_id):
     if len(data) != 1:
         return render_template("problem/problem_noexist.html"), 404
 
-    r = db.execute("UPDATE problems SET draft=0 WHERE id=? AND draft=1", problem_id)
+    new_status = request.form.get("status")
+    new_stat_code = PROBLEM_STAT.get(new_status)
+    if new_stat_code is None:
+        flash("Invalid problem status", "danger")
+        return redirect("/problem/" + problem_id)
+
+    r = db.execute("UPDATE problems SET status=? WHERE id=?", new_stat_code, problem_id)
     if r == 1:
-        logger.info(f"User #{session['user_id']} ({session['username']}) published {problem_id}",  # noqa
+        logger.info((f"User #{session['user_id']} ({session['username']}) made "
+                     "{problem_id} {new_status}"),
                     extra={"section": "problem"})
-    flash('Problem successfully published', 'success')
+    flash('Problem status successfully changed to ' + new_status, 'success')
     return redirect("/problem/" + problem_id)
 
 
@@ -95,7 +105,8 @@ def problem_editorial(problem_id):
     if len(data) == 0:
         return render_template("problem/problem_noexist.html"), 404
 
-    if data[0]["draft"] == 1 and not check_perm(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER", "CONTENT_MANAGER"]):
+    if (data[0]["status"] == PROBLEM_STAT["DRAFT"] and
+            not check_perm(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER", "CONTENT_MANAGER"])):  # noqa
         return render_template("problem/problem_noexist.html"), 404
 
     return render_template('problem/problemeditorial.html', data=data[0])

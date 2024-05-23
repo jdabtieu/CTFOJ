@@ -206,6 +206,7 @@ td {
 
 .pagination {
     overflow-x: auto;
+    margin-bottom: 0;
 }
 
 .hidden {

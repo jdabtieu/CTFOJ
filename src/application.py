@@ -184,7 +184,7 @@ def get_asset(filename):
 @login_required
 def dl_file(problem_id):
     problem = db.execute("SELECT * FROM problems WHERE id=?", problem_id)
-    if len(problem) == 0 or (problem[0]["draft"] and not
+    if len(problem) == 0 or (problem[0]["status"] == PROBLEM_STAT["DRAFT"] and not
                              check_perm(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER", "CONTENT_MANAGER"])):
         return abort(404)
     return send_from_directory("dl/", f"{problem_id}.zip", as_attachment=True)
@@ -202,7 +202,7 @@ def dl_contest(contest_id, problem_id):
         return abort(404)
     problem = db.execute(("SELECT * FROM contest_problems WHERE contest_id=? "
                           "AND problem_id=?"), contest_id, problem_id)
-    if len(problem) == 0 or (problem[0]["draft"] and
+    if len(problem) == 0 or (problem[0]["status"] == PROBLEM_STAT["DRAFT"] and
                              not check_perm(["ADMIN", "SUPERADMIN"])):
         return abort(404)
     return send_from_directory("dl/", f"{contest_id}/{problem_id}.zip",
@@ -654,20 +654,20 @@ def problems():
         data = db.execute(
             ("SELECT problems.*, COUNT(DISTINCT problem_solved.user_id) AS sols "
              "FROM problems LEFT JOIN problem_solved ON "
-             "problems.id=problem_solved.problem_id WHERE (draft=0 AND category=?)"
+             "problems.id=problem_solved.problem_id WHERE (status=0 AND category=?)"
              "GROUP BY problems.id ORDER BY id ASC LIMIT 50 OFFSET ?"),
             category, page)
         length = db.execute(("SELECT COUNT(*) AS cnt FROM problems WHERE "
-                             "draft=0 AND category=?"), category)[0]["cnt"]
+                             "status=0 AND category=?"), category)[0]["cnt"]
     else:
         data = db.execute(
             ("SELECT problems.*, COUNT(DISTINCT problem_solved.user_id) AS sols "
              "FROM problems LEFT JOIN problem_solved ON "
-             "problems.id=problem_solved.problem_id WHERE draft=0 "
+             "problems.id=problem_solved.problem_id WHERE status=0 "
              "GROUP BY problems.id ORDER BY id ASC LIMIT 50 OFFSET ?"), page)
-        length = db.execute("SELECT COUNT(*) AS cnt FROM problems WHERE draft=0")[0]["cnt"]  # noqa E501
+        length = db.execute("SELECT COUNT(*) AS cnt FROM problems WHERE status=0")[0]["cnt"]  # noqa E501
 
-    categories = db.execute("SELECT DISTINCT category FROM problems WHERE draft=0")
+    categories = db.execute("SELECT DISTINCT category FROM problems WHERE status=0")
     categories.sort(key=lambda x: x['category'])
 
     is_ongoing_contest = len(db.execute(
@@ -678,6 +678,49 @@ def problems():
                            data=data, solved=solved, length=-(-length // 50),
                            categories=categories, selected=category,
                            is_ongoing_contest=is_ongoing_contest)
+
+
+@app.route('/problems/archived')
+def archived_problems():
+    page = request.args.get("page")
+    if not page:
+        page = "1"
+    page = (int(page) - 1) * 50
+
+    category = request.args.get("category")
+    if not category:
+        category = None
+
+    solved = set()
+    if session.get("user_id"):
+        solved_db = db.execute("SELECT problem_id FROM problem_solved WHERE user_id=:uid",
+                               uid=session["user_id"])
+        for row in solved_db:
+            solved.add(row["problem_id"])
+
+    if category is not None:
+        data = db.execute(
+            ("SELECT problems.*, COUNT(DISTINCT problem_solved.user_id) AS sols "
+             "FROM problems LEFT JOIN problem_solved ON "
+             "problems.id=problem_solved.problem_id WHERE (status=2 AND category=?)"
+             "GROUP BY problems.id ORDER BY id ASC LIMIT 50 OFFSET ?"),
+            category, page)
+        length = db.execute(("SELECT COUNT(*) AS cnt FROM problems WHERE "
+                             "status=0 AND category=?"), category)[0]["cnt"]
+    else:
+        data = db.execute(
+            ("SELECT problems.*, COUNT(DISTINCT problem_solved.user_id) AS sols "
+             "FROM problems LEFT JOIN problem_solved ON "
+             "problems.id=problem_solved.problem_id WHERE status=2 "
+             "GROUP BY problems.id ORDER BY id ASC LIMIT 50 OFFSET ?"), page)
+        length = db.execute("SELECT COUNT(*) AS cnt FROM problems WHERE status=2")[0]["cnt"]  # noqa E501
+
+    categories = db.execute("SELECT DISTINCT category FROM problems WHERE status=2")
+    categories.sort(key=lambda x: x['category'])
+
+    return render_template('problem/archived_list.html',
+                           data=data, solved=solved, length=-(-length // 50),
+                           categories=categories, selected=category)
 
 
 @app.route("/problems/create", methods=["GET", "POST"])
@@ -722,11 +765,10 @@ def create_problem():
 
     # Create & ensure problem doesn't already exist
     try:
-        db.execute(("INSERT INTO problems (id, name, point_value, category, flag, draft, "
-                    "flag_hint, instanced) VALUES (:id, :name, :point_value, :category, "
-                    ":flag, :draft, :fhint, :inst)"),
-                   id=problem_id, name=name, point_value=point_value, category=category,
-                   flag=flag, draft=draft, fhint=flag_hint, inst=instanced)
+        db.execute(("INSERT INTO problems (id, name, point_value, category, flag, "
+                    "status, flag_hint, instanced) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"),
+                   problem_id, name, point_value, category, flag, draft, flag_hint,
+                   instanced)
     except ValueError:
         flash('A problem with this name or ID already exists', 'danger')
         return render_template("problem/create.html"), 400
@@ -757,8 +799,8 @@ def draft_problems():
         page = "1"
     page = (int(page) - 1) * 50
 
-    data = db.execute("SELECT * FROM problems WHERE draft=1 LIMIT 50 OFFSET ?", page)
-    length = db.execute("SELECT COUNT(*) AS cnt FROM problems WHERE draft=1")[0]["cnt"]
+    data = db.execute("SELECT * FROM problems WHERE status=1 LIMIT 50 OFFSET ?", page)
+    length = db.execute("SELECT COUNT(*) AS cnt FROM problems WHERE status=1")[0]["cnt"]
 
     return render_template('problem/draft_problems.html',
                            data=data, length=-(-length // 50))

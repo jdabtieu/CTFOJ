@@ -1,20 +1,18 @@
 {% extends "layout.html" %}
 
-{% block title %}Problems{% endblock %}
+{% block title %}Archived Problems{% endblock %}
 {% block active %}Practice{% endblock %}
 
 {% block main %}
-<h1>Problems</h1>
-{% if is_ongoing_contest %}
-<div class="alert alert-danger alert-dismissible fade show" role="alert">
-        There is currently an ongoing contest. To view it, go to the <a href="/contests">Contests</a> page.
-        These are only <b>practice problems unrelated to the contest</b>.
+<h1>Archived Problems</h1>
+<div class="alert alert-warning alert-dismissible fade show" role="alert">
+        These problems are archived. That means they used to be solveable, but may no longer be anymore due to servers shutting down or other reasons.
+        They may also be archived because they are too low quality, but users who have solved them previously still retain the points.
         <button type="button"
                 class="btn-close"
                 data-bs-dismiss="alert"
                 aria-label="Close"></button>
     </div>
-{% endif %}
 <div id="pagination" style="display: inline-block; min-height: 42px" data-pages="{{ length }}"></div>
 <div id="category-selector-container">
     <label for="category-selector">Category</label>
@@ -32,7 +30,7 @@
         {% endfor %}
     </select>
 </div>
-<div class="mb-1"><a href="/problems/archived">View archived problems</a></div>
+<div class="mb-1"><a href="/problems">Back to unarchived problems</a></div>
 <div style="overflow-x: auto;">
     <table class="table table-hover table-full-width">
         <thead class="table-dark">

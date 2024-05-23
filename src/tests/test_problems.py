@@ -89,10 +89,23 @@ def test_problem(client, database):
     assert result.status_code == 200
     assert b'1 Point' in result.data
 
-    # Publish
-    result = client.post('/problem/helloworldtesting/publish', follow_redirects=True)
+    # Archive
+    result = client.post('/problem/helloworldtesting/changestat', data={
+        'status': 'ARCHIVED'
+    }, follow_redirects=True)
     assert result.status_code == 200
-    assert b'published' in result.data
+    assert b'ARCHIVED' in result.data
+
+    result = client.get('/problems/archived')
+    assert result.status_code == 200
+    assert b'helloworldtesting' in result.data
+
+    # Publish
+    result = client.post('/problem/helloworldtesting/changestat', data={
+        'status': 'PUBLISHED'
+    }, follow_redirects=True)
+    assert result.status_code == 200
+    assert b'PUBLISHED' in result.data
 
     # Editorial
     result = client.get('/problem/helloworldtesting/editeditorial')

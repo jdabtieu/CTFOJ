@@ -35,7 +35,8 @@ def problem():
     problem_id = request.args["id"]
 
     data = db.execute("SELECT * FROM problems WHERE id=:pid", pid=problem_id)
-    if len(data) == 0 or (data[0]["draft"] and not api_perm(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER", "CONTENT_MANAGER"])):
+    if len(data) == 0 or (data[0]["status"] == PROBLEM_STAT["DRAFT"] and
+            not api_perm(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER", "CONTENT_MANAGER"])):
         return json_fail("Problem not found", 404)
 
     description = read_file(f"metadata/problems/{problem_id}/description.md")
@@ -72,7 +73,7 @@ def check_instancer_perms(id):
         has_perm = api_perm(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER", "CONTENT_MANAGER"])
         data = db.execute("SELECT * FROM problems WHERE id=:pid", pid=problem_id)
 
-    if len(data) == 0 or (data[0]["draft"] and not has_perm):
+    if len(data) == 0 or (data[0]["status"] == PROBLEM_STAT["DRAFT"] and not has_perm):
         return ("Problem not found", 404)
     if not data[0]["instanced"]:  # Check if the problem is instanced
         return ("This problem is not instanced", 400)
@@ -181,7 +182,7 @@ def contest_problem():
     data = db.execute(("SELECT * FROM contest_problems WHERE "
                        "contest_id=:cid AND problem_id=:pid"),
                       cid=contest_id, pid=problem_id)
-    if len(data) == 0 or (data[0]["draft"] and not has_perm):
+    if len(data) == 0 or (data[0]["status"] == PROBLEM_STAT["DRAFT"] and not has_perm):
         return json_fail("Problem not found", 404)
 
     description = read_file(f"metadata/contests/{contest_id}/{problem_id}/description.md")

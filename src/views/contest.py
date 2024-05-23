@@ -58,7 +58,7 @@ def contest(contest_id):
 
     data = []
     info = db.execute(
-        ("SELECT * FROM contest_problems WHERE contest_id=:cid AND draft=0 "
+        ("SELECT * FROM contest_problems WHERE contest_id=:cid AND status=0 "
          "GROUP BY problem_id ORDER BY problem_id ASC, category ASC;"),
         cid=contest_id)
 
@@ -198,7 +198,7 @@ def contest_drafts(contest_id):
     if len(contest_info) != 1:
         return render_template("contest/contest_noexist.html"), 404
 
-    data = db.execute("SELECT * FROM contest_problems WHERE contest_id=:cid AND draft=1",
+    data = db.execute("SELECT * FROM contest_problems WHERE contest_id=:cid AND status=1",
                       cid=contest_id)
 
     return render_template("contest/draft_problems.html",
@@ -222,7 +222,8 @@ def contest_problem(contest_id, problem_id):
     check = db.execute(("SELECT * FROM contest_problems WHERE contest_id=:cid AND "
                         "problem_id=:pid"),
                        cid=contest_id, pid=problem_id)
-    if len(check) != 1 or (check[0]["draft"] and not check_perm(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"])):
+    if len(check) != 1 or (check[0]["status"] == PROBLEM_STAT["DRAFT"]
+            and not check_perm(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"])):
         return render_template("contest/contest_problem_noexist.html"), 404
 
     # Check if problem is solved
@@ -302,7 +303,7 @@ def publish_contest_problem(contest_id, problem_id):
         return render_template("contest/contest_noexist.html"), 404
 
     r = db.execute(
-        "UPDATE contest_problems SET draft=0 WHERE problem_id=? AND contest_id=?",
+        "UPDATE contest_problems SET status=0 WHERE problem_id=? AND contest_id=?",
         problem_id, contest_id)
     if r == 0:
         return render_template("contest/contest_problem_noexist.html"), 404
@@ -596,11 +597,9 @@ def contest_add_problem(contest_id):
 
         # Modify problems table
         try:
-            db.execute(("INSERT INTO contest_problems VALUES(:cid, :pid, :name, :pv, "
-                        ":category, :flag, :draft, :min, :max, :users, :fhint, :inst)"),
-                       cid=contest_id, pid=problem_id, name=name, pv=max_points,
-                       category=category, flag=flag, draft=draft, min=min_points,
-                       max=max_points, users=users_decay, fhint=flag_hint, inst=instanced)
+            db.execute(("INSERT INTO contest_problems VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"),
+                       contest_id, problem_id, name, max_points, category, flag, draft,
+                       min_points, max_points, users_decay, flag_hint, instanced)
         except ValueError:
             flash('A problem with this ID already exists', 'danger')
             return render_template("contest/create_problem.html"), 409
@@ -613,7 +612,7 @@ def contest_add_problem(contest_id):
         # Modify problems table
         try:
             db.execute(("INSERT INTO contest_problems(contest_id, problem_id, name, "
-                        "point_value, category, flag, draft, flag_hint, instanced) "
+                        "point_value, category, flag, status, flag_hint, instanced) "
                         "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)"),
                        contest_id, problem_id, name, point_value, category, flag, draft,
                        flag_hint, instanced)

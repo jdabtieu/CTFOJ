@@ -163,7 +163,7 @@
                     </a>
                 <br><a href="{{ request.path }}/edit">Edit problem</a>
                 <br><a href="{{ request.path }}/download">Download problem</a>
-                {% if data["draft"] %}
+                {% if data["status"] == 1 %}
                     <br><a href="#" id="btn-publish" onclick="">
                             Publish problem
                         </a>
@@ -201,7 +201,7 @@
         document.getElementById("hint").classList.toggle("hidden");
     });
 </script>
-{% if data["draft"] %}
+{% if data["status"] == 1 %}
     <script>
         document.getElementById("btn-publish").addEventListener("click", function() {
             document.getElementById("confirm").style.display = "block";

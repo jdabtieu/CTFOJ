@@ -25,6 +25,12 @@ USER_PERM = {
     "CONTENT_MANAGER": 3,
 }
 
+PROBLEM_STAT = {
+    "PUBLISHED": 0,
+    "DRAFT": 1,
+    "ARCHIVED": 2,
+}
+
 
 def sha256sum(string):
     return hashlib.sha256(string.encode("utf-8")).hexdigest()
