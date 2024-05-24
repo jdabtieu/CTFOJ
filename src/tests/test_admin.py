@@ -89,6 +89,10 @@ def test_admin(client, database):
     assert b'was reset' in result.data
 
     # Test manual user verification
+    result = client.post('/admin/verify', follow_redirects=True)
+    assert b'Must provide user ID' in result.data
+    result = client.post('/admin/verify', data={'user_id': 5}, follow_redirects=True)
+    assert b'exist' in result.data
     result = client.post('/admin/verify', data={'user_id': 2}, follow_redirects=True)
     assert b'already verified' in result.data
     database.execute("UPDATE users SET verified=0 WHERE id=2")

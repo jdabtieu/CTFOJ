@@ -138,3 +138,83 @@ def test_register(client, database):
 
     result = client.get(f'/cancelregister/{token}', follow_redirects=True)
     assert b'invalid' in result.data
+
+    # Test resending registration email
+    # Manually generate token to check
+    exp = datetime.utcnow() - timedelta(seconds=1800)
+    token = jwt.encode(
+        {
+            'username': 'bob',
+            'expiration': exp.isoformat()
+        },
+        'testing_secret_key',
+        algorithm='HS256'
+    )
+
+    result = client.post('/auth/resend_registration_confirmation', data={
+        'token': token
+    }, follow_redirects=True)
+    assert b'expired' in result.data
+
+    result = client.post('/auth/resend_registration_confirmation', data={
+        'token': 'abc'
+    }, follow_redirects=True)
+    assert b'Invalid' in result.data
+
+    exp = datetime.utcnow() + timedelta(seconds=1800)
+    token = jwt.encode(
+        {
+            'username': 'bob',
+            'expiration': exp.isoformat()
+        },
+        'testing_secret_key',
+        algorithm='HS256'
+    )
+
+    result = client.post('/auth/resend_registration_confirmation', data={
+        'token': token
+    }, follow_redirects=True)
+    assert b'doesn\'t exist' in result.data
+
+    token = jwt.encode(
+        {
+            'username': 'testing',
+            'expiration': exp.isoformat()
+        },
+        'testing_secret_key',
+        algorithm='HS256'
+    )
+    result = client.post('/auth/resend_registration_confirmation', data={
+        'token': token
+    })
+    assert result.data == b'/login'
+    assert result.status_code == 302
+
+    result = client.post('/register', data={
+        'username': 'unverified',
+        'password': 'unverified',
+        'confirmation': 'unverified',
+        'email': 'unverified@email.com'
+    }, follow_redirects=True)
+    assert result.status_code == 200
+    assert b'Resend' in result.data
+    token = jwt.encode(
+        {
+            'username': 'unverified',
+            'expiration': exp.isoformat()
+        },
+        'testing_secret_key',
+        algorithm='HS256'
+    )
+    result = client.post('/auth/resend_registration_confirmation', data={
+        'token': token
+    })
+    assert result.data == b'OK'
+    result = client.post('/auth/resend_registration_confirmation', data={
+        'token': token
+    })
+    assert result.data == b'OK'
+    result = client.post('/auth/resend_registration_confirmation', data={
+        'token': token
+    })
+    assert b'too many times' in result.data
