@@ -37,6 +37,9 @@
                                   {{ 'user-ban' if row['banned'] }}">
                             {{ row["username"] }}
                         </a>
+                        {% if not row['verified'] %}
+                            <span class="user-ban">(unverified)</span>
+                        {% endif %}
                     </td>
                     <td>{{ row["email"] }}</td>
                     <td class="dt">{{ row["join_date"] }}</td>
@@ -70,6 +73,15 @@
                                  alt="Reset password"
                                  title="Reset password">
                         </a>
+                        {% if not row['verified'] %}
+                        <a href="#">
+                            <img src="/assets/images/check.svg"
+                                 onerror="this.src='/assets/images/check.png'"
+                                 class="svg-green icon users-verify"
+                                 alt="Verify user"
+                                 title="Verify user">
+                        </a>
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
@@ -124,6 +136,14 @@
             var username = this.parentElement.getAttribute("data-username");
             var msg = `Are you sure you want to grant/revoke admin to ${username}? Click here to confirm.`;
             createForm(msg, "/admin/makeadmin", this.parentElement.getAttribute("data-id"));
+        });
+    }
+
+    for (let node of document.getElementsByClassName("users-verify")) {
+        node.parentElement.addEventListener("click", function() {
+            var username = this.parentElement.getAttribute("data-username");
+            var msg = `Are you sure you want to manually verify ${username}? Click here to confirm.`;
+            createForm(msg, "/admin/verify", this.parentElement.getAttribute("data-id"));
         });
     }
 </script>

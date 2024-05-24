@@ -233,6 +233,33 @@ def update_perms():
     return redirect("/admin/users")
 
 
+@api.route("/verify", methods=["POST"])
+@admin_required
+def verify_user():
+    user_id = request.form.get("user_id")
+    if not user_id:
+        flash("Must provide user ID", "danger")
+        return redirect("/admin/users")
+
+    user = db.execute("SELECT * FROM users WHERE id=:id", id=user_id)
+
+    if len(user) == 0:
+        flash("That user doesn't exist", "danger")
+        return redirect("/admin/users")
+
+    if user[0]["verified"]:
+        flash("That user is already verified", "warning")
+        return redirect("/admin/users")
+
+    db.execute("UPDATE users SET verified=1 WHERE id=:id", id=user_id)
+
+    flash(f"{user[0]['username']} is now verified.", "success")
+    logger.info((f"User #{user_id} ({user[0]['username']}) manually verified by "
+                 f"user #{session['user_id']} ({session['username']})"),
+                extra={"section": "auth"})
+    return redirect("/admin/users")
+
+
 @api.route("/createannouncement", methods=["GET", "POST"])
 @perm_required(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"])
 def createannouncement():

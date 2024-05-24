@@ -13,7 +13,7 @@ def test_register(client, database):
     }, follow_redirects=True)
 
     assert result.status_code == 200
-    assert b'account creation' in result.data
+    assert b'Resend' in result.data
 
     # Manually generate token to check
     exp = datetime.utcnow() + timedelta(seconds=1800)
@@ -66,16 +66,6 @@ def test_register(client, database):
 
     result = client.post('/register', data={
         'username': 'testing',
-        'password': 'testingpassword',
-        'confirmation': 'testingpass',
-        'email': 'testingemail@email.com'
-    }, follow_redirects=True)
-
-    assert result.status_code == 400
-    assert b'do not match' in result.data
-
-    result = client.post('/register', data={
-        'username': 'testing',
         'password': 'testingpass',
         'confirmation': 'testingpass',
         'email': 'testingemai+l@email.com'
@@ -92,7 +82,7 @@ def test_register(client, database):
     }, follow_redirects=True)
 
     assert result.status_code == 400
-    assert b'already exists' in result.data
+    assert b'already in use' in result.data
 
     result = client.post('/register', data={
         'username': 'randouser',
@@ -102,7 +92,7 @@ def test_register(client, database):
     }, follow_redirects=True)
 
     assert result.status_code == 400
-    assert b'already exists' in result.data
+    assert b'already in use' in result.data
 
     result = client.get('/confirmregister/fake', follow_redirects=True)
 

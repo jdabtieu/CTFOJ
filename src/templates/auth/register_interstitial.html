@@ -1,0 +1,68 @@
+{% extends "layout.html" %}
+
+{% block title %}Register{% endblock %}
+{% block active %}Register{% endblock %}
+
+{% block main %}
+<h1 class="text-center">Register</h1>
+<div class="alert alert-success show text-center" role="alert">
+     An account creation confirmation email has been sent to the email address 
+     you provided. Be sure to check your spam folder!
+</div>
+<div class="text-center">
+    <p>Didn't receive the email?</p>
+    <button id="resend" class="btn btn-primary" disabled>Resend in <span id="count">1:00</span></button>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+    const token = "{{ token }}";
+    let now = new Date();
+    let resends = 0;
+    let int = setInterval(() => {
+        let diff = 60 - Math.round((new Date() - now) / 1000);
+        if (diff <= 0) {
+            document.querySelector("#resend").removeAttribute("disabled");
+            document.querySelector("#resend").innerText = "Resend";
+            clearInterval(int);
+        } else {
+            document.querySelector("#count").innerText = Math.floor(diff / 60) + ":";
+            document.querySelector("#count").innerText += (diff % 60).toString().padStart(2, '0');  
+        }
+    }, 500);
+    document.querySelector("#resend").addEventListener("click", e => {
+        e.target.setAttribute("disabled", "");
+        fetch("/auth/resend_registration_confirmation", {
+            method: "POST",
+            body: "csrf_token={{ csrf_token() }}&token="+token,
+            headers: {"Content-Type": "application/x-www-form-urlencoded"}
+        }).then(b => {
+            if (b.status == 400) {
+                b.text().then(x => alert(x));
+            } else if (b.status == 302) {
+                alert("You are already verified. Please log in.");
+                b.text().then(x => window.location = "/login");
+            }
+        });
+        if (++resends == 2) {
+            document.querySelector("#resend").classList.add("btn-danger");
+            document.querySelector("#resend").classList.remove("btn-primary");
+            document.querySelector("#resend").innerText = 'Please contact an admin if you still do not receive the confirmation email.';
+            return;
+        }
+        now = new Date();
+        document.querySelector("#resend").innerHTML = 'Resend in <span id="count">5:00</span>';
+        int = setInterval(() => {
+            let diff = 300 - Math.round((new Date() - now) / 1000);
+            if (diff <= 0) {
+                document.querySelector("#resend").removeAttribute("disabled");
+                document.querySelector("#resend").innerText = "Resend";
+                clearInterval(int);
+            } else {
+                document.querySelector("#count").innerText = Math.floor(diff / 60) + ":";
+                document.querySelector("#count").innerText += (diff % 60).toString().padStart(2, '0');  
+            }
+        }, 500);
+    });
+</script>
+{% endblock %}

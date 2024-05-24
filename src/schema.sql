@@ -10,7 +10,8 @@ CREATE TABLE 'users' (
     'api' varchar(36) UNIQUE,
     'total_points' integer NOT NULL DEFAULT(0),
     'contests_completed' integer NOT NULL DEFAULT(0),
-    'problems_solved' integer NOT NULL DEFAULT(0)
+    'problems_solved' integer NOT NULL DEFAULT(0),
+    'registration_resend_attempts' integer NOT NULL DEFAULT(0)
 );
 CREATE TABLE 'user_perms' (
     'user_id' integer NOT NULL,

@@ -11,7 +11,7 @@ def test_api(client, database):
     database.execute(
         ("INSERT INTO 'users' VALUES(1, 'user', 'pbkdf2:sha256:150000$XoLKRd3I$"
          "2dbdacb6a37de2168298e419c6c54e768d242aee475aadf1fa9e6c30aa02997f', 'e', "
-         "datetime('now'), 0, 1, 0, NULL, 0, 0, 0)"))
+         "datetime('now'), 0, 1, 0, NULL, 0, 0, 0, 0)"))
     client.post('/login', data={'username': 'user', 'password': 'CTFOJadmin'})
     result = client.post('/api/getkey')
     assert (database.execute("SELECT * FROM users")[0]["api"]

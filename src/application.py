@@ -290,10 +290,9 @@ def register():
 
     username = request.form.get("username")
     password = request.form.get("password")
-    confirmation = request.form.get("confirmation")
     email = request.form.get("email")
 
-    code = register_chk(username, password, confirmation, email)
+    code = register_chk(username, password, email)
     if code:
         return render_template("auth/register.html",
                                site_key=app.config['HCAPTCHA_SITE']), code
@@ -314,9 +313,9 @@ def register():
                    username, generate_password_hash(password), email)
     except ValueError:
         if db.execute("SELECT COUNT(*) AS cnt FROM users WHERE username=?", username)[0]["cnt"] > 0:
-            flash('Username already exists', 'danger')
+            flash('Username already in use', 'danger')
         elif db.execute("SELECT COUNT(*) AS cnt FROM users WHERE email=?", email)[0]["cnt"] > 0:
-            flash('Email already exists', 'danger')
+            flash('Email already in use', 'danger')
         return render_template("auth/register.html",
                                site_key=app.config['HCAPTCHA_SITE']), 400
 
@@ -327,11 +326,36 @@ def register():
         send_email('CTFOJ Account Confirmation',
                    app.config['MAIL_DEFAULT_SENDER'], [email], text)
 
-    flash(('An account creation confirmation email has been sent to the email address '
-           'you provided. Be sure to check your spam folder!'), 'success')
     logger.info((f"User {username} ({email}) has initiated a registration request "
                  f"on IP {request.remote_addr}"), extra={"section": "auth"})
-    return render_template("auth/register.html", site_key=app.config['HCAPTCHA_SITE'])
+    token = create_jwt({'username': username}, app.config['SECRET_KEY'])
+    return render_template("auth/register_interstitial.html", token=token)
+
+
+@app.route("/auth/resend_registration_confirmation", methods=["POST"])
+def resend_registration_confirmation():
+    try:
+        token = jwt.decode(request.form.get("token"), app.config['SECRET_KEY'], algorithms=['HS256'])
+    except Exception as e:
+        return "Invalid token. Please contact an admin.", 400
+    if datetime.strptime(token["expiration"], "%Y-%m-%dT%H:%M:%S.%f") < datetime.utcnow():
+        return "Page expired. Please contact an admin.", 400
+    username = token["username"]
+    user = db.execute("SELECT * FROM users WHERE username=?", username)
+    if len(user) == 0:
+        return "User doesn't exist.", 400
+    if user[0]["verified"]:
+        return "/login", 302
+    if user[0]['registration_resend_attempts'] >= 2: # allow 2 tries
+        return "You have tried too many times. Please contact an admin.", 400
+    if not app.config['TESTING']:
+        token = create_jwt({'email': user[0]["email"]}, app.config['SECRET_KEY'])
+        text = render_template('email/confirm_account.html',
+                               username=username, token=token)
+        send_email('CTFOJ Account Confirmation',
+                   app.config['MAIL_DEFAULT_SENDER'], [user[0]["email"]], text)
+    db.execute("UPDATE users SET registration_resend_attempts=registration_resend_attempts+1 WHERE username=?", username)
+    return "OK"
 
 
 @app.route('/confirmregister/<token>')

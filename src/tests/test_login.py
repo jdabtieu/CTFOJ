@@ -10,7 +10,7 @@ def test_login(client, database):
     database.execute(
         ("INSERT INTO 'users' VALUES(1, 'admin', 'pbkdf2:sha256:150000$XoLKRd3I$"
          "2dbdacb6a37de2168298e419c6c54e768d242aee475aadf1fa9e6c30aa02997f', 'e1', "
-         "datetime('now'), 0, 1, 0, NULL, 0, 0, 0)"))
+         "datetime('now'), 0, 1, 0, NULL, 0, 0, 0, 0)"))
     database.execute("INSERT INTO user_perms VALUES(1, ?)", USER_PERM["ADMIN"])
     result = client.post('/login', data={
         'username': 'admin',
@@ -64,7 +64,7 @@ def test_login(client, database):
     database.execute(
         ("INSERT INTO 'users' VALUES(2, 'user', 'pbkdf2:sha256:150000$XoLKRd3I$"
          "2dbdacb6a37de2168298e419c6c54e768d242aee475aadf1fa9e6c30aa02997f', 'e2', "
-         "datetime('now'), 1, 1, 0, NULL, 0, 0, 0)"))
+         "datetime('now'), 1, 1, 0, NULL, 0, 0, 0, 0)"))
     result = client.post('/login', data={
         'username': 'user',
         'password': 'CTFOJadmin'
@@ -75,7 +75,7 @@ def test_login(client, database):
     database.execute(
         ("INSERT INTO 'users' VALUES(3, 'user2', 'pbkdf2:sha256:150000$XoLKRd3I$"
          "2dbdacb6a37de2168298e419c6c54e768d242aee475aadf1fa9e6c30aa02997f', 'e3', "
-         "datetime('now'), 0, 0, 0, NULL, 0, 0, 0)"))
+         "datetime('now'), 0, 0, 0, NULL, 0, 0, 0, 0)"))
     result = client.post('/login', data={
         'username': 'user2',
         'password': 'CTFOJadmin'

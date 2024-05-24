@@ -34,18 +34,24 @@
            autocomplete="new-password"
            required>
         <label for="password">Password</label>
+        <div class="invalid-feedback">
+            Password must have at least 8 characters.
+        </div>
     </div>
-    <div class="form-floating">
-        <input class="form-control mb-3"
+    <div class="form-floating mb-3">
+        <input class="form-control"
                name="confirmation"
                id="confirmation"
-               placeholder="Confirmation"
+               placeholder="Password Confirmation"
                type="password"
            autocomplete="new-password"
            required>
-        <label for="confirmation">Confirmation</label>
+        <label for="confirmation">Password Confirmation</label>
+        <div class="invalid-feedback">
+            Passwords must match.
+        </div>
     </div>
-    <button class="btn btn-primary" type="submit">Register</button>
+    <button class="btn btn-primary" type="submit" id="reg-submit">Register</button>
     {% if USE_CAPTCHA %}
         <script src="https://hcaptcha.com/1/api.js" async defer></script>
         <hr>
@@ -68,27 +74,28 @@
 <script>
     const newPassword = document.getElementById("password");
     const confirmPassword = document.getElementById("confirmation");
-    document.querySelector("form").addEventListener("submit", event => {
-        if (newPassword.value != confirmPassword.value) {
-            makeAlert("Passwords do not match");
-            event.preventDefault();
-        }
+    const submitBtn = document.getElementById("reg-submit");
+    function checkPasswordConfirmation() {
+        let disable = false;
         if (newPassword.value.length < 8) {
-            makeAlert("Password must be at least 8 characters");
-            event.preventDefault();
+            newPassword.classList.add("is-invalid");
+            disable = true;
+        } else {
+            newPassword.classList.remove("is-invalid");
         }
-    });
-
-    function makeAlert(message) {
-        var tmp = document.createElement('div');
-        tmp.innerHTML = `<div class="alert alert-danger alert-dismissible fade show" role="alert">
-                             ${message}
-                             <button type="button"
-                                     class="btn-close"
-                                     data-bs-dismiss="alert"
-                                     aria-label="Close"></button>
-                         </div>`;
-        document.querySelector("main").prepend(tmp.firstChild);
+        if (confirmPassword.value != newPassword.value) {
+            confirmPassword.classList.add("is-invalid");
+            disable = true;
+        } else {
+            confirmPassword.classList.remove("is-invalid");
+        }
+        if (disable) {
+            submitBtn.setAttribute("disabled", "");
+        } else {
+            submitBtn.removeAttribute("disabled");
+        }
     }
+    document.getElementById("confirmation").addEventListener("change", checkPasswordConfirmation);
+    document.getElementById("password").addEventListener("change", checkPasswordConfirmation);
 </script>
 {% endblock %}

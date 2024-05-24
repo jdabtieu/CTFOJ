@@ -50,6 +50,8 @@ db.execute("INSERT INTO contest_problems_migration SELECT contest_id, problem_id
 db.execute("DROP TABLE contest_problems")
 db.execute("ALTER TABLE contest_problems_migration RENAME TO contest_problems")
 
+db.execute("ALTER TABLE users ADD COLUMN 'registration_resend_attempts' integer NOT NULL DEFAULT(0)")
+
 db.execute("COMMIT")
 
 with open('settings.py', 'a') as f:
