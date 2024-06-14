@@ -86,7 +86,7 @@ if (paginationDiv != null) {
     document.querySelectorAll(".page-item").forEach(e => {
         if (!e.classList.contains("active") && !e.classList.contains("disabled")) {
             e.addEventListener("click", function() {
-                switch (this.innerText) {
+                switch (this.innerText.trim()) {
                 case "First":
                     insertParam("1");
                     break;
