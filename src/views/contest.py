@@ -23,6 +23,18 @@ class CUser(Enum):
     BANNED = 2
 
 
+def _insert_user_into_contest(user_id, contest_row):
+    """
+    Inserts a user into a contest if they are not already in it and the contest is not over.
+    """
+    if datetime.utcnow() >= parse_datetime(contest_row["end"]):
+        return
+    db.execute("INSERT INTO contest_users (contest_id, user_id) VALUES(:cid, :uid)",
+                cid=contest_row["id"], uid=user_id)
+    db.execute("UPDATE users SET contests_completed=contests_completed+1 WHERE id=?",
+                user_id)
+
+
 @api.route("/<contest_id>")
 @login_required
 def contest(contest_id):
@@ -45,11 +57,8 @@ def contest(contest_id):
         "SELECT * FROM contest_users WHERE contest_id=:cid AND user_id=:uid",
         cid=contest_id, uid=session["user_id"])
 
-    if len(user_info) == 0 and datetime.utcnow() < parse_datetime(contest_info[0]["end"]):
-        db.execute("INSERT INTO contest_users (contest_id, user_id) VALUES(:cid, :uid)",
-                   cid=contest_id, uid=session["user_id"])
-        db.execute("UPDATE users SET contests_completed=contests_completed+1 WHERE id=?",
-                   session["user_id"])
+    if len(user_info) == 0:
+        _insert_user_into_contest(session["user_id"], contest_info[0])
 
     solved_info = db.execute(
         "SELECT problem_id FROM contest_solved WHERE contest_id=:cid AND user_id=:uid",
@@ -213,8 +222,8 @@ def contest_problem(contest_id, problem_id):
         return render_template("contest/contest_noexist.html"), 404
 
     # Ensure contest started or user is admin
-    check = db.execute("SELECT * FROM contests WHERE id=?", contest_id)
-    if (datetime.utcnow() < parse_datetime(check[0]["start"])
+    contest_info = db.execute("SELECT * FROM contests WHERE id=?", contest_id)
+    if (datetime.utcnow() < parse_datetime(contest_info[0]["start"])
             and not check_perm(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"])):
         flash('The contest has not started yet!', 'danger')
         return redirect("/contests")
@@ -249,8 +258,7 @@ def contest_problem(contest_id, problem_id):
         flash('You are banned from this contest', 'danger')
         return render_template("contest/contest_problem.html", data=check[0])
     if len(user) == 0:
-        db.execute("INSERT INTO contest_users(contest_id, user_id) VALUES (:cid, :uid)",
-                   cid=contest_id, uid=session["user_id"])
+        _insert_user_into_contest(session["user_id"], contest_info[0])
 
     if not check[0]["solved"]:
         submit_rate_limited = check_submit_rate_limit(contest_id, problem_id)
