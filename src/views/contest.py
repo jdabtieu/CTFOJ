@@ -59,16 +59,16 @@ def contest(contest_id):
 
     if len(user_info) == 0:
         _insert_user_into_contest(session["user_id"], contest_info[0])
+    db.execute("COMMIT")
 
-    solved_info = db.execute(
+    user_solved = set([x["problem_id"] for x in db.execute(
         "SELECT problem_id FROM contest_solved WHERE contest_id=:cid AND user_id=:uid",
-        cid=contest_id, uid=session["user_id"])
-    solved_data = set([x["problem_id"] for x in solved_info])
+        cid=contest_id, uid=session["user_id"])])
 
     data = []
-    info = db.execute(
+    problems = db.execute(
         ("SELECT * FROM contest_problems WHERE contest_id=:cid AND status=0 "
-         "GROUP BY problem_id ORDER BY problem_id ASC, category ASC;"),
+         "GROUP BY problem_id"),
         cid=contest_id)
 
     solves = db.execute(("SELECT problem_id, COUNT(user_id) AS solves FROM "
@@ -76,20 +76,20 @@ def contest(contest_id):
                          "SELECT user_id FROM contest_users WHERE contest_id=:cid AND "
                          "hidden != 0) GROUP BY problem_id"), cid=contest_id)
     solve_count = {x["problem_id"]: x["solves"] for x in solves}
-    db.execute("COMMIT")
 
-    for row in info:
+    for row in problems:
         problem_id = row["problem_id"]
         keys = {
             "name": row["name"],
             "category": row["category"],
             "problem_id": problem_id,
-            "solved": 1 if problem_id in solved_data else 0,
+            "solved": 1 if problem_id in user_solved else 0,
             "point_value": row["point_value"],
             "sols": solve_count[problem_id] if problem_id in solve_count else 0,
             "dynamic": 0 if row["score_users"] == -1 else 1,
         }
         data.append(keys)
+    data.sort(key=lambda x: (x["point_value"], x["problem_id"]))
 
     return render_template("contest/contest.html", title=title,
                            scoreboard_key=scoreboard_key, data=data)
