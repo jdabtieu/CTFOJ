@@ -15,8 +15,13 @@ logger = logging.getLogger("CTFOJ")
 @api.route("/console")
 @perm_required(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER", "CONTENT_MANAGER"])
 def admin_console():
+    maintenance_mode = os.path.exists('maintenance_mode')
+    if maintenance_mode:
+        msg = read_file('maintenance_mode')
+    else:
+        msg = ""
     return render_template("admin/console.html", ver="v4.2.3",
-                           maintenance_mode=os.path.exists('maintenance_mode'))
+                           maintenance_mode=maintenance_mode, maintenance_msg=msg)
 
 
 @api.route("/submissions")
@@ -344,19 +349,26 @@ def editannouncement(aid):
     return redirect("/")
 
 
-@api.route("/maintenance", methods=["POST"])
+@api.route("/maintenance/enable", methods=["POST"])
 @admin_required
-def maintenance():
-    maintenance_mode = os.path.exists('maintenance_mode')
+def enable_maintenance():
+    msg = request.form.get("message") or ""
+    write_file('maintenance_mode', msg)
+    flash("Enabled maintenance mode", "success")
 
-    msg = "Disabled" if maintenance_mode else "Enabled"
-    if maintenance_mode:
-        os.remove('maintenance_mode')
-    else:
-        write_file('maintenance_mode', '')
-    flash(msg + " maintenance mode", "success")
+    logger.info(("Enabled maintenance mode by "
+                 f"user #{session['user_id']} ({session['username']})"),
+                extra={"section": "misc"})
+    return redirect('/admin/console')
 
-    logger.info((f"{msg} maintenance mode by "
+
+@api.route("/maintenance/disable", methods=["POST"])
+@admin_required
+def disable_maintenance():
+    os.remove('maintenance_mode')
+    flash("Disabled maintenance mode", "success")
+
+    logger.info(("Disabled maintenance mode by "
                  f"user #{session['user_id']} ({session['username']})"),
                 extra={"section": "misc"})
     return redirect('/admin/console')

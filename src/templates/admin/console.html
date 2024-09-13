@@ -79,12 +79,22 @@
     Maintenance mode prevents non-admin users from interacting with the site. Admins can still log
     in and perform changes as required. Use this for site upgrades and for other situations as
     needed. If CTFOJ or its server is rebooted, maintenance mode will remain on. To disable it,
-    log in as an admin account and navigate back to this page or remove the 'maintenance_mode' file
-    on the server.
+    log in as an admin account and navigate back to this page.
 </p>
-<form action="/admin/maintenance" method="POST">
+{% if maintenance_mode %}
+<form action="/admin/maintenance/disable" method="POST">
+    <input type="submit" class="btn btn-danger mb-3" value="Disable Maintenance Mode">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+</form>
+{% endif %}
+<form action="/admin/maintenance/enable" method="POST">
+    <textarea class="form-control mb-3"
+        name="message"
+        id="maintenance-message"
+        rows="4"
+        placeholder="Maintenance message (optional)">{{ maintenance_msg }}</textarea>
     {% if maintenance_mode %}
-        <input type="submit" class="btn btn-danger" value="Disable Maintenance Mode">
+        <input type="submit" class="btn btn-secondary" value="Update Message">
     {% else %}
         <input type="submit" class="btn btn-danger" value="Enable Maintenance Mode">
     {% endif %}

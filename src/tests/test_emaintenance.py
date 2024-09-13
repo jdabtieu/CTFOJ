@@ -13,7 +13,7 @@ def test_emaintenance(client, database):
         'password': 'CTFOJadmin'
     }, follow_redirects=True)
 
-    result = client.post('/admin/maintenance', follow_redirects=True)
+    result = client.post('/admin/maintenance/enable', follow_redirects=True)
     assert result.status_code == 200
     assert b'Enabled' in result.data
 
@@ -21,15 +21,18 @@ def test_emaintenance(client, database):
     assert result.status_code == 200
     assert b'maintenance' not in result.data
 
-    result = client.post('/admin/maintenance', follow_redirects=True)
+    result = client.post('/admin/maintenance/disable', follow_redirects=True)
     assert result.status_code == 200
     assert b'Disabled' in result.data
 
-    client.post('/admin/maintenance', follow_redirects=True)
+    client.post('/admin/maintenance/enable', data={
+        'message': 'maintenance message'
+    })
 
     result = client.get('/logout', follow_redirects=True)
     assert result.status_code == 503
     assert b'maintenance' in result.data
+    assert b'maintenance message' in result.data
 
     result = client.get('/api', follow_redirects=True)
     assert result.status_code == 503
@@ -43,6 +46,6 @@ def test_emaintenance(client, database):
         'username': 'admin',
         'password': 'CTFOJadmin'
     }, follow_redirects=True)
-    result = client.post('/admin/maintenance', follow_redirects=True)
+    result = client.post('/admin/maintenance/disable', follow_redirects=True)
     assert result.status_code == 200
     assert b'Disabled' in result.data  # disable mode for other tests
