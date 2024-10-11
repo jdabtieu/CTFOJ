@@ -3,7 +3,7 @@ import os
 import requests
 import sys
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import jwt
 from flask import (abort, Flask, flash, redirect, render_template, request,
@@ -102,8 +102,10 @@ if not app.config['TESTING']:
                 logging.warning("Settings validation: Homepage file nonexistent.")
 
 
-@app.before_request
 def check_for_maintenance():
+    """
+    Pre-request handler to block requests during maintenance mode
+    """
     # Don't prevent login or getting assets
     if request.path == '/login' or request.path.startswith('/assets/'):
         return
@@ -123,6 +125,30 @@ def check_for_maintenance():
         else:
             flash("Maintenance mode is enabled", "maintenance")
 
+def refresh_perms():
+    """
+    Pre-request handler to ensure permission freshness
+    """
+    if not session.get("user_id"):
+        return
+    if "perms_expiry" not in session:  # Old, invalid session
+        session.clear()
+        return redirect("/login")
+    safer_methods = ["GET", "HEAD"]
+    if request.method not in safer_methods or (request.method in safer_methods and session["perms_expiry"] < datetime.now()):
+        perms = db.execute("SELECT * FROM user_perms WHERE user_id=?", session["user_id"])
+        session["perms"] = set([x["perm_id"] for x in perms])
+        session["perms_expiry"] = datetime.now() + timedelta(seconds=300)
+    return
+
+@app.before_request
+def before_hooks():
+    funcs = [check_for_maintenance, refresh_perms]
+    for f in funcs:
+        r = f()
+        if r:
+            return r
+    
 
 @app.route("/")
 def index():
@@ -267,6 +293,7 @@ def login():
     session["user_id"] = rows[0]["id"]
     session["username"] = rows[0]["username"]
     session["perms"] = set([x["perm_id"] for x in perms])
+    session["perms_expiry"] = datetime.now() + timedelta(seconds=300)
 
     logger.info((f"User #{session['user_id']} ({session['username']}) logged in "
                  f"on IP {request.remote_addr}"), extra={"section": "auth"})
@@ -389,6 +416,7 @@ def confirm_register(token):
     session["user_id"] = user["id"]
     session["username"] = user["username"]
     session["perms"] = set([x["perm_id"] for x in perms])
+    session["perms_expiry"] = datetime.now() + timedelta(seconds=300)
 
     logger.info((f"User #{session['user_id']} ({session['username']}) has successfully "
                  f"registered on IP {request.remote_addr}"), extra={"section": "auth"})
@@ -441,6 +469,7 @@ def confirm_login(token):
     session["user_id"] = user["id"]
     session["username"] = user["username"]
     session["perms"] = set([x["perm_id"] for x in perms])
+    session["perms_expiry"] = datetime.now() + timedelta(seconds=300)
 
     logger.info((f"User #{session['user_id']} ({session['username']}) logged in via 2FA "
                  f"on IP {request.remote_addr}"), extra={"section": "auth"})
