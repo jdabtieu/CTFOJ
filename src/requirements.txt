@@ -2,7 +2,7 @@ Flask-Mail==0.10.0
 flask-session==0.8.0
 Flask-WTF==1.2.1
 Flask==3.0.*
-Werkzeug==3.0.*
+Werkzeug==3.1.*
 cs50==9.3.4
 pyjwt>=2.8.0
 requests>=2.31.0
