@@ -1,6 +1,6 @@
 Flask-Mail==0.10.0
 flask-session==0.8.0
-Flask-WTF==1.2.1
+Flask-WTF==1.2.2
 Flask==3.0.*
 Werkzeug==3.0.*
 cs50==9.4.0
