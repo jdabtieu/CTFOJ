@@ -1,10 +1,10 @@
 # Installation
-Prerequisites: Python 3, SQLite 3
+Prerequisites: Python >= 3.9, SQLite 3
 
 For updating instructions, click [here](#updating).
 
 Although CTFOJ can run on Linux and Windows, it is recommended to run it
-on a modern Linux distribution such as Ubuntu 22.04 LTS. This guide assumes that
+on a modern Linux distribution such as Ubuntu 24.04 LTS. This guide assumes that
 you are running Linux. If you're running on Windows, your user account must
 be able to create symlinks. For instructions on enabling this, visit
 [this article](https://portal.perforce.com/s/article/3472)
