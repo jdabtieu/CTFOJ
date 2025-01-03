@@ -68,7 +68,7 @@ ln -s "$DATA_DIR/database.db" database.db
 echo "Creating database..."
 sqlite3 database.db < schema.sql
 sqlite3 database.db << EOF
-INSERT INTO 'users'('id', 'username', 'password', 'verified') VALUES(1, 'admin', 'scrypt:32768:8:1$0PpJqMKKSkCtcmqX$5f870621d3c86dae39edb02856e92961dd54b42f3e8e16ed83c9475be8ff0e4f27cb0b79a6ca3beafe72ee18936527303d092a35eca019d344bcde1423bb824c', 1);
+INSERT INTO 'users'('id', 'username', 'password', 'verified') VALUES(1, 'admin', 'scrypt:32768:8:1\$0PpJqMKKSkCtcmqX\$5f870621d3c86dae39edb02856e92961dd54b42f3e8e16ed83c9475be8ff0e4f27cb0b79a6ca3beafe72ee18936527303d092a35eca019d344bcde1423bb824c', 1);
 INSERT INTO 'user_perms' VALUES(1, 0); -- helpers.py: SUPERADMIN
 EOF
 mkdir -p "$DATA_DIR/logs" "$DATA_DIR/dl" "$DATA_DIR/backups" "$DATA_DIR/metadata/contests"
