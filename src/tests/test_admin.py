@@ -98,7 +98,7 @@ def test_admin(client, database):
     database.execute("UPDATE users SET verified=0 WHERE id=2")
     result = client.post('/admin/verify', data={'user_id': 2}, follow_redirects=True)
     assert b'is now verified' in result.data
-    
+
     # Test make admin feature
     result = client.post('/admin/updateperms?user_id=2',
                          data={'perms': [USER_PERM["ADMIN"]]},

@@ -112,6 +112,36 @@ def test_contest(client, database):
     assert result.status_code == 302
 
     result = client.post('/contest/testingcontest/addproblem', data={
+        'id': 'publishedlater',
+        'name': 'hello world',
+        'description': 'a short fun problem',
+        'hints': 'try looking at the title',
+        'point_value': 1,
+        'category': 'general',
+        'flag': 'ctf{hello}',
+        'flag_hint': 'ctf{...}',
+        'draft': True,
+        'publish_timestamp': datetime.strftime(datetime.now() + timedelta(600), "%Y-%m-%dT%H:%M:%S.%fZ"),  # noqa E501
+        'file': ('test_upload.txt', 'test_upload.txt')
+    })
+    assert result.status_code == 302
+
+    result = client.post('/contest/testingcontest/addproblem', data={
+        'id': 'publishednow',
+        'name': 'hello world',
+        'description': 'a short fun problem',
+        'hints': 'try looking at the title',
+        'point_value': 1,
+        'category': 'general',
+        'flag': 'ctf{hello}',
+        'flag_hint': 'ctf{...}',
+        'draft': True,
+        'publish_timestamp': datetime.strftime(datetime.now(), "%Y-%m-%dT%H:%M:%S.%fZ"),  # noqa E501
+        'file': ('test_upload.txt', 'test_upload.txt')
+    })
+    assert result.status_code == 302
+
+    result = client.post('/contest/testingcontest/addproblem', data={
         'id': 'helloworldtesting',
         'name': 'hello world',
         'description': 'a short fun problem',
@@ -130,6 +160,11 @@ def test_contest(client, database):
     result = client.get('/contest/testingcontest/problem/helloworldtesting')
     assert result.status_code == 200
     assert b'Contest Leaderboard' in result.data
+
+    result = client.get('/contest/testingcontest/problem/publishedlater')
+    assert result.status_code == 200
+    assert b'Contest Leaderboard' in result.data
+    assert b'Publish problem' in result.data
 
     result = client.post('/contest/testingcontest/problem/helloworldtesting/edit', data={
         'name': 'hello world 2',
@@ -265,6 +300,12 @@ def test_contest(client, database):
     assert result.status_code == 200
     assert b'ctf{wrong}' in result.data
 
+    result = client.get('/contest/testingcontest/problem/publishedlater')
+    assert result.status_code == 404
+
+    result = client.get('/contest/testingcontest/problem/publishednow')
+    assert result.status_code == 200
+
     client.get('/logout')
 
     result = client.get('/api/contests?id=testingcontest&key=' + user_api)
@@ -345,7 +386,7 @@ def test_contest(client, database):
     assert b'Hidden' in result.data
 
     # Test other admin functions
-    
+
     result = client.get('/contest/testingcontest/submissions', follow_redirects=True)
     assert result.request.path == '/admin/submissions'
 

@@ -432,9 +432,9 @@ def check_submit_rate_limit(contest_id, problem_id):
 
     if rl_min:  # Do not rate limit if rl_min is zero or undefined
         past_min = db.execute(("SELECT COUNT(*) AS cnt FROM submissions WHERE "
-                            "contest_id=? AND problem_id=? AND user_id=? AND "
-                            "date > datetime('now', '-1 minute')"),
-                            contest_id, problem_id, session["user_id"])[0]["cnt"]
+                               "contest_id=? AND problem_id=? AND user_id=? AND "
+                               "date > datetime('now', '-1 minute')"),
+                              contest_id, problem_id, session["user_id"])[0]["cnt"]
         if past_min >= rl_min:
             return (f"You are submitting too fast! You may only submit {rl_min} time(s) "
                     "per minute. Please wait a while before submitting again.")
@@ -442,7 +442,7 @@ def check_submit_rate_limit(contest_id, problem_id):
         past_hour = db.execute(("SELECT COUNT(*) AS cnt FROM submissions WHERE "
                                 "contest_id=? AND problem_id=? AND user_id=? AND "
                                 "date > datetime('now', '-1 hour')"),
-                                contest_id, problem_id, session["user_id"])[0]["cnt"]
+                               contest_id, problem_id, session["user_id"])[0]["cnt"]
         if past_hour >= rl_hour:
             return (f"You are submitting too fast! You may only submit {rl_hour} time(s) "
                     "per hour. Please wait a while before submitting again.")

@@ -125,6 +125,7 @@ def check_for_maintenance():
         else:
             flash("Maintenance mode is enabled", "maintenance")
 
+
 def refresh_perms():
     """
     Pre-request handler to ensure permission freshness
@@ -141,6 +142,7 @@ def refresh_perms():
         session["perms_expiry"] = datetime.now() + timedelta(seconds=300)
     return
 
+
 @app.before_request
 def before_hooks():
     funcs = [check_for_maintenance, refresh_perms]
@@ -148,7 +150,7 @@ def before_hooks():
         r = f()
         if r:
             return r
-    
+
 
 @app.route("/")
 def index():
@@ -360,7 +362,7 @@ def register():
 def resend_registration_confirmation():
     try:
         token = jwt.decode(request.form.get("token"), app.config['SECRET_KEY'], algorithms=['HS256'])
-    except Exception as e:
+    except Exception:
         return "Invalid token. Please contact an admin.", 400
     if datetime.strptime(token["expiration"], "%Y-%m-%dT%H:%M:%S.%f") < datetime.utcnow():
         return "Page expired. Please contact an admin.", 400
@@ -370,7 +372,7 @@ def resend_registration_confirmation():
         return "User doesn't exist.", 400
     if user[0]["verified"]:
         return "/login", 302
-    if user[0]['registration_resend_attempts'] >= 2: # allow 2 tries
+    if user[0]['registration_resend_attempts'] >= 2:  # allow 2 tries
         return "You have tried too many times. Please contact an admin.", 400
     if not app.config['TESTING']:
         token = create_jwt({'email': user[0]["email"]}, app.config['SECRET_KEY'])

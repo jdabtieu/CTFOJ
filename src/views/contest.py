@@ -30,16 +30,16 @@ def _insert_user_into_contest(user_id, contest_row):
     if datetime.utcnow() >= parse_datetime(contest_row["end"]):
         return
     db.execute("INSERT INTO contest_users (contest_id, user_id) VALUES(:cid, :uid)",
-                cid=contest_row["id"], uid=user_id)
+               cid=contest_row["id"], uid=user_id)
     db.execute("UPDATE users SET contests_completed=contests_completed+1 WHERE id=?",
-                user_id)
+               user_id)
 
 
 def _get_contest(contest_id: str, access_check: bool = True):
     """
     Retrieves the contest info row if it exists
     If access_check is true, also check that the contest has started or the user is admin
-    
+
     Returns (data, None) if the contest exists, (None, error) otherwise
     """
     data = db.execute("SELECT * FROM contests WHERE id=?", contest_id)
@@ -48,13 +48,13 @@ def _get_contest(contest_id: str, access_check: bool = True):
         return None, redirect("/contests")
     elif not access_check:
         return data[0], None
-    
+
     # Access checks
     start = parse_datetime(data[0]["start"])
     if datetime.utcnow() < start and not check_perm(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"]):
         flash('The contest has not started yet!', 'danger')
         return None, redirect("/contests")
-    
+
     return data[0], None
 
 
@@ -72,13 +72,13 @@ def _get_problem(contest_id: str, problem_id: str, access_check: bool = True):
         return None, (render_template("contest/problem/404.html"), 404)
     elif not access_check:
         return data[0], None
-    
+
     # Access checks
     needs_admin = (data[0]["publish_timestamp"] is None or
                    parse_datetime(data[0]["publish_timestamp"]) > datetime.utcnow())
     if needs_admin and not check_perm(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"]):
         return None, (render_template("contest/problem/404.html"), 404)
-    
+
     return data[0], None
 
 
@@ -88,7 +88,7 @@ def contest(contest_id):
     contest_info, err = _get_contest(contest_id)
     if err:
         return err
-    
+
     title = contest_info["name"]
     scoreboard_key = contest_info["scoreboard_key"]
 
@@ -213,7 +213,7 @@ def contest_notify(contest_id):
     _, err = _get_contest(contest_id, False)
     if err:
         return err
-        
+
     if request.method == "GET":
         return render_template('contest/notify.html')
 
@@ -267,7 +267,7 @@ def contest_problem(contest_id, problem_id):
     if err:
         return err
     problem_info["show_publish_btn"] = (
-        not problem_info["publish_timestamp"] or 
+        not problem_info["publish_timestamp"] or
         parse_datetime(problem_info["publish_timestamp"]) > datetime.utcnow()
     )
 
@@ -350,7 +350,7 @@ def publish_contest_problem(contest_id, problem_id):
     if pdata["publish_timestamp"] and parse_datetime(pdata["publish_timestamp"]) < datetime.utcnow():
         flash('This problem has already been published', 'success')
         return redirect("/contest/" + contest_id + "/problem/" + problem_id)
-    
+
     # Publish the problem
     db.execute(
         ("UPDATE contest_problems SET publish_timestamp=datetime('now') WHERE "
@@ -398,7 +398,7 @@ def edit_contest_problem(contest_id, problem_id):
             or (not new_points and pdata["score_users"] == -1)):
         flash('You have not entered all required fields', 'danger')
         return render_template('contest/problem/edit.html', data=pdata), 400
-    
+
     # Generate actual publish timestamp
     if not pdata["publish_later"]:
         if pdata["publish_timestamp"]:
