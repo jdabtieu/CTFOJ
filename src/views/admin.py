@@ -417,3 +417,71 @@ def preview_homepage():
         props["length"] = db.execute(
             "SELECT COUNT(*) AS cnt FROM announcements")[0]["cnt"]
     return render_template(f"home_fragment/home{template_type}.html", props=props)
+
+
+@api.route("/staticpages")
+@perm_required(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"])
+def list_static_pages():
+    data = db.execute("SELECT * FROM static_pages")
+    return render_template("admin/staticpages.html", data=data)
+
+@api.route("/staticpages/create", methods=["GET", "POST"])
+@perm_required(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"])
+def create_static_page():
+    if request.method == "GET":
+        return render_template("admin/createstaticpage.html")
+    
+    # Reached via POST
+    title = request.form.get("title")
+    path = request.form.get("path")
+    content = request.form.get("content")
+
+    if not title or not path or not content:
+        flash('You have not entered all required fields', 'danger')
+        return render_template("admin/createstaticpage.html"), 400
+    path = path.strip().strip('/').lower()
+
+    db.execute("INSERT INTO static_pages (title, path, content) VALUES (?, ?, ?)",
+               title, path, content)
+    return redirect("/admin/staticpages")
+
+@api.route("/staticpages/delete", methods=["POST"])
+@perm_required(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"])
+def delete_static_page():
+    page_id = request.form.get("page_id")
+    if not page_id:
+        return "Must provide page ID", 400
+
+    r = db.execute("DELETE FROM static_pages WHERE id=?", page_id)
+    if r == 0:
+        flash("That page doesn't exist", "warning")
+        return redirect("/admin/staticpages")
+
+    return redirect("/admin/staticpages")
+
+@api.route("/staticpages/edit/<pid>", methods=["GET", "POST"])
+@perm_required(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"])
+def edit_static_page(pid):
+    data = db.execute("SELECT * FROM static_pages WHERE id=?", pid)
+    if len(data) == 0:
+        flash('That page does not exist', 'danger')
+        return redirect("/admin/staticpages")
+
+    data = data[0]
+    if request.method == "GET":
+        return render_template("admin/editstaticpage.html", data=data)
+    
+    # Reached via POST
+    title = request.form.get("title")
+    path = request.form.get("path")
+    content = request.form.get("content")
+
+    if not title or not path or not content:
+        flash('You have not entered all required fields', 'danger')
+        return render_template("admin/editstaticpage.html"), 400
+    path = path.strip().strip('/').lower()
+
+    db.execute("UPDATE static_pages SET title=?, path=?, content=? WHERE id=?",
+               title, path, content, pid)
+    flash("Page successfully updated", "success")
+    return redirect("/admin/staticpages")

@@ -1,0 +1,43 @@
+{% extends "layout.html" %}
+
+{% block title %}Edit Static Page{% endblock %}
+{% block active %}Admin Console{% endblock %}
+
+{% block main %}
+<h1>Edit Static Page</h1>
+<form autocomplete="off" method="post" id="edit" name="edit">
+    <div class="form-floating">
+        <input autofocus
+               class="form-control mb-3"
+               name="title"
+               id="title"
+               placeholder="Title"
+               value="{{ data['title'] }}"
+               required>
+        <label for="title">Title</label>
+    </div>
+    <div class="flex">
+        <p style="margin: auto 4px auto 0;">/page/</p>
+        <div class="form-floating" style="flex: 1;">
+            <input autofocus
+                class="form-control mb-3"
+                name="path"
+                id="path"
+                placeholder="Path"
+                value="{{ data['path'] }}"
+                required>
+            <label for="name">Path</label>
+        </div>
+    </div>
+    <div style="display: flex;">
+        <textarea class="form-control mb-3"
+            id="content"
+            name="content"
+            rows="20"
+            placeholder="HTML Content"
+            required>{{ data['content'] }}</textarea>
+    </div>
+    <input class="btn btn-primary" type="submit" id="submit" name="submit" value="Edit">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+</form>
+{% endblock %}

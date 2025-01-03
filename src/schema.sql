@@ -84,3 +84,9 @@ CREATE TABLE 'contest_problems' (
     'instanced' boolean NOT NULL DEFAULT(0),
     UNIQUE(contest_id, problem_id) ON CONFLICT ABORT
 );
+CREATE TABLE 'static_pages' (
+    'id' integer PRIMARY KEY NOT NULL,
+    'title' varchar(256) NOT NULL,
+    'path' varchar(256) NOT NULL UNIQUE,
+    'content' text NOT NULL
+);

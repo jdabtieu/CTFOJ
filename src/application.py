@@ -882,6 +882,17 @@ def ranking():
                            is_ongoing_contest=is_ongoing_contest)
 
 
+@app.route('/page/<path:path>')
+def static_page(path):
+    path = path.strip().strip('/').lower()
+    page = db.execute("SELECT * FROM static_pages WHERE path=?", path)
+    if len(page) == 0:
+        return abort(404)
+    
+    return render_template("staticpage.html", data=page[0])
+    
+
+
 # Error handling
 def errorhandler(e):
     if not isinstance(e, HTTPException):

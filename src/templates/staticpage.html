@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="theme-color" content="#0d6efd">
+
+        <title>{{ data['title'] }} | {{ CLUB_NAME }}</title>
+    </head>
+    <body style="margin: 0; padding: 0; overflow: hidden;">
+        <template id="data">
+            {{ data['content'] }}
+        </template>
+        <iframe referrerpolicy="no-referrer"
+            sandbox="allow-downloads allow-forms allow-modals allow-pointer-lock allow-popups allow-presentation allow-scripts"
+            style="width: 100vw; height: 100vh; border: none;">
+        </iframe>
+        <script id="loader">
+            const data = document.getElementById('data').content.textContent;
+            document.querySelector('iframe').srcdoc = data;
+            document.getElementById('data').remove();
+            document.getElementById('loader').remove();
+        </script>
+    </body>
+</html>

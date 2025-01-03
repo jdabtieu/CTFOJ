@@ -1,0 +1,70 @@
+{% extends "layout.html" %}
+
+{% block title %}Static Pages{% endblock %}
+{% block active %}Admin Console{% endblock %}
+
+{% block main %}
+<h1>Static Pages <a class="btn btn-primary" href="/admin/staticpages/create" role="button">Create New</a></h1>
+<div id="confirm" style="display: none;">
+    <form method="post" style="margin-bottom: 1rem;">
+        <input class="btn btn-danger" type="submit">
+        <input type="hidden" name="page_id">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+    </form>
+</div>
+<div class="flex-desktop">
+    <div style="flex: 3; overflow-x: auto;">
+        <table class="table table-hover table-full-width">
+            <thead class="table-dark">
+                <tr>
+                    <th scope="col" style="width: 45%;">Title</th>
+                    <th scope="col" style="width: 45%;">Path</th>
+                    <th scope="col" style="width: 10%;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in data %}
+                <tr>
+                    <td class="page-title">{{ row["title"] }}</td>
+                    <td><a href="/page/{{ row['path'] }}">/page/{{ row["path"] }}</a></td>
+                    <td data-id="{{ row['id'] }}">
+                        <a href="/admin/staticpages/edit/{{ row['id'] }}">
+                            <img src="/assets/images/pencil.svg"
+                                 onerror="this.src='/assets/images/pencil.png'"
+                                 class="icon"
+                                 alt="Edit page"
+                                 title="Edit page">
+                        </a>
+                        <a href="#">
+                            <img src="/assets/images/trash.svg"
+                                 onerror="this.src='/assets/images/trash.png'"
+                                 class="icon pages-delete"
+                                 alt="Delete page"
+                                 title="Delete page">
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+    function createForm(msg, path, userId) {
+        document.getElementById("confirm").style.display = "";
+        document.querySelector("#confirm .btn").setAttribute("value", msg);
+        document.querySelector("#confirm form").setAttribute("action", path);
+        document.querySelector("#confirm input[name=page_id]").setAttribute("value", userId);
+    }
+
+    for (let node of document.getElementsByClassName("pages-delete")) {
+        node.parentElement.addEventListener("click", function() {
+            var title = this.parentElement.parentElement.querySelector(".page-title").textContent;
+            var msg = `Are you sure you want to delete ${title}? Click here to confirm.`;
+            createForm(msg, "/admin/staticpages/delete", this.parentElement.getAttribute("data-id"));
+        });
+    }
+</script>
+{% endblock %}
