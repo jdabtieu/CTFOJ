@@ -35,22 +35,43 @@ def _insert_user_into_contest(user_id, contest_row):
                 user_id)
 
 
+def _get_contest(contest_id):
+    """
+    Retrieves the contest with contest_id or None if it does not exist
+    """
+    data = db.execute("SELECT * FROM contests WHERE id=?", contest_id)
+    return None if len(data) == 0 else data[0]
+
+
+def _basic_access_check(contest_id: str):
+    """
+    Checks that:
+    - the contest exists
+    - the contest has started or the user is admin
+    Returns the contest info row if it exists, error and status code otherwise
+    """
+    contest_info = _get_contest(contest_id)
+    if not contest_info:
+        flash('That contest does not exist', 'danger')
+        return None, redirect("/contests")
+    
+    start = parse_datetime(contest_info["start"])
+    if datetime.utcnow() < start and not check_perm(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"]):
+        flash('The contest has not started yet!', 'danger')
+        return None, redirect("/contests")
+    
+    return contest_info, None
+
+
 @api.route("/<contest_id>")
 @login_required
 def contest(contest_id):
-    # Ensure contest exists
-    contest_info = db.execute("SELECT * FROM contests WHERE id=:cid", cid=contest_id)
-    if len(contest_info) != 1:
-        return render_template("contest/404.html"), 404
-
-    # Ensure contest started or user is admin
-    start = parse_datetime(contest_info[0]["start"])
-    if datetime.utcnow() < start and not check_perm(["ADMIN", "SUPERADMIN"]):
-        flash('The contest has not started yet!', 'danger')
-        return redirect("/contests")
-
-    title = contest_info[0]["name"]
-    scoreboard_key = contest_info[0]["scoreboard_key"]
+    contest_info, err = _basic_access_check(contest_id)
+    if err:
+        return err
+    
+    title = contest_info["name"]
+    scoreboard_key = contest_info["scoreboard_key"]
 
     db.execute("BEGIN")
     user_info = db.execute(
@@ -58,7 +79,7 @@ def contest(contest_id):
         cid=contest_id, uid=session["user_id"])
 
     if len(user_info) == 0:
-        _insert_user_into_contest(session["user_id"], contest_info[0])
+        _insert_user_into_contest(session["user_id"], contest_info)
     db.execute("COMMIT")
 
     user_solved = set([x["problem_id"] for x in db.execute(
@@ -98,15 +119,13 @@ def contest(contest_id):
 @api.route('/<contest_id>/edit', methods=["GET", "POST"])
 @perm_required(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"])
 def editcontest(contest_id):
-    data = db.execute("SELECT * FROM contests WHERE id=:cid", cid=contest_id)
-
-    # Ensure contest exists
-    if len(data) == 0:
+    data = _get_contest(contest_id)
+    if not data:
         flash('That contest does not exist', 'danger')
         return redirect("/contests")
 
     if request.method == "GET":
-        return render_template('contest/edit.html', data=data[0])
+        return render_template('contest/edit.html', data=data)
 
     # Reached via POST
     new_name = request.form.get("name")
@@ -117,10 +136,10 @@ def editcontest(contest_id):
 
     if not new_name:
         flash('Name cannot be empty', 'danger')
-        return render_template('contest/edit.html', data=data[0]), 400
+        return render_template('contest/edit.html', data=data), 400
     if not new_description:
         flash('Description cannot be empty', 'danger')
-        return render_template('contest/edit.html', data=data[0]), 400
+        return render_template('contest/edit.html', data=data), 400
 
     # Ensure start and end dates are valid
     check_start = datetime.strptime(start, "%Y-%m-%dT%H:%M:%S.%fZ")
@@ -144,9 +163,9 @@ def editcontest(contest_id):
 @api.route("/<contest_id>/delete", methods=["GET", "POST"])
 @perm_required(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"])
 def delete_contest(contest_id):
-    # Ensure contest exists
-    if not contest_exists(contest_id):
-        return render_template("contest/404.html")
+    if not _get_contest(contest_id):
+        flash('That contest does not exist', 'danger')
+        return redirect("/contests")
 
     if request.method == "GET":
         return render_template("contest/delete_confirm.html", data=contest_id)
@@ -173,6 +192,10 @@ def delete_contest(contest_id):
 @api.route("/<contest_id>/notify", methods=['GET', 'POST'])
 @admin_required
 def contest_notify(contest_id):
+    if not _get_contest(contest_id):
+        flash('That contest does not exist', 'danger')
+        return redirect("/contests")
+        
     if request.method == "GET":
         return render_template('contest/notify.html')
 
@@ -202,31 +225,24 @@ def contest_notify(contest_id):
 @api.route("/<contest_id>/drafts")
 @perm_required(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"])
 def contest_drafts(contest_id):
-    # Ensure contest exists
-    contest_info = db.execute("SELECT * FROM contests WHERE id=:cid", cid=contest_id)
-    if len(contest_info) != 1:
-        return render_template("contest/404.html"), 404
+    contest_info = _get_contest(contest_id)
+    if not contest_info:
+        flash('That contest does not exist', 'danger')
+        return redirect("/contests")
 
     data = db.execute("SELECT * FROM contest_problems WHERE contest_id=:cid AND status=1",
                       cid=contest_id)
 
     return render_template("contest/list_draft_problems.html",
-                           title=contest_info[0]["name"], data=data)
+                           title=contest_info["name"], data=data)
 
 
 @api.route("/<contest_id>/problem/<problem_id>", methods=["GET", "POST"])
 @login_required
 def contest_problem(contest_id, problem_id):
-    # Ensure contest and problem exist
-    if not contest_exists(contest_id):
-        return render_template("contest/404.html"), 404
-
-    # Ensure contest started or user is admin
-    contest_info = db.execute("SELECT * FROM contests WHERE id=?", contest_id)
-    if (datetime.utcnow() < parse_datetime(contest_info[0]["start"])
-            and not check_perm(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"])):
-        flash('The contest has not started yet!', 'danger')
-        return redirect("/contests")
+    contest_info, err = _basic_access_check(contest_id)
+    if err:
+        return err
 
     check = db.execute(("SELECT * FROM contest_problems WHERE contest_id=:cid AND "
                         "problem_id=:pid"),
@@ -247,7 +263,7 @@ def contest_problem(contest_id, problem_id):
     # Reached via POST
 
     # Ensure contest hasn't ended
-    if contest_ended(db.execute("SELECT end FROM contests WHERE id=:id", id=contest_id)):
+    if contest_ended(contest_info):
         flash('This contest has ended', 'danger')
         return render_template("contest/problem/problem.html", data=check[0]), 400
 
@@ -258,7 +274,7 @@ def contest_problem(contest_id, problem_id):
         flash('You are banned from this contest', 'danger')
         return render_template("contest/problem/problem.html", data=check[0])
     if len(user) == 0:
-        _insert_user_into_contest(session["user_id"], contest_info[0])
+        _insert_user_into_contest(session["user_id"], contest_info)
 
     if not check[0]["solved"]:
         submit_rate_limited = check_submit_rate_limit(contest_id, problem_id)
@@ -307,7 +323,7 @@ def contest_problem(contest_id, problem_id):
 @api.route("/<contest_id>/problem/<problem_id>/publish", methods=["POST"])
 @perm_required(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"])
 def publish_contest_problem(contest_id, problem_id):
-    if not contest_exists(contest_id):
+    if not _get_contest(contest_id):
         return render_template("contest/404.html"), 404
 
     r = db.execute(
@@ -326,7 +342,7 @@ def publish_contest_problem(contest_id, problem_id):
 @perm_required(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"])
 def edit_contest_problem(contest_id, problem_id):
     # Ensure contest exists
-    if not contest_exists(contest_id):
+    if not _get_contest(contest_id):
         return render_template("contest/404.html"), 404
 
     # Ensure problem exists
@@ -406,13 +422,12 @@ def edit_contest_problem(contest_id, problem_id):
 @api.route("/<contest_id>/scoreboard")
 @login_required
 def contest_scoreboard(contest_id):
-    # Ensure contest exists
-    contest_info = db.execute("SELECT * FROM contests WHERE id=:cid", cid=contest_id)
-    if len(contest_info) != 1:
-        return render_template("contest/404.html"), 404
+    contest_info, err = _basic_access_check(contest_id)
+    if err:
+        return err
 
     # Ensure proper permissions
-    if not (contest_info[0]["scoreboard_visible"] or check_perm(["ADMIN", "SUPERADMIN"])):
+    if not (contest_info["scoreboard_visible"] or check_perm(["ADMIN", "SUPERADMIN"])):
         flash('You are not allowed to view the scoreboard!', 'danger')
         return redirect("/contest/" + contest_id)
 
@@ -441,12 +456,12 @@ def contest_scoreboard(contest_id):
             cid=contest_id, uid=session["user_id"])
 
     return render_template("contest/scoreboard.html",
-                           title=contest_info[0]["name"], data=data, hidden=hidden)
+                           title=contest_info["name"], data=data, hidden=hidden)
 
 
 def _contest_hide(contest_id, hide_enum, hide_msg):
     # Ensure contest exists
-    if not contest_exists(contest_id):
+    if not _get_contest(contest_id):
         return render_template("contest/404.html"), 404
 
     user_id = request.form.get("user_id")
@@ -484,7 +499,7 @@ def _contest_hide(contest_id, hide_enum, hide_msg):
 
 def _contest_unhide(contest_id, hide_msg):
     # Ensure contest exists
-    if not contest_exists(contest_id):
+    if not _get_contest(contest_id):
         return render_template("contest/404.html"), 404
 
     user_id = request.form.get("user_id")
@@ -552,10 +567,10 @@ def contest_unhide(contest_id):
 @perm_required(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"])
 def contest_add_problem(contest_id):
     # Ensure contest exists
-    contest_info = db.execute(
-        "SELECT * FROM contests WHERE id=:cid", cid=contest_id)
-    if len(contest_info) != 1:
-        return render_template("contest/404.html"), 404
+    contest_info = _get_contest(contest_id)
+    if not contest_info:
+        flash('That contest does not exist', 'danger')
+        return redirect("/contests")
 
     # Ensure contest hasn't ended
     if contest_ended(contest_info):
@@ -654,9 +669,10 @@ def contest_add_problem(contest_id):
 @perm_required(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"])
 def export_contest_problem(contest_id, problem_id):
     # Ensure contest exists
-    cdata = db.execute("SELECT * FROM contests WHERE id=:cid", cid=contest_id)
-    if len(cdata) != 1:
-        return render_template("contest/404.html"), 404
+    cdata = _get_contest(contest_id)
+    if not cdata:
+        flash('That contest does not exist', 'danger')
+        return redirect("/contests")
 
     # Ensure problem exists
     pdata = db.execute(
@@ -673,7 +689,7 @@ def export_contest_problem(contest_id, problem_id):
     # Reached via POST
 
     new_id = contest_id + "-" + problem_id  # this should be safe already
-    new_name = cdata[0]["name"] + " - " + pdata[0]["name"]
+    new_name = cdata["name"] + " - " + pdata[0]["name"]
     new_points = request.form.get("point_value") or pdata[0]["point_value"]
 
     # Insert into problems databases
@@ -738,15 +754,9 @@ def contest_submissions(contest_id):
         return redirect("/admin/submissions?contest_id=" + contest_id)
 
     # Ensure contest exists
-    contest_info = db.execute("SELECT * FROM contests WHERE id=?", contest_id)
-    if len(contest_info) != 1:
-        return render_template("contest/404.html"), 404
-
-    # Ensure contest started or user is admin
-    start = parse_datetime(contest_info[0]["start"])
-    if datetime.utcnow() < start:
-        flash('The contest has not started yet!', 'danger')
-        return redirect("/contests")
+    _, err = _basic_access_check(contest_id)
+    if err:
+        return err
 
     submissions = None
 

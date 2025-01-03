@@ -3,7 +3,7 @@ CREATE TABLE 'users' (
     'username' varchar(20) NOT NULL UNIQUE,
     'password' varchar(64) NOT NULL,
     'email' varchar(128) UNIQUE,
-    'join_date' datetime NOT NULL DEFAULT(0),
+    'join_date' datetime NOT NULL DEFAULT(datetime('now')),
     'banned' boolean NOT NULL DEFAULT(0),
     'verified' boolean NOT NULL DEFAULT(0),
     'twofa' boolean NOT NULL DEFAULT(0),

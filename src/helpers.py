@@ -296,13 +296,6 @@ def update_dyn_score(contest_id, problem_id, update_curr_user=True, d_solves=1):
                point_change=point_diff, cid=contest_id, pid=problem_id)
 
 
-def contest_exists(contest_id):
-    """
-    Checks if the contest with contest_id exists
-    """
-    return len(db.execute("SELECT * FROM contests WHERE id=:id", id=contest_id)) == 1
-
-
 def login_chk(rows):
     """
     Determines if the user is allowed to login
@@ -366,9 +359,8 @@ def contest_ended(info):
     """
     Determine if the contest from db query info has ended
     Returns whether the contest is over or not
-    info should be an array (len 1) of a dict representing the contest data from the db
     """
-    end = parse_datetime(info[0]["end"])
+    end = parse_datetime(info["end"])
     return datetime.utcnow() > end
 
 
