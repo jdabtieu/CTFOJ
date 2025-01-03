@@ -107,9 +107,22 @@
         <input type="checkbox" name="instanced">
     </div>
     <input class="form-control mb-3" type="file" id="file" name="file" accept=".zip">
-    <div class="form-control mb-3" style="border: 0;">
-        <input type="checkbox" id="draft" name="draft">
-        <label for="draft">Draft?</label>
+    <div class="mb-3 toggle-input">
+        <div style="width: 300px;">
+            <span>Publish Now</span>
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" name="draft">
+            </div>
+            <span>Publish Later</span>
+        </div>
+        <div class="form-floating" style="width: 100%;">
+            <input class="form-control"
+                type="datetime-local"
+                id="publish_timestamp"
+                name="publish_timestamp"
+                placeholder="Publish Time (optional)">
+            <label for="publish_timestamp">Publish Time (optional)</label>
+        </div>
     </div>
     <input class="btn btn-primary" type="submit" id="submit" name="submit" value="Create">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
@@ -176,6 +189,15 @@
         document.getElementById("score-dynamic")
                 .querySelectorAll("input")
                 .forEach(e => e.setAttribute("required", ""));
+    }
+
+    document.querySelector("form").onsubmit = function(event) {
+        var formPub = this.querySelector("#publish_timestamp");
+        if (formPub.value !== "") {
+            var pub = new Date(formPub.value).toISOString();
+            formPub.setAttribute("type", "text");
+            formPub.value = pub;
+        }
     }
 </script>
 {% endblock %}

@@ -76,7 +76,7 @@ CREATE TABLE 'contest_problems' (
     'point_value' integer NOT NULL DEFAULT(0),
     'category' varchar(64),
     'flag' varchar(256) NOT NULL,
-    'status' integer NOT NULL DEFAULT(0), -- 0: published, 1: draft
+    'publish_timestamp' datetime DEFAULT(datetime('now')),
     'score_min' integer NOT NULL DEFAULT(0),
     'score_max' integer NOT NULL DEFAULT(0),
     'score_users' integer NOT NULL DEFAULT(-1),

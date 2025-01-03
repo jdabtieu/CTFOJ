@@ -221,17 +221,12 @@ def dl_file(problem_id):
 @app.route("/dl/<contest_id>/<problem_id>.zip")
 @login_required
 def dl_contest(contest_id, problem_id):
-    contest = db.execute("SELECT * FROM contests WHERE id=?", contest_id)
-    if len(contest) == 0:
+    from views.contest import _get_contest, _get_problem
+    _, err = _get_contest(contest_id)
+    if err:
         return abort(404)
-    # Ensure contest started or user is admin
-    start = parse_datetime(contest[0]["start"])
-    if datetime.utcnow() < start and not check_perm(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"]):
-        return abort(404)
-    problem = db.execute(("SELECT * FROM contest_problems WHERE contest_id=? "
-                          "AND problem_id=?"), contest_id, problem_id)
-    if len(problem) == 0 or (problem[0]["status"] == PROBLEM_STAT["DRAFT"] and
-                             not check_perm(["ADMIN", "SUPERADMIN"])):
+    _, err = _get_problem(contest_id, problem_id)
+    if err:
         return abort(404)
     return send_from_directory("dl/", f"{contest_id}/{problem_id}.zip",
                                as_attachment=True)

@@ -38,15 +38,18 @@ db.execute("""CREATE TABLE 'contest_problems_migration' (
     'point_value' integer NOT NULL DEFAULT(0),
     'category' varchar(64),
     'flag' varchar(256) NOT NULL,
-    'status' integer NOT NULL DEFAULT(0),
+    'publish_timestamp' datetime DEFAULT(datetime('now')),
     'score_min' integer NOT NULL DEFAULT(0),
     'score_max' integer NOT NULL DEFAULT(0),
     'score_users' integer NOT NULL DEFAULT(-1),
     'flag_hint' varchar(256) NOT NULL DEFAULT(''),
     'instanced' boolean NOT NULL DEFAULT(0),
     UNIQUE(contest_id, problem_id) ON CONFLICT ABORT
-)""")
+);
+""")
 db.execute("INSERT INTO contest_problems_migration SELECT contest_id, problem_id, name, point_value, category, flag, draft, score_min, score_max, score_users, flag_hint, instanced FROM contest_problems")
+db.execute("UPDATE contest_problems_migration SET publish_timestamp = datetime('now') WHERE publish_timestamp = 0")
+db.execute("UPDATE contest_problems_migration SET publish_timestamp = NULL WHERE publish_timestamp = 1")
 db.execute("DROP TABLE contest_problems")
 db.execute("ALTER TABLE contest_problems_migration RENAME TO contest_problems")
 

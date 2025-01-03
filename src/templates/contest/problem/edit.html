@@ -4,7 +4,7 @@
 {% block active %}Contests{% endblock %}
 
 {% block preload %}
-<link rel="preload" href="/api/contest/problem/description?cid={{ request.path.split('/')[2] }}&pid={{ request.path.split('/')[4] }}" as="fetch" crossorigin="anonymous">
+<link rel="preload" href="/api/contest/problem?cid={{ request.path.split('/')[2] }}&pid={{ request.path.split('/')[4] }}" as="fetch" crossorigin="anonymous">
 {% endblock %}
 
 {% block main %}
@@ -84,6 +84,33 @@
         <label class="input-group-text" for="file">New File (optional)</label>
         <input class="form-control" type="file" id="file" name="file" accept=".zip">
     </div>
+    <div class="mb-3 toggle-input">
+        <div style="width: 300px;">
+            <span>Publish Now</span>
+            <div class="form-check form-switch">
+                <input class="form-check-input"
+                    type="checkbox"
+                    name="draft"
+                    {{ 'checked' if data['publish_later'] else 'disabled' }}>
+            </div>
+            <span>Publish Later</span>
+        </div>
+        <div class="form-floating" style="width: 100%;">
+            <input
+                {% if data['publish_timestamp'] %}
+                    class="form-control dtl"
+                {% else %}
+                    class="form-control"
+                {% endif %}
+                type="datetime-local"
+                id="publish_timestamp"
+                name="publish_timestamp"
+                placeholder="Publish Time (optional)"
+                {% if data['publish_timestamp'] %} value="{{ data['publish_timestamp'] }}" {% endif %}
+                {% if not data['publish_later'] %} disabled {% endif %}>
+            <label for="publish_timestamp">Publish Time (optional)</label>
+        </div>
+    </div>
     <input class="btn btn-primary" type="submit" id="submit" name="submit" value="Submit">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 </form>
@@ -141,5 +168,27 @@
         hints.value = b["data"]["hints"];
         updateHints();
     });
+
+    document.querySelectorAll(".dtl").forEach(function (e) {
+        var split = e.getAttribute("value").split(" ");
+        var dateSplit = split[0].split("-");
+        var final = dateSplit[1] + "/" + dateSplit[2] + "/" + dateSplit[0] + " " + split[1];
+        var parsed = new Date(final + " UTC").toString().split(" ");
+        e.value = `${ parsed[3] }-${ getMonthFromString(parsed[1]) }-${ parsed[2] }T${ parsed[4] }`;
+
+        function getMonthFromString(mon) {
+            var str = (new Date(Date.parse(mon + " 1, 2012")).getMonth() + 1).toString();
+            return str.length == 2 ? str : "0" + str;
+        }
+    });
+
+    document.querySelector("form").onsubmit = function(event) {
+        var formPub = this.querySelector("#publish_timestamp");
+        if (formPub.value !== "") {
+            var pub = new Date(formPub.value).toISOString();
+            formPub.setAttribute("type", "text");
+            formPub.value = pub;
+        }
+    }
 </script>
 {% endblock %}
