@@ -24,7 +24,7 @@ def problem(problem_id):
     # Ensure problem exists
     if len(data) != 1 or (data[0]["status"] == PROBLEM_STAT["DRAFT"] and
             not check_perm(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER", "CONTENT_MANAGER"])):  # noqa
-        return render_template("problem/problem_noexist.html"), 404
+        return render_template("problem/404.html"), 404
 
     data[0]["editorial"] = read_file(f"metadata/problems/{problem_id}/editorial.md")
     data[0]["solved"] = db.execute(("SELECT COUNT(*) AS cnt FROM problem_solved WHERE "
@@ -78,7 +78,7 @@ def change_problem_status(problem_id):
 
     # Ensure problem exists
     if len(data) != 1:
-        return render_template("problem/problem_noexist.html"), 404
+        return render_template("problem/404.html"), 404
 
     new_status = request.form.get("status")
     new_stat_code = PROBLEM_STAT.get(new_status)
@@ -103,13 +103,13 @@ def problem_editorial(problem_id):
 
     # Ensure problem exists
     if len(data) == 0:
-        return render_template("problem/problem_noexist.html"), 404
+        return render_template("problem/404.html"), 404
 
     if (data[0]["status"] == PROBLEM_STAT["DRAFT"] and
             not check_perm(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER", "CONTENT_MANAGER"])):  # noqa
-        return render_template("problem/problem_noexist.html"), 404
+        return render_template("problem/404.html"), 404
 
-    return render_template('problem/problemeditorial.html', data=data[0])
+    return render_template('problem/editorial.html', data=data[0])
 
 
 @api.route('<problem_id>/edit', methods=["GET", "POST"])
@@ -120,10 +120,10 @@ def editproblem(problem_id):
 
     # Ensure problem exists
     if len(data) == 0:
-        return render_template("problem/problem_noexist.html"), 404
+        return render_template("problem/404.html"), 404
 
     if request.method == "GET":
-        return render_template('problem/edit_problem.html', data=data[0])
+        return render_template('problem/problem_edit.html', data=data[0])
 
     # Reached via POST
 
@@ -138,12 +138,12 @@ def editproblem(problem_id):
 
     if not new_name or not new_description or not new_category or not new_points:
         flash('You have not entered all required fields', 'danger')
-        return render_template('problem/edit_problem.html', data=data[0]), 400
+        return render_template('problem/problem_edit.html', data=data[0]), 400
 
     if new_flag:
         if not verify_flag(new_flag):
             flash('Invalid flag', 'danger')
-            return render_template('problem/edit_problem.html', data=data[0]), 400
+            return render_template('problem/problem_edit.html', data=data[0]), 400
         if request.form.get("rejudge"):
             db.execute("UPDATE submissions SET correct=0 WHERE problem_id=:pid",
                        pid=problem_id)
@@ -206,10 +206,10 @@ def problem_editeditorial(problem_id):
 
     # Ensure problem exists
     if len(data) == 0:
-        return render_template("problem/problem_noexist.html"), 404
+        return render_template("problem/404.html"), 404
 
     if request.method == "GET":
-        return render_template('problem/edit_editorial.html', data=data[0])
+        return render_template('problem/editorial_edit.html', data=data[0])
 
     # Reached via POST
 
@@ -233,7 +233,7 @@ def delete_problem(problem_id):
     data = db.execute("SELECT * FROM problems WHERE id=?", problem_id)
     if len(data) == 0:
         db.execute("COMMIT")
-        return render_template("problem/problem_noexist.html"), 404
+        return render_template("problem/404.html"), 404
     db.execute("DELETE FROM problems WHERE id=:pid", pid=problem_id)
     db.execute(
         ("UPDATE users SET total_points=total_points-:pv, "

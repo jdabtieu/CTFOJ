@@ -6,7 +6,7 @@
 {% block main %}
 <h1>Nonexistent problem</h1>
 <div>
-    The problem with id {{ request.path.split("/")[4] }} does not exist.
+    This problem either does not exist or is not published yet.
 </div>
 <a href="/contest/{{ request.path.split('/')[2] }}">Back to contest</a>
 {% endblock %}

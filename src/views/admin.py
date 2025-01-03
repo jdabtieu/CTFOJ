@@ -269,13 +269,13 @@ def verify_user():
 @perm_required(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"])
 def createannouncement():
     if request.method == "GET":
-        return render_template("admin/createannouncement.html")
+        return render_template("admin/announcement_create.html")
 
     # Reached via POST
 
     if not request.form.get("name") or not request.form.get("description"):
         flash('You have not entered all required fields', 'danger')
-        return render_template("admin/createannouncement.html"), 400
+        return render_template("admin/announcement_create.html"), 400
 
     name = request.form.get("name")
     description = request.form.get("description").replace('\r', '')
@@ -324,7 +324,7 @@ def editannouncement(aid):
     data[0]["description"] = read_file('metadata/announcements/' + aid + '.md')
 
     if request.method == "GET":
-        return render_template('admin/editannouncement.html', data=data[0])
+        return render_template('admin/announcement_edit.html', data=data[0])
 
     # Reached via POST
     new_name = request.form.get("name")
@@ -332,10 +332,10 @@ def editannouncement(aid):
 
     if not new_name:
         flash('Name cannot be empty', 'danger')
-        return render_template('admin/editannouncement.html', data=data[0]), 400
+        return render_template('admin/announcement_edit.html', data=data[0]), 400
     if not new_description:
         flash('Description cannot be empty', 'danger')
-        return render_template('admin/editannouncement.html', data=data[0]), 400
+        return render_template('admin/announcement_edit.html', data=data[0]), 400
 
     # Update database
     db.execute("UPDATE announcements SET name=:name WHERE id=:aid",
@@ -379,7 +379,7 @@ def disable_maintenance():
 def edit_homepage():
     data = read_file(app.config['HOMEPAGE_FILE'])[2:]
     if request.method == "GET":
-        return render_template("admin/edithomepage.html", data=data)
+        return render_template("admin/homepage_edit.html", data=data)
 
     # Reached via POST
 
@@ -388,7 +388,7 @@ def edit_homepage():
 
     if not content:
         flash('To disable the homepage, edit settings.py instead', 'danger')
-        return render_template("admin/edithomepage.html", data=data), 400
+        return render_template("admin/homepage_edit.html", data=data), 400
     if not layout_method or layout_method not in ["1", "2"]:
         layout_method = "1"
 

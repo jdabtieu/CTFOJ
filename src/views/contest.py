@@ -41,7 +41,7 @@ def contest(contest_id):
     # Ensure contest exists
     contest_info = db.execute("SELECT * FROM contests WHERE id=:cid", cid=contest_id)
     if len(contest_info) != 1:
-        return render_template("contest/contest_noexist.html"), 404
+        return render_template("contest/404.html"), 404
 
     # Ensure contest started or user is admin
     start = parse_datetime(contest_info[0]["start"])
@@ -146,7 +146,7 @@ def editcontest(contest_id):
 def delete_contest(contest_id):
     # Ensure contest exists
     if not contest_exists(contest_id):
-        return render_template("contest/contest_noexist.html")
+        return render_template("contest/404.html")
 
     if request.method == "GET":
         return render_template("contest/delete_confirm.html", data=contest_id)
@@ -205,12 +205,12 @@ def contest_drafts(contest_id):
     # Ensure contest exists
     contest_info = db.execute("SELECT * FROM contests WHERE id=:cid", cid=contest_id)
     if len(contest_info) != 1:
-        return render_template("contest/contest_noexist.html"), 404
+        return render_template("contest/404.html"), 404
 
     data = db.execute("SELECT * FROM contest_problems WHERE contest_id=:cid AND status=1",
                       cid=contest_id)
 
-    return render_template("contest/draft_problems.html",
+    return render_template("contest/list_draft_problems.html",
                            title=contest_info[0]["name"], data=data)
 
 
@@ -219,7 +219,7 @@ def contest_drafts(contest_id):
 def contest_problem(contest_id, problem_id):
     # Ensure contest and problem exist
     if not contest_exists(contest_id):
-        return render_template("contest/contest_noexist.html"), 404
+        return render_template("contest/404.html"), 404
 
     # Ensure contest started or user is admin
     contest_info = db.execute("SELECT * FROM contests WHERE id=?", contest_id)
@@ -233,7 +233,7 @@ def contest_problem(contest_id, problem_id):
                        cid=contest_id, pid=problem_id)
     if len(check) != 1 or (check[0]["status"] == PROBLEM_STAT["DRAFT"]
             and not check_perm(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"])):
-        return render_template("contest/contest_problem_noexist.html"), 404
+        return render_template("contest/problem/404.html"), 404
 
     # Check if problem is solved
     check[0]["solved"] = db.execute(
@@ -242,21 +242,21 @@ def contest_problem(contest_id, problem_id):
         contest_id, problem_id, session["user_id"])[0]["cnt"]
 
     if request.method == "GET":
-        return render_template("contest/contest_problem.html", data=check[0])
+        return render_template("contest/problem/problem.html", data=check[0])
 
     # Reached via POST
 
     # Ensure contest hasn't ended
     if contest_ended(db.execute("SELECT end FROM contests WHERE id=:id", id=contest_id)):
         flash('This contest has ended', 'danger')
-        return render_template("contest/contest_problem.html", data=check[0]), 400
+        return render_template("contest/problem/problem.html", data=check[0]), 400
 
     # Check if user is banned from this contest
     user = db.execute("SELECT * FROM contest_users WHERE user_id=? AND contest_id=?",
                       session["user_id"], contest_id)
     if len(user) > 0 and user[0]["hidden"] == CUser.BANNED.value:
         flash('You are banned from this contest', 'danger')
-        return render_template("contest/contest_problem.html", data=check[0])
+        return render_template("contest/problem/problem.html", data=check[0])
     if len(user) == 0:
         _insert_user_into_contest(session["user_id"], contest_info[0])
 
@@ -264,12 +264,12 @@ def contest_problem(contest_id, problem_id):
         submit_rate_limited = check_submit_rate_limit(contest_id, problem_id)
         if submit_rate_limited:
             flash(submit_rate_limited, 'warning')
-            return render_template("contest/contest_problem.html", data=check[0]), 400
+            return render_template("contest/problem/problem.html", data=check[0]), 400
 
     flag = request.form.get("flag")
     if not flag or not verify_flag(flag):
         flash('Invalid flag', 'danger')
-        return render_template("contest/contest_problem.html", data=check[0]), 400
+        return render_template("contest/problem/problem.html", data=check[0]), 400
 
     flag_correct = flag == check[0]["flag"]
     db.execute(("INSERT INTO submissions(user_id, problem_id, contest_id, correct, "
@@ -279,7 +279,7 @@ def contest_problem(contest_id, problem_id):
     # Check if flag is correct
     if not flag_correct:
         flash('Your flag is incorrect', 'danger')
-        return render_template("contest/contest_problem.html", data=check[0])
+        return render_template("contest/problem/problem.html", data=check[0])
 
     # Check if user has already found this flag
     db.execute("BEGIN")
@@ -308,13 +308,13 @@ def contest_problem(contest_id, problem_id):
 @perm_required(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"])
 def publish_contest_problem(contest_id, problem_id):
     if not contest_exists(contest_id):
-        return render_template("contest/contest_noexist.html"), 404
+        return render_template("contest/404.html"), 404
 
     r = db.execute(
         "UPDATE contest_problems SET status=0 WHERE problem_id=? AND contest_id=?",
         problem_id, contest_id)
     if r == 0:
-        return render_template("contest/contest_problem_noexist.html"), 404
+        return render_template("contest/problem/404.html"), 404
 
     logger.info((f"User #{session['user_id']} ({session['username']}) published "
                  f"{problem_id} from contest {contest_id}"), extra={"section": "contest"})
@@ -327,17 +327,17 @@ def publish_contest_problem(contest_id, problem_id):
 def edit_contest_problem(contest_id, problem_id):
     # Ensure contest exists
     if not contest_exists(contest_id):
-        return render_template("contest/contest_noexist.html"), 404
+        return render_template("contest/404.html"), 404
 
     # Ensure problem exists
     data = db.execute(
         "SELECT * FROM contest_problems WHERE contest_id=:cid AND problem_id=:pid",
         cid=contest_id, pid=problem_id)
     if len(data) == 0:
-        return render_template("contest/contest_problem_noexist.html"), 404
+        return render_template("contest/problem/404.html"), 404
 
     if request.method == "GET":
-        return render_template('contest/edit_problem.html', data=data[0])
+        return render_template('contest/problem/edit.html', data=data[0])
 
     # Reached via POST
 
@@ -353,12 +353,12 @@ def edit_contest_problem(contest_id, problem_id):
     if (not new_name or not new_description or not new_category
             or (not new_points and data[0]["score_users"] == -1)):
         flash('You have not entered all required fields', 'danger')
-        return render_template('contest/edit_problem.html', data=data[0]), 400
+        return render_template('contest/problem/edit.html', data=data[0]), 400
 
     if new_flag:
         if not verify_flag(new_flag):
             flash('Invalid flag', 'danger')
-            return render_template('contest/edit_problem.html', data=data[0]), 400
+            return render_template('contest/problem/edit.html', data=data[0]), 400
         if request.form.get("rejudge"):
             rejudge_contest_problem(contest_id, problem_id, new_flag)
     else:
@@ -409,7 +409,7 @@ def contest_scoreboard(contest_id):
     # Ensure contest exists
     contest_info = db.execute("SELECT * FROM contests WHERE id=:cid", cid=contest_id)
     if len(contest_info) != 1:
-        return render_template("contest/contest_noexist.html"), 404
+        return render_template("contest/404.html"), 404
 
     # Ensure proper permissions
     if not (contest_info[0]["scoreboard_visible"] or check_perm(["ADMIN", "SUPERADMIN"])):
@@ -447,7 +447,7 @@ def contest_scoreboard(contest_id):
 def _contest_hide(contest_id, hide_enum, hide_msg):
     # Ensure contest exists
     if not contest_exists(contest_id):
-        return render_template("contest/contest_noexist.html"), 404
+        return render_template("contest/404.html"), 404
 
     user_id = request.form.get("user_id")
     if not user_id:
@@ -485,7 +485,7 @@ def _contest_hide(contest_id, hide_enum, hide_msg):
 def _contest_unhide(contest_id, hide_msg):
     # Ensure contest exists
     if not contest_exists(contest_id):
-        return render_template("contest/contest_noexist.html"), 404
+        return render_template("contest/404.html"), 404
 
     user_id = request.form.get("user_id")
     if not user_id:
@@ -555,7 +555,7 @@ def contest_add_problem(contest_id):
     contest_info = db.execute(
         "SELECT * FROM contests WHERE id=:cid", cid=contest_id)
     if len(contest_info) != 1:
-        return render_template("contest/contest_noexist.html"), 404
+        return render_template("contest/404.html"), 404
 
     # Ensure contest hasn't ended
     if contest_ended(contest_info):
@@ -563,7 +563,7 @@ def contest_add_problem(contest_id):
         return redirect('/contest/' + contest_id)
 
     if request.method == "GET":
-        return render_template("contest/create_problem.html")
+        return render_template("contest/problem/create.html")
 
     # Reached via POST
 
@@ -581,17 +581,17 @@ def contest_add_problem(contest_id):
 
     if not problem_id or not name or not description or not category or not flag:
         flash('You have not entered all required fields', 'danger')
-        return render_template("contest/create_problem.html"), 400
+        return render_template("contest/problem/create.html"), 400
 
     # Check if problem ID is valid
     if not verify_text(problem_id):
         flash('Invalid problem ID', 'danger')
-        return render_template("contest/create_problem.html"), 400
+        return render_template("contest/problem/create.html"), 400
 
     # Check if flag is valid
     if not verify_flag(flag):
         flash('Invalid flag', 'danger')
-        return render_template("contest/create_problem.html"), 400
+        return render_template("contest/problem/create.html"), 400
 
     # Check for static vs dynamic scoring
     score_type = request.form.get("score_type")
@@ -601,7 +601,7 @@ def contest_add_problem(contest_id):
         users_decay = request.form.get("users_point_value")
         if not min_points or not max_points or not users_decay:
             flash('You have not entered all required fields', 'danger')
-            return render_template("contest/create_problem.html"), 400
+            return render_template("contest/problem/create.html"), 400
 
         # Modify problems table
         try:
@@ -610,12 +610,12 @@ def contest_add_problem(contest_id):
                        min_points, max_points, users_decay, flag_hint, instanced)
         except ValueError:
             flash('A problem with this ID already exists', 'danger')
-            return render_template("contest/create_problem.html"), 409
+            return render_template("contest/problem/create.html"), 409
     else:  # assume static
         point_value = request.form.get("point_value")
         if not point_value:
             flash('You have not entered all required fields', 'danger')
-            return render_template("contest/create_problem.html"), 400
+            return render_template("contest/problem/create.html"), 400
 
         # Modify problems table
         try:
@@ -626,7 +626,7 @@ def contest_add_problem(contest_id):
                        flag_hint, instanced)
         except ValueError:
             flash('A problem with this ID already exists', 'danger')
-            return render_template("contest/create_problem.html"), 409
+            return render_template("contest/problem/create.html"), 409
 
     # Check if file exists & upload if it does
     file = request.files["file"]
@@ -656,19 +656,19 @@ def export_contest_problem(contest_id, problem_id):
     # Ensure contest exists
     cdata = db.execute("SELECT * FROM contests WHERE id=:cid", cid=contest_id)
     if len(cdata) != 1:
-        return render_template("contest/contest_noexist.html"), 404
+        return render_template("contest/404.html"), 404
 
     # Ensure problem exists
     pdata = db.execute(
         "SELECT * FROM contest_problems WHERE contest_id=:cid AND problem_id=:pid",
         cid=contest_id, pid=problem_id)
     if len(pdata) != 1:
-        return render_template("contest/contest_problem_noexist.html"), 404
+        return render_template("contest/problem/404.html"), 404
 
     if request.method == "GET":
         if not contest_ended(cdata):
             flash("Are you sure? The contest hasn't ended yet", 'warning')
-        return render_template('contest/export_problem.html', data=pdata[0])
+        return render_template('contest/problem/export.html', data=pdata[0])
 
     # Reached via POST
 
@@ -685,7 +685,7 @@ def export_contest_problem(contest_id, problem_id):
     except ValueError:
         flash(('This problem has already been exported, or a problem with '
                f'ID {new_id} already exists'), 'danger')
-        return render_template('contest/export_problem.html', data=pdata[0])
+        return render_template('contest/problem/export.html', data=pdata[0])
 
     db.execute("INSERT INTO problem_solved(user_id, problem_id) SELECT user_id, :new_id "
                "FROM contest_solved WHERE contest_id=:cid AND problem_id=:pid",
@@ -740,7 +740,7 @@ def contest_submissions(contest_id):
     # Ensure contest exists
     contest_info = db.execute("SELECT * FROM contests WHERE id=?", contest_id)
     if len(contest_info) != 1:
-        return render_template("contest/contest_noexist.html"), 404
+        return render_template("contest/404.html"), 404
 
     # Ensure contest started or user is admin
     start = parse_datetime(contest_info[0]["start"])

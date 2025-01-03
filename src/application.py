@@ -486,7 +486,7 @@ def settings():
 @login_required
 def changepassword():
     if request.method == "GET":
-        return render_template("auth/changepassword.html")
+        return render_template("auth/change_password.html")
 
     # Reached using POST
 
@@ -497,19 +497,19 @@ def changepassword():
     # Ensure passwords were submitted and they match
     if not old_password:
         flash('Password cannot be blank', 'danger')
-        return render_template("auth/changepassword.html"), 400
+        return render_template("auth/change_password.html"), 400
     if not new_password or len(new_password) < 8:
         flash('New password must be at least 8 characters', 'danger')
-        return render_template("auth/changepassword.html"), 400
+        return render_template("auth/change_password.html"), 400
     if not confirmation or new_password != confirmation:
         flash('Passwords do not match', 'danger')
-        return render_template("auth/changepassword.html"), 400
+        return render_template("auth/change_password.html"), 400
 
     # Ensure username exists and password is correct
     rows = db.execute("SELECT * FROM users WHERE id=:id", id=session["user_id"])
     if len(rows) != 1 or not check_password_hash(rows[0]["password"], old_password):
         flash('Incorrect password', 'danger')
-        return render_template("auth/changepassword.html"), 401
+        return render_template("auth/change_password.html"), 401
 
     db.execute("UPDATE users SET password=:new WHERE id=:id",
                new=generate_password_hash(new_password), id=session["user_id"])
@@ -550,7 +550,7 @@ def toggle2fa():
 @app.route("/forgotpassword", methods=["GET", "POST"])
 def forgotpassword():
     if request.method == "GET":
-        return render_template("auth/forgotpassword.html",
+        return render_template("auth/forgot_password.html",
                                site_key=app.config['HCAPTCHA_SITE'])
 
     # Reached via POST
@@ -558,14 +558,14 @@ def forgotpassword():
     email = request.form.get("email")
     if not email:
         flash('Email cannot be blank', 'danger')
-        return render_template("auth/forgotpassword.html"), 400
+        return render_template("auth/forgot_password.html"), 400
 
     # Ensure captcha is valid
     if app.config['USE_CAPTCHA']:
         if not check_captcha(app.config['HCAPTCHA_SECRET'],
                              request.form.get('h-captcha-response'),
                              app.config['HCAPTCHA_SITE']):
-            return render_template("auth/forgotpassword.html",
+            return render_template("auth/forgot_password.html",
                                    site_key=app.config['HCAPTCHA_SITE']), 400
 
     rows = db.execute("SELECT * FROM users WHERE email = :email",
@@ -584,7 +584,7 @@ def forgotpassword():
 
     flash(('If there is an account associated with that email, a password reset email '
            'has been sent'), 'success')
-    return render_template("auth/forgotpassword.html")
+    return render_template("auth/forgot_password.html")
 
 
 @app.route('/resetpassword/<token>', methods=['GET', 'POST'])
@@ -601,17 +601,17 @@ def reset_password_user(token):
         return redirect('/forgotpassword')
 
     if request.method == "GET":
-        return render_template('auth/resetpassword.html')
+        return render_template('auth/reset_password.html')
 
     password = request.form.get("password")
     confirmation = request.form.get("confirmation")
 
     if not password or len(password) < 8:
         flash('New password must be at least 8 characters', 'danger')
-        return render_template("auth/resetpassword.html"), 400
+        return render_template("auth/reset_password.html"), 400
     if not confirmation or password != confirmation:
         flash('Passwords do not match', 'danger')
-        return render_template("auth/resetpassword.html"), 400
+        return render_template("auth/reset_password.html"), 400
 
     db.execute("UPDATE users SET password=:new WHERE id=:id",
                new=generate_password_hash(password), id=user_id)
@@ -631,7 +631,7 @@ def contests():
          "start <= datetime('now') ORDER BY end DESC"))
     future = db.execute(
         "SELECT * FROM contests WHERE start > datetime('now') ORDER BY start DESC")
-    return render_template("contest/contests.html",
+    return render_template("contest/list.html",
                            past=past, current=current, future=future)
 
 
@@ -729,7 +729,7 @@ def problems():
         "SELECT * FROM contests WHERE end > datetime('now') AND start <= datetime('now')"
     ))
 
-    return render_template('problem/problems.html',
+    return render_template('problem/list.html',
                            data=data, solved=solved, length=-(-length // 50),
                            categories=categories, selected=category,
                            is_ongoing_contest=is_ongoing_contest)
@@ -773,7 +773,7 @@ def archived_problems():
     categories = db.execute("SELECT DISTINCT category FROM problems WHERE status=2")
     categories.sort(key=lambda x: x['category'])
 
-    return render_template('problem/archived_list.html',
+    return render_template('problem/list_archived.html',
                            data=data, solved=solved, length=-(-length // 50),
                            categories=categories, selected=category)
 
@@ -857,7 +857,7 @@ def draft_problems():
     data = db.execute("SELECT * FROM problems WHERE status=1 LIMIT 50 OFFSET ?", page)
     length = db.execute("SELECT COUNT(*) AS cnt FROM problems WHERE status=1")[0]["cnt"]
 
-    return render_template('problem/draft_problems.html',
+    return render_template('problem/list_draft.html',
                            data=data, length=-(-length // 50))
 
 
