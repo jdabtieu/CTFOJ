@@ -545,6 +545,13 @@ def test_contest_rejudge(client, database):
     os.remove('test_upload.txt')
     assert result.status_code == 302
 
+    edit_dict = {
+        'name': 'dynamic',
+        'description': 'dynamic is fun',
+        'category': 'web',
+        'file': ('fake_empty_file', ''),
+    }
+
     # WA --> First AC
     result = client.post('/contest/testingcontest/problem/dynamic', data={
         'flag': 'ctf{wrong}'
@@ -557,12 +564,9 @@ def test_contest_rejudge(client, database):
     assert b'None' in result.data
 
     result = client.post('/contest/testingcontest/problem/dynamic/edit', data={
-        'name': 'dynamic',
-        'description': 'dynamic is fun',
-        'category': 'web',
+        **edit_dict,
         'flag': 'ctf{wrong}',
-        'rejudge': True,
-        'file': ('fake_empty_file', ''),
+        'rejudge': True
     }, follow_redirects=True)
     assert result.status_code == 200
     assert b'successfully' in result.data
@@ -577,11 +581,8 @@ def test_contest_rejudge(client, database):
 
     # Without rejudge
     result = client.post('/contest/testingcontest/problem/dynamic/edit', data={
-        'name': 'dynamic',
-        'description': 'dynamic is fun',
-        'category': 'web',
-        'flag': 'ctf{verywrong}',
-        'file': ('fake_empty_file', ''),
+        **edit_dict,
+        'flag': 'ctf{verywrong}'
     }, follow_redirects=True)
     assert result.status_code == 200
 
@@ -591,12 +592,9 @@ def test_contest_rejudge(client, database):
 
     # First AC --> WA
     result = client.post('/contest/testingcontest/problem/dynamic/edit', data={
-        'name': 'dynamic',
-        'description': 'dynamic is fun',
-        'category': 'web',
+        **edit_dict,
         'flag': 'ctf{hello}',
-        'rejudge': True,
-        'file': ('fake_empty_file', ''),
+        'rejudge': True
     }, follow_redirects=True)
     assert result.status_code == 200
     assert b'successfully' in result.data
@@ -616,18 +614,30 @@ def test_contest_rejudge(client, database):
     assert b'None' not in result2.data
 
     result = client.post('/contest/testingcontest/problem/dynamic/edit', data={
-        'name': 'dynamic',
-        'description': 'dynamic is fun',
-        'category': 'web',
+        **edit_dict,
         'flag': 'ctf{wrong}',
-        'rejudge': True,
-        'file': ('fake_empty_file', ''),
+        'rejudge': True
     }, follow_redirects=True)
     assert result.status_code == 200
     assert b'successfully' in result.data
 
     result = client.get('/contest/testingcontest/scoreboard')
     assert result.status_code == 200
+    assert b'None' not in result.data
+    assert result.data[result.data.index(b'table'):].replace(b'458', b'1') == result2.data[result2.data.index(b'table'):]  # Check points and last AC
+
+    client.post('/contest/testingcontest/problem/dynamic/edit', data={
+        **edit_dict,
+        'flag': 'ctf{different}',
+        'rejudge': True
+    }, follow_redirects=True)
+    result = client.post('/contest/testingcontest/problem/dynamic', data={
+        'flag': 'ctf{different}'
+    }, follow_redirects=True)
+    assert result.status_code == 200
+    assert b'Congratulations' in result.data
+
+    result = client.get('/contest/testingcontest/scoreboard')
     assert b'None' not in result.data
     assert result.data[result.data.index(b'table'):].replace(b'458', b'1') == result2.data[result2.data.index(b'table'):]  # Check points and last AC
 
