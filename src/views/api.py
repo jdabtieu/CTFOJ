@@ -202,17 +202,15 @@ def contest_problem():
 
 @api.route("/contest/scoreboard/<contest_id>")
 def contest_scoreboard(contest_id):
-    if not request.args.get("key"):
-        return json_fail("Unauthorized", 401)
-
     # Ensure contest exists
     contest_info = db.execute("SELECT * FROM contests WHERE id=:cid", cid=contest_id)
     if len(contest_info) != 1:
         return json_fail("The contest doesn't exist", 404)
 
     # Ensure proper permissions
-    if request.args.get("key") != contest_info[0]["scoreboard_key"]:
-        return json_fail('Invalid token', 401)
+    # Either has regular scoreboard perms or has the scoreboard key
+    if not api_perm(["ADMIN", "SUPERADMIN"]) and request.args.get("key") != contest_info[0]["scoreboard_key"]:
+        return json_fail('Unauthorized', 401)
 
     data = db.execute(
         ("SELECT user_id, points, lastAC, username FROM contest_users "

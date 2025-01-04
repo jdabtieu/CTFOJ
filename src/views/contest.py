@@ -1,5 +1,5 @@
 from enum import Enum
-from flask import (Blueprint, flash, redirect, render_template, request,
+from flask import (Blueprint, abort, flash, redirect, render_template, request,
                    send_file, session, current_app as app)
 import logging
 import os
@@ -783,6 +783,8 @@ def export_contest_problem(contest_id, problem_id):
 @api.route('/<contest_id>/problem/<problem_id>/download')
 @perm_required(["ADMIN", "SUPERADMIN", "CONTENT_MANAGER"])
 def download_contest_problem(contest_id, problem_id):
+    if len(db.execute("SELECT * FROM contest_problems WHERE contest_id=? AND problem_id=?", contest_id, problem_id)) == 0:
+        return abort(404)
     temp_zipfile = BytesIO()
     zf = zipfile.ZipFile(temp_zipfile, 'w', zipfile.ZIP_DEFLATED)
     for file in os.listdir(f'metadata/contests/{contest_id}/{problem_id}'):
