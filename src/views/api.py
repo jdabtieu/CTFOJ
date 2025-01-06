@@ -69,13 +69,13 @@ def check_instancer_perms(id):
         data = db.execute(("SELECT * FROM contest_problems WHERE "
                            "contest_id=:cid AND problem_id=:pid"),
                           cid=contest_id, pid=problem_id)
+        has_perm |= len(data) > 0 and (data[0]["publish_timestamp"] is not None and
+            parse_datetime(data[0]["publish_timestamp"]) <= datetime.utcnow())
     else:
         has_perm = api_perm(["ADMIN", "SUPERADMIN", "PROBLEM_MANAGER", "CONTENT_MANAGER"])
         data = db.execute("SELECT * FROM problems WHERE id=:pid", pid=problem_id)
 
-    needs_admin = len(data) == 0 or (data[0]["publish_timestamp"] is None or
-                   parse_datetime(data[0]["publish_timestamp"]) > datetime.utcnow())
-    if len(data) == 0 or (needs_admin and not has_perm):
+    if len(data) == 0 or not has_perm:
         return ("Problem not found", 404)
     if not data[0]["instanced"]:  # Check if the problem is instanced
         return ("This problem is not instanced", 400)
