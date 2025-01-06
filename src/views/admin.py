@@ -20,7 +20,7 @@ def admin_console():
         msg = read_file('maintenance_mode')
     else:
         msg = ""
-    return render_template("admin/console.html", ver="v4.2.3",
+    return render_template("admin/console.html", ver="v4.3.0",
                            maintenance_mode=maintenance_mode, maintenance_msg=msg)
 
 
