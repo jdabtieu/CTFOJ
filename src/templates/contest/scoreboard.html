@@ -4,8 +4,9 @@
 {% block active %}Contest Leaderboard{% endblock %}
 
 {% block main %}
+{% set admin = check_perm(["ADMIN", "SUPERADMIN"]) %}
 <h1><a href="{{ request.path[:-11] }}">{{ title }}</a></h1>
-{% if check_perm(["ADMIN", "SUPERADMIN"]) %}
+{% if admin %}
     <div id="confirm" class="hidden">
         <form method="post" style="margin-bottom: 1rem;">
             <input type="hidden" name="user_id">
@@ -22,7 +23,7 @@
                 <th scope="col" style="width: 40%;">Username</th>
                 <th scope="col" style="width: 18%;">Points</th>
                 <th scope="col" style="width: 30%;">Latest correct flag</th>
-                {% if check_perm(["ADMIN", "SUPERADMIN"]) %}
+                {% if admin %}
                     <th scope="col" style="width: 10%">Actions</th>
                 {% endif %}
             </tr>
@@ -38,7 +39,7 @@
                 {% else %}
                     <td>None</td>
                 {% endif %}
-                {% if check_perm(["ADMIN", "SUPERADMIN"]) %}
+                {% if admin %}
                     <td data-id="{{ data[i]['user_id'] }}" data-username="{{ data[i]['username'] }}">
                         <a href="#">
                             <img src="/assets/images/restrict.svg"
@@ -69,7 +70,7 @@
                     <th scope="col" style="width: 40%;">Username</th>
                     <th scope="col" style="width: 18%;">Points</th>
                     <th scope="col" style="width: 30%;">Most recent AC submission</th>
-                    {% if check_perm(["ADMIN", "SUPERADMIN"]) %}
+                    {% if admin %}
                         <th scope="col" style="width: 10%">Actions</th>
                     {% endif %}
                 </tr>
@@ -85,7 +86,7 @@
                     {% else %}
                         <td>None</td>
                     {% endif %}
-                    {% if check_perm(["ADMIN", "SUPERADMIN"]) %}
+                    {% if admin %}
                         <td data-id="{{ hidden[i]['user_id'] }}" data-username="{{ hidden[i]['username'] }}">
                             {% if hidden[i]['hidden'] == 1 %}
                                 <a href="#">
@@ -124,7 +125,7 @@
 {% endif %}
 {% endblock %}
 {% block script %}
-{% if check_perm(["ADMIN", "SUPERADMIN"]) %}
+{% if admin %}
     <script>
         const path = "{{ request.path }}";
         const confirmDiv = document.getElementById("confirm");
